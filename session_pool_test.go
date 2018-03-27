@@ -105,9 +105,8 @@ func TestSessionPoolPopluateUnauth(t *testing.T) {
 	if sess.Sabre.Body.Fault.Detail.StackTrace != sampleSessionNoAuthStackTrace {
 		t.Errorf("Session Fault Invalid token expect: %s, got: %s", sampleSessionNoAuthStackTrace, sess.Sabre.Body.Fault.String)
 	}
-	soaperr := string([]byte(`Authentication failed-soap-env:Client.AuthenticationFailed: com.sabre.universalservices.base.security.AuthenticationException: errors.authentication.USG_AUTHENTICATION_FAILED`))
-	if sess.FaultError.Error() != soaperr {
-		t.Errorf("Session Soap Error should be nasty string. expect: %s, got: %s", soaperr, sess.FaultError)
+	if sess.FaultError.Error() != sampleSessionPoolMsgNoAuth {
+		t.Errorf("Session Soap Error should be nasty string. expect: %s, got: %s", sampleSessionPoolMsgNoAuth, sess.FaultError)
 	}
 	if len(p.FaultErrors) != poolSize {
 		t.Error("SessionPool fault errors shoudl exist")
