@@ -1,0 +1,4 @@
+.vscode
+.sabre.toml
+*.log
+log/
