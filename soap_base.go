@@ -13,25 +13,26 @@ import (
 	"time"
 )
 
-// This should parse out sabre tokens: \!-\d.*
-
 const (
-	letterBytes         = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	letterIdxBits       = 6                    // 6 bits to represent a letter index
-	letterIdxMask       = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
-	letterIdxMax        = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
-	sabreToBase         = "webservices.sabre.com"
-	sabreDefaultDomain  = "DEFAULT"
-	sabreMustUnderstand = "1"
-	sabreEBVersion      = "2.0.0"
-	partyIDTypeURN      = "urn:x12.org:IO5:01"
-	baseNS              = "http://schemas.xmlsoap.org/soap/envelope/"
-	baseEBNameSpace     = "http://www.ebxml.org/namespaces/messageHeader"
-	baseXlinkNameSpace  = "http://www.w3.org/1999/xlink"
-	baseXSDNameSpace    = "http://www.w3.org/1999/XMLSchema"
-	baseWsse            = "http://schemas.xmlsoap.org/ws/2002/12/secext"
-	baseWsuNameSpace    = "http://schemas.xmlsoap.org/ws/2002/12/utility"
-	baseOTANameSpace    = "http://www.opentravel.org/OTA/2002/11"
+	letterBytes               = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	letterIdxBits             = 6                    // 6 bits to represent a letter index
+	letterIdxMask             = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
+	letterIdxMax              = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
+	sabreToBase               = "webservices.sabre.com"
+	sabreDefaultDomain        = "DEFAULT"
+	sabreMustUnderstand       = "1"
+	sabreEBVersion            = "2.0.0"
+	sabreHotelContentVersion  = "1.0.0"
+	partyIDTypeURN            = "urn:x12.org:IO5:01"
+	baseNS                    = "http://schemas.xmlsoap.org/soap/envelope/"
+	baseEBNameSpace           = "http://www.ebxml.org/namespaces/messageHeader"
+	baseXlinkNameSpace        = "http://www.w3.org/1999/xlink"
+	baseXSDNameSpace          = "http://www.w3.org/1999/XMLSchema"
+	baseWsse                  = "http://schemas.xmlsoap.org/ws/2002/12/secext"
+	baseWsuNameSpace          = "http://schemas.xmlsoap.org/ws/2002/12/utility"
+	baseOTANameSpace          = "http://www.opentravel.org/OTA/2002/11"
+	baseXsiNamespace          = "http://www.w3.org/2001/XMLSchema-instance"
+	baseGetHotelContentSchema = "http://services.sabre.com/hotel/content/v1 GetHotelContentRQ.xsd"
 
 	//StatusErrorRS is the string value error response when SOAP request->response had an error, typically found in the Header.MessageHeader.Action. Usually, any SOAP response with Action="ErrorRS" will also have a SOAPFault body with more informative error codes. This can be used as an easy way to identify and error.
 	StatusErrorRS         = "ErrorRS"
@@ -71,7 +72,7 @@ type Envelope struct {
 	XMLNSxsd   string   `xml:"xmlns:xsd,attr"`
 }
 
-// EnvelopeUnMarsh is wrapper with namespace prefix definitions for payload
+// EnvelopeUnMarsh is wrapper to unmarshal with namespace prefix
 type EnvelopeUnMarsh struct {
 	XMLName    xml.Name `xml:"Envelope"`
 	XMLNSbase  string   `xml:"soap-env,attr,omitempty"`
@@ -86,25 +87,25 @@ type PartyIDElem struct {
 	Type  string `xml:"type,attr"`
 }
 
-// FromElem whom we get message
+// FromElem who is sending message
 type FromElem struct {
 	XMLName xml.Name    `xml:"eb:From"`
 	PartyID PartyIDElem `xml:"eb:PartyId"`
 }
 
-// FromElemUnmarsh whom we get message
+// FromElemUnmarsh is wrapper to unmarshal with namespace prefix
 type FromElemUnmarsh struct {
 	XMLName xml.Name    `xml:"From"`
 	PartyID PartyIDElem `xml:"PartyId"`
 }
 
-// ToElem whom we get message
+// ToElem whom message message is sent
 type ToElem struct {
 	XMLName xml.Name    `xml:"eb:To"`
 	PartyID PartyIDElem `xml:"eb:PartyId"`
 }
 
-// ToElemUnmarsh whom we get message
+// ToElemUnmarsh is wrapper to unmarshal with namespace prefix
 type ToElemUnmarsh struct {
 	XMLName xml.Name    `xml:"To"`
 	PartyID PartyIDElem `xml:"PartyId"`
@@ -133,7 +134,7 @@ type ServiceElem struct {
 	Type  string `xml:"eb:type,attr"`
 }
 
-// MessageHeader wrapper with multiple namespace prefixes
+// MessageHeader contains message specific data such as credentials, from, to, conversation id, soap service, soap action, etc...
 type MessageHeader struct {
 	XMLName        xml.Name `xml:"eb:MessageHeader"`
 	MustUnderstand string   `xml:"soap-env:mustUnderstand,attr"`
@@ -147,7 +148,7 @@ type MessageHeader struct {
 	MessageData    MessageDataElem
 }
 
-// MessageHeaderUnmarsh wrapper with multiple namespace prefixes
+// MessageHeaderUnmarsh wrapper to unmarshal with namespace prefix
 type MessageHeaderUnmarsh struct {
 	XMLName        xml.Name `xml:"MessageHeader"`
 	MustUnderstand string   `xml:"mustUnderstand,attr"`
@@ -170,7 +171,7 @@ type UsernameTokenElem struct {
 	Domain       string   `xml:"Domain"`
 }
 
-// UsernameTokenElemUnmarsh contains user security info
+// UsernameTokenElemUnmarsh wrapper to unmarshal with namespace prefix
 type UsernameTokenElemUnmarsh struct {
 	XMLName      xml.Name `xml:"UsernameToken"`
 	Username     string   `xml:"Username"`
@@ -197,7 +198,7 @@ type BinarySecurityTokenUnmarsh struct {
 	EncodingType string `xml:"EncodingType,attr"`
 }
 
-// SecurityUnmarsh is wrapper with namespace prefix definitions for payload
+// SecurityUnmarsh wrapper to unmarshal with namespace prefix
 type SecurityUnmarsh struct {
 	XMLName             xml.Name `xml:"Security"`
 	XMLNSWsseBase       string   `xml:"wsse,attr"`
@@ -213,7 +214,7 @@ type SessionHeader struct {
 	Security      Security
 }
 
-// SessionHeaderUnmarsh header of session
+// SessionHeaderUnmarsh wrapper to unmarshal with namespace prefix
 type SessionHeaderUnmarsh struct {
 	XMLName       xml.Name `xml:"Header"`
 	MessageHeader MessageHeaderUnmarsh
@@ -302,7 +303,6 @@ func SabreTimeFormat() string {
 }
 
 // randStringBytesMaskImprSrc generate random string of specific length
-// Author: Icza - http://stackoverflow.com/users/1705598/icza
 func randStringBytesMaskImprSrc(n int) string {
 	src := rand.NewSource(time.Now().UnixNano())
 	b := make([]byte, n)
