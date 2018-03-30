@@ -6,6 +6,22 @@ import (
 	"testing"
 )
 
+func TestContentRQHasFormattedIDS(t *testing.T) {
+	ids := []string{"0000001", "002", "03", "000124"}
+	con, _ := BuildGetContentRequest(1, ids)
+	refs := con.SearchCriteria.HotelRefs
+
+	if len(refs) != len(ids) {
+		t.Errorf("HotelRefs '%d' not size of input ids '%d'. expect %v, got %v", len(refs), len(ids), ids, refs)
+	}
+
+	for i, id := range ids {
+		if id != refs[i].HotelCode {
+			t.Error("HotelRef id not properly formatted. expect", id, "got", refs[i].HotelCode)
+		}
+	}
+}
+
 func TestBuildGetHotelContentRequestMarshal(t *testing.T) {
 	ids := []string{"1", "002", "03"}
 	content, _ := BuildGetContentRequest(10, ids)
@@ -15,11 +31,6 @@ func TestBuildGetHotelContentRequestMarshal(t *testing.T) {
 	}
 	if content.XMLNSSchemaLocation != baseGetHotelContentSchema {
 		t.Errorf("GetHotelContent XMLNSSchemaLocation expect: %s, got %s", baseGetHotelContentSchema, content.XMLNSSchemaLocation)
-	}
-
-	if len(content.SearchCriteria.HotelRefs) != len(ids) {
-		t.Errorf("HotelRefs '%d' not size of input ids '%d'. expect %v, got %v", len(content.SearchCriteria.HotelRefs), len(ids), ids, content.SearchCriteria.HotelRefs)
-
 	}
 
 	b, err := xml.Marshal(content)
