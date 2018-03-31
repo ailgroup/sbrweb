@@ -2,7 +2,6 @@ package sbrhotel
 
 import (
 	"encoding/xml"
-	"fmt"
 	"testing"
 
 	"github.com/ailgroup/sbrweb"
@@ -97,11 +96,23 @@ func TestBuildHotelSearchMarshal(t *testing.T) {
 	if avail.Avail.GuestCounts.Count != sampleGuestCount {
 		t.Errorf("BuildHotelAvailRq GuestCounts.Count expect: %d, got %d", sampleGuestCount, avail.Avail.GuestCounts.Count)
 	}
-	/*
-		if avail.Avail.Customer.Corporate.ID != sampleCorpID {
-			t.Errorf("BuildHotelAvailRq Customer.Corporate.ID expect: %s, got %s", sampleCorpID, avail.Avail.Customer.Corporate.ID)
-		}
-	*/
+	if avail.Avail.Customer.Corporate.ID != sampleCorpID {
+		t.Errorf("BuildHotelAvailRq Customer.Corporate.ID expect: %s, got %s", sampleCorpID, avail.Avail.Customer.Corporate.ID)
+	}
+
+	_, err := xml.Marshal(avail)
+	if err != nil {
+		t.Error("Error marshaling get hotel content", err)
+	}
+}
+
+func TestBuildHotelSearchNoCorpIDMarshal(t *testing.T) {
+	avail := BuildHotelAvailRq(sampleNoCorpID, sampleGuestCount, HotelSearchCriteria{})
+	customer := Customer{}
+
+	if avail.Avail.Customer != customer {
+		t.Errorf("BuildHotelAvailRq Customer for empty corporate ID should be empty expect: %v, got %v", customer, avail.Avail.Customer)
+	}
 
 	_, err := xml.Marshal(avail)
 	if err != nil {
@@ -118,7 +129,7 @@ func TestBuildHotelSearchWithIDSMarshal(t *testing.T) {
 		t.Errorf("BuildHotelAvailRq GuestCounts.Count expect: %d, got %d", gcount, avail.Avail.GuestCounts.Count)
 	}
 
-	b, err := xml.Marshal(avail)
+	_, err := xml.Marshal(avail)
 	if err != nil {
 		t.Error("Error marshaling get hotel content", err)
 	}
@@ -127,7 +138,7 @@ func TestBuildHotelSearchWithIDSMarshal(t *testing.T) {
 			t.Errorf("Expected marshal hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQHotelIDS), string(b))
 		}
 	*/
-	fmt.Printf("content marshal \n%s\n", b)
+	//fmt.Printf("content marshal \n%s\n", b)
 }
 func TestBuildHotelSearchWithCitiesMarshal(t *testing.T) {
 	q, _ := buildHotelSearch(hqcity)
@@ -138,7 +149,7 @@ func TestBuildHotelSearchWithCitiesMarshal(t *testing.T) {
 		t.Errorf("BuildHotelAvailRq GuestCounts.Count expect: %d, got %d", gcount, avail.Avail.GuestCounts.Count)
 	}
 
-	b, err := xml.Marshal(avail)
+	_, err := xml.Marshal(avail)
 	if err != nil {
 		t.Error("Error marshaling get hotel content", err)
 	}
@@ -147,5 +158,5 @@ func TestBuildHotelSearchWithCitiesMarshal(t *testing.T) {
 			t.Errorf("Expected marshal hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQCities), string(b))
 		}
 	*/
-	fmt.Printf("content marshal \n%s\n", b)
+	//fmt.Printf("content marshal \n%s\n", b)
 }
