@@ -1,18 +1,10 @@
-package sbrweb
+package sbrhotel
 
+/*
+DEPRECATE: use rest instead
 import (
 	"encoding/xml"
 	"errors"
-)
-
-const (
-	propertyQueryField = "property"
-	locationQueryField = "location"
-	amenityQueryField  = "amenity"
-	airportQueryField  = "airport"
-	creditQueryField   = "creditcard"
-	diningTypeField    = "Dining"
-	alertTypeField     = "Alerts"
 )
 
 // GetHotelContent retrieve sabre hotel content using various query criteria, see SearchCriteria
@@ -106,7 +98,7 @@ func BuildGetHotelContent(images int, hotelIDs []string, dinfo DescriptiveInfo) 
 		hotelrefs = append(hotelrefs, HotelRef{HotelCode: id})
 	}
 	return GetHotelContent{
-		XMLNSXsi:            baseXsiNamespace,
+		XMLNSXsi:            baseXSINamespace,
 		XMLNSSchemaLocation: baseGetHotelContentSchema,
 		Version:             sabreHotelContentVersion,
 		SearchCriteria: SearchCriteria{
@@ -116,3 +108,4 @@ func BuildGetHotelContent(images int, hotelIDs []string, dinfo DescriptiveInfo) 
 		},
 	}, nil
 }
+*/

@@ -14,29 +14,28 @@ import (
 )
 
 const (
-	letterBytes               = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	letterIdxBits             = 6                    // 6 bits to represent a letter index
-	letterIdxMask             = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
-	letterIdxMax              = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
-	sabreToBase               = "webservices.sabre.com"
-	sabreDefaultDomain        = "DEFAULT"
-	sabreMustUnderstand       = "1"
-	sabreEBVersion            = "2.0.0"
-	sabreHotelContentVersion  = "1.0.0"
-	partyIDTypeURN            = "urn:x12.org:IO5:01"
-	baseNS                    = "http://schemas.xmlsoap.org/soap/envelope/"
-	baseEBNameSpace           = "http://www.ebxml.org/namespaces/messageHeader"
-	baseXlinkNameSpace        = "http://www.w3.org/1999/xlink"
-	baseXSDNameSpace          = "http://www.w3.org/1999/XMLSchema"
-	baseWsse                  = "http://schemas.xmlsoap.org/ws/2002/12/secext"
-	baseWsuNameSpace          = "http://schemas.xmlsoap.org/ws/2002/12/utility"
-	baseOTANameSpace          = "http://www.opentravel.org/OTA/2002/11"
-	baseXsiNamespace          = "http://www.w3.org/2001/XMLSchema-instance"
-	baseGetHotelContentSchema = "http://services.sabre.com/hotel/content/v1 GetHotelContentRQ.xsd"
-
 	//StatusErrorRS is the string value error response when SOAP request->response had an error, typically found in the Header.MessageHeader.Action. Usually, any SOAP response with Action="ErrorRS" will also have a SOAPFault body with more informative error codes. This can be used as an easy way to identify and error.
 	StatusErrorRS         = "ErrorRS"
-	standardTimeFormatter = "2006-01-02T15:04:05Z"
+	StandardTimeFormatter = "2006-01-02T15:04:05Z"
+	BaseXSDNameSpace      = "http://www.w3.org/2001/XMLSchema"
+	BaseWebServicesNS     = "http://webservices.sabre.com/sabreXML/2011/10"
+	BaseXSINamespace      = "http://www.w3.org/2001/XMLSchema-instance"
+
+	letterBytes         = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	letterIdxBits       = 6                    // 6 bits to represent a letter index
+	letterIdxMask       = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
+	letterIdxMax        = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
+	sabreToBase         = "webservices.sabre.com"
+	sabreDefaultDomain  = "DEFAULT"
+	sabreMustUnderstand = "1"
+	sabreEBVersion      = "2.0.0"
+	partyIDTypeURN      = "urn:x12.org:IO5:01"
+	baseNS              = "http://schemas.xmlsoap.org/soap/envelope/"
+	baseEBNameSpace     = "http://www.ebxml.org/namespaces/messageHeader"
+	baseXlinkNameSpace  = "http://www.w3.org/2001/xlink"
+	baseWsse            = "http://schemas.xmlsoap.org/ws/2002/12/secext"
+	baseWsuNameSpace    = "http://schemas.xmlsoap.org/ws/2002/12/utility"
+	baseOTANameSpace    = "http://www.opentravel.org/OTA/2002/11"
 )
 
 var (
@@ -263,7 +262,7 @@ func createEnvelope() Envelope {
 		XMLNSbase:  baseNS,
 		XMLNSeb:    baseEBNameSpace,
 		XMLNSxlink: baseXlinkNameSpace,
-		XMLNSxsd:   baseXSDNameSpace,
+		XMLNSxsd:   BaseXSDNameSpace,
 	}
 }
 
@@ -299,7 +298,7 @@ func SabreTokenParse(tok string) string {
 
 // SabreTimeFormat returns '2017-11-27T09:58:31Z'
 func SabreTimeFormat() string {
-	return time.Now().Format(standardTimeFormatter)
+	return time.Now().Format(StandardTimeFormatter)
 }
 
 // randStringBytesMaskImprSrc generate random string of specific length

@@ -1,9 +1,12 @@
-package sbrweb
+package sbrhotel
 
+/*
+DEPRECATE: use rest instead
 import (
 	"encoding/xml"
 	"testing"
 )
+
 
 var (
 	dt                      = DescriptionTypes{diningTypeField, alertTypeField}
@@ -91,3 +94,4 @@ func TestBuildGetHotelContentMarshal(t *testing.T) {
 	}
 	//fmt.Printf("content marshal \n%s\n", b)
 }
+*/
