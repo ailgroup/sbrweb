@@ -1,34 +1,41 @@
 package sbrhotel
 
 import (
+	"encoding/xml"
+	"strings"
 	"testing"
+
+	"github.com/ailgroup/sbrweb"
 )
 
 var (
-	hqbad               = make(GeoQueryParams)
-	hqcity              = make(GeoQueryParams)
-	hqids               = make(GeoQueryParams)
-	addr                = make(AddressQueryParams)
+	hqbad               = make(HotelRefCriterion)
+	hqcity              = make(HotelRefCriterion)
+	hqids               = make(HotelRefCriterion)
+	hqltln              = make(HotelRefCriterion)
+	addr                = make(AddressCriterion)
 	sampleCorpID        = "12345"
 	sampleNoCorpID      = ""
+	sampleLatLang       = []string{"32.78,-96.81", "54.87,-102.96"}
 	sampleHotelCode     = []string{"0012", "19876", "1109", "445098", "000034"}
-	sampleHotelCityCode = []string{"DFW", "CHC"}
+	sampleHotelCityCode = []string{"DFW", "CHC", "LA"}
 	sampleGuestCount    = 2
 	sampleStreet        = "2031 N. 100 W"
 	sampleCity          = "Nowhere"
 	samplePostal        = "999908"
 	sampleCountryCode   = "US"
 
-	//sampleAvailRQHotelIDS = []byte(``)
+	sampleAvailRQHotelIDSCoprID = []byte(`<OTA_HotelAvailRQ version="2.3.0" xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><ReturnHostCommand>true</ReturnHostCommand><AvailRequestSegment><Corporate><ID>12345</ID></Corporate><GuestCounts Count="4"></GuestCounts><HotelSearchCriteria><Criterion><HotelRef HotelCode="0012"></HotelRef><HotelRef HotelCode="19876"></HotelRef><HotelRef HotelCode="1109"></HotelRef><HotelRef HotelCode="445098"></HotelRef><HotelRef HotelCode="000034"></HotelRef></Criterion></HotelSearchCriteria></AvailRequestSegment></OTA_HotelAvailRQ>`)
 
-	//sampleAvailRQCities = []byte(``)
+	sampleAvailRQCities = []byte(`<OTA_HotelAvailRQ version="2.3.0" xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><ReturnHostCommand>true</ReturnHostCommand><AvailRequestSegment><Corporate></Corporate><GuestCounts Count="3"></GuestCounts><HotelSearchCriteria><Criterion><HotelRef HotelCityCode="DFW"></HotelRef><HotelRef HotelCityCode="CHC"></HotelRef><HotelRef HotelCityCode="LA"></HotelRef></Criterion></HotelSearchCriteria></AvailRequestSegment></OTA_HotelAvailRQ>`)
+
+	sampleAvailRQLatLng = []byte(`<OTA_HotelAvailRQ version="2.3.0" xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><ReturnHostCommand>true</ReturnHostCommand><AvailRequestSegment><Corporate></Corporate><GuestCounts Count="2"></GuestCounts><HotelSearchCriteria><Criterion><HotelRef Latitude="32.78" Longitude="-96.81"></HotelRef><HotelRef Latitude="54.87" Longitude="-102.96"></HotelRef></Criterion></HotelSearchCriteria></AvailRequestSegment></OTA_HotelAvailRQ>`)
 )
 
 func init() {
-	hqbad[cityQueryField] = sampleHotelCityCode
-	hqbad[hotelidQueryField] = sampleHotelCode
 	hqcity[cityQueryField] = sampleHotelCityCode
 	hqids[hotelidQueryField] = sampleHotelCode
+	hqltln[latlngQueryField] = sampleLatLang
 
 	addr[streetQueryField] = sampleStreet
 	addr[cityQueryField] = sampleCity
@@ -36,80 +43,91 @@ func init() {
 	addr[countryCodeQueryField] = sampleCountryCode
 }
 
+func TestAddressSearchReturnError(t *testing.T) {
+	_, err := NewHotelSearchCriteria(
+		AddressSearch(AddressCriterion{}),
+	)
+	if err == nil {
+		t.Errorf("AddressSearch empty params should return error: '%v'", err)
+	}
+}
+
 func TestAddressSearchCriteria(t *testing.T) {
-	address := AddressOption(addr)
-	a, err := NewHotelSearchCriteria(address)
+	a, err := NewHotelSearchCriteria(
+		AddressSearch(addr),
+	)
 
 	if err != nil {
 		t.Errorf("NewHotelSearchCriteria with AddressOption error %v", err)
 	}
-
-	if a.Criterion.HotelRef[0].Address.Street != sampleStreet {
+	if a.Criterion.Address.Street != sampleStreet {
 		t.Error("buildAddress street not correct")
 	}
-	if a.Criterion.HotelRef[0].Address.City != sampleCity {
+	if a.Criterion.Address.City != sampleCity {
 		t.Error("buildAddress city not correct")
 	}
-	if a.Criterion.HotelRef[0].Address.Postal != samplePostal {
+	if a.Criterion.Address.Postal != samplePostal {
 		t.Error("buildAddress postal not correct")
 	}
-	if a.Criterion.HotelRef[0].Address.CountryCode != sampleCountryCode {
+	if a.Criterion.Address.CountryCode != sampleCountryCode {
 		t.Error("buildAddress country code not correct")
 	}
 }
 
-/*
-func TestBuildHotelSearchReturnError(t *testing.T) {
-	_, err := buildHotelSearch(hqbad)
+func TestHotelRefSearchReturnError(t *testing.T) {
+	_, err := NewHotelSearchCriteria(
+		HotelRefSearch(hqbad),
+	)
 	if err == nil {
-		t.Error("HotelQueryParams with more than 1 key should have error")
-	}
-	if len(hqbad) <= 1 {
-		t.Errorf("HotelQueryParams with error should have multiple map keys, got error message: '%v' for map: %v", err, hqbad)
+		t.Errorf("HotelRefSearch empty params should return error: '%v'", err)
 	}
 }
 
-func TestBuildHotelSearchCity(t *testing.T) {
-	q, err := buildHotelSearch(hqcity)
+func TestHotelRefSearchCityCodeCriteria(t *testing.T) {
+	r, err := NewHotelSearchCriteria(
+		HotelRefSearch(hqcity),
+	)
 	if err != nil {
-		t.Error("buildHotelSearch with good params should not have error!")
+		t.Errorf("NewHotelSearchCriteria with HotelRefSearch error %v", err)
 	}
-	_, ok := hqcity[cityQueryField]
-	if !ok {
-		t.Error("cityQueryField should not be empty")
-	}
+	for i, code := range sampleHotelCityCode {
+		if r.Criterion.HotelRef[i].HotelCityCode != code {
+			t.Errorf("HotelRef[%d].HotelCityCode city expect: %s, got: %s", i, code, r.Criterion.HotelRef[i].HotelCityCode)
+		}
 
-	if len(q.Criterion.HotelRef) < 1 {
-		t.Error("HotelSearchCriteria.Criterion.HotelRef should not be empty")
-	}
-
-	if q.Criterion.HotelRef[0].HotelCityCode != "DFW" {
-		t.Errorf("HotelSearchCriteria.Criterion.HotelRef[0].HotelCityCode expect: %s, got: %s", sampleHotelCityCode[0], q.Criterion.HotelRef[0].HotelCityCode)
-	}
-	if q.Criterion.HotelRef[1].HotelCityCode != "CHC" {
-		t.Errorf("HotelSearchCriteria.Criterion.HotelRef[1].HotelCityCode expect: %s, got: %s", sampleHotelCityCode[1], q.Criterion.HotelRef[1].HotelCityCode)
 	}
 }
 
-func TestBuildHotelSearchHotelIDs(t *testing.T) {
-	q, err := buildHotelSearch(hqids)
+func TestHotelRefSearchHotelCodeCriteria(t *testing.T) {
+	r, err := NewHotelSearchCriteria(
+		HotelRefSearch(hqids),
+	)
 	if err != nil {
-		t.Error("buildHotelSearch with good params should not have error!")
+		t.Errorf("NewHotelSearchCriteria with HotelRefSearch error %v", err)
 	}
-	_, ok := hqids[hotelidQueryField]
-	if !ok {
-		t.Error("hotelidQueryField should not be empty")
-	}
+	for i, code := range sampleHotelCode {
+		if r.Criterion.HotelRef[i].HotelCode != code {
+			t.Errorf("HotelRef[%d].HotelCode expect: %s, got: %s", i, code, r.Criterion.HotelRef[i].HotelCode)
+		}
 
-	if len(q.Criterion.HotelRef) < 1 {
-		t.Error("HotelSearchCriteria.Criterion.HotelRef should not be empty")
 	}
+}
 
-	if q.Criterion.HotelRef[0].HotelCode != "0012" {
-		t.Errorf("HotelSearchCriteria.Criterion.HotelRef[0].HotelCode expect: %s, got: %s", sampleHotelCode[0], q.Criterion.HotelRef[0].HotelCode)
+func TestHotelRefSearchLatLngCodeCriteria(t *testing.T) {
+	r, err := NewHotelSearchCriteria(
+		HotelRefSearch(hqltln),
+	)
+	if err != nil {
+		t.Errorf("NewHotelSearchCriteria with HotelRefSearch error %v", err)
 	}
-	if q.Criterion.HotelRef[1].HotelCode != "19876" {
-		t.Errorf("HotelSearchCriteria.Criterion.HotelRef[1].HotelCityCode expect: %s, got: %s", sampleHotelCode[1], q.Criterion.HotelRef[1].HotelCode)
+	for i, code := range sampleLatLang {
+		ll := strings.Split(code, ",")
+		if r.Criterion.HotelRef[i].Latitude != ll[0] {
+			t.Errorf("HotelRef[%d].Latitude expect: %s, got: %s", i, ll[0], r.Criterion.HotelRef[i].Latitude)
+		}
+		if r.Criterion.HotelRef[i].Longitude != ll[1] {
+			t.Errorf("HotelRef[%d].Longitude expect: %s, got: %s", i, ll[1], r.Criterion.HotelRef[i].Longitude)
+		}
 	}
 }
 
@@ -150,7 +168,9 @@ func TestBuildHotelSearchNoCorpIDMarshal(t *testing.T) {
 }
 
 func TestBuildHotelSearchWithIDSMarshal(t *testing.T) {
-	q, _ := buildHotelSearch(hqids)
+	q, _ := NewHotelSearchCriteria(
+		HotelRefSearch(hqids),
+	)
 	gcount := 4
 	avail := BuildHotelAvailRq(sampleCorpID, gcount, q)
 
@@ -158,31 +178,65 @@ func TestBuildHotelSearchWithIDSMarshal(t *testing.T) {
 		t.Errorf("BuildHotelAvailRq GuestCounts.Count expect: %d, got %d", gcount, avail.Avail.GuestCounts.Count)
 	}
 
-	_, err := xml.Marshal(avail)
+	if len(avail.Avail.HotelSearchCriteria.Criterion.HotelRef) != len(hqids[hotelidQueryField]) {
+		t.Error("HotelRefs shoudl be same length as params", len(avail.Avail.HotelSearchCriteria.Criterion.HotelRef), len(hqids[hotelidQueryField]))
+	}
+
+	b, err := xml.Marshal(avail)
 	if err != nil {
 		t.Error("Error marshaling get hotel content", err)
 	}
-		if string(b) != string(sampleAvailRQHotelIDS) {
-			t.Errorf("Expected marshal hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQHotelIDS), string(b))
-		}
+	if string(b) != string(sampleAvailRQHotelIDSCoprID) {
+		t.Errorf("Expected marshal hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQHotelIDSCoprID), string(b))
+	}
 	//fmt.Printf("content marshal \n%s\n", b)
 }
+
 func TestBuildHotelSearchWithCitiesMarshal(t *testing.T) {
-	q, _ := buildHotelSearch(hqcity)
-	gcount := 4
+	q, _ := NewHotelSearchCriteria(
+		HotelRefSearch(hqcity),
+	)
+	gcount := 3
 	avail := BuildHotelAvailRq(sampleNoCorpID, gcount, q)
 
 	if avail.Avail.GuestCounts.Count != gcount {
 		t.Errorf("BuildHotelAvailRq GuestCounts.Count expect: %d, got %d", gcount, avail.Avail.GuestCounts.Count)
 	}
 
-	_, err := xml.Marshal(avail)
+	if len(avail.Avail.HotelSearchCriteria.Criterion.HotelRef) != len(hqcity[cityQueryField]) {
+		t.Error("HotelRefs shoudl be same length as params", len(avail.Avail.HotelSearchCriteria.Criterion.HotelRef), len(hqcity[cityQueryField]))
+	}
+
+	b, err := xml.Marshal(avail)
 	if err != nil {
 		t.Error("Error marshaling get hotel content", err)
 	}
-		if string(b) != string(sampleAvailRQCities) {
-			t.Errorf("Expected marshal hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQCities), string(b))
-		}
+	if string(b) != string(sampleAvailRQCities) {
+		t.Errorf("Expected marshal hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQCities), string(b))
+	}
 	//fmt.Printf("content marshal \n%s\n", b)
 }
-*/
+
+func TestBuildHotelSearchWithLatLngMarshal(t *testing.T) {
+	q, _ := NewHotelSearchCriteria(
+		HotelRefSearch(hqltln),
+	)
+	avail := BuildHotelAvailRq(sampleNoCorpID, sampleGuestCount, q)
+
+	if avail.Avail.GuestCounts.Count != sampleGuestCount {
+		t.Errorf("BuildHotelAvailRq GuestCounts.Count expect: %d, got %d", sampleGuestCount, avail.Avail.GuestCounts.Count)
+	}
+
+	if len(avail.Avail.HotelSearchCriteria.Criterion.HotelRef) != len(hqltln[latlngQueryField]) {
+		t.Error("HotelRefs shoudl be same length as params", len(avail.Avail.HotelSearchCriteria.Criterion.HotelRef), len(hqltln[latlngQueryField]))
+	}
+
+	b, err := xml.Marshal(avail)
+	if err != nil {
+		t.Error("Error marshaling get hotel content", err)
+	}
+	if string(b) != string(sampleAvailRQLatLng) {
+		t.Errorf("Expected marshal hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQLatLng), string(b))
+	}
+	//fmt.Printf("content marshal \n%s\n", b)
+}

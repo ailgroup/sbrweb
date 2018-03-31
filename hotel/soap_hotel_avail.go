@@ -39,15 +39,15 @@ type HotelSearchCriteria struct {
 
 type CriterionElem struct {
 	HotelRef []HotelRef
+	Address
 }
 
 type HotelRef struct {
 	HotelCityCode string `xml:",attr,omitempty"`
 	HotelCode     string `xml:",attr,omitempty"`
-	Address              //see xml_set.go
 	//HotelName     string `xml:",attr,omitempty"`
-	//Latitude      string `xml:",attr,omitempty"`
-	//Longitude     string `xml:",attr,omitempty"`
+	Latitude  string `xml:",attr,omitempty"`
+	Longitude string `xml:",attr,omitempty"`
 }
 
 func BuildHotelAvailRq(corpID string, guestCount int, query HotelSearchCriteria) OTA_HotelAvailRQ {

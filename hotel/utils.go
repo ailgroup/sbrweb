@@ -1,5 +1,28 @@
 package sbrhotel
 
+import (
+	"fmt"
+	"strings"
+)
+
+/*
+	propertyQueryField = "property"
+	locationQueryField = "location"
+	amenityQueryField  = "amenity"
+	airportQueryField  = "airport"
+	creditQueryField   = "creditcard"
+	diningTypeField    = "Dining"
+	alertTypeField     = "Alerts"
+
+	sabreHotelContentVersion = "1.0.0"
+
+	// LatLng represents a location on the Earth.
+	type LatLng struct {
+		Lat float64
+		Lng float64
+	}
+*/
+
 const (
 	hotelAvailVersion = "2.3.0"
 
@@ -7,10 +30,12 @@ const (
 	cityQueryField        = "city_qf"
 	postalQueryField      = "postal_qf"
 	countryCodeQueryField = "countryCode_qf"
+	latlngQueryField      = "latlng_qf"
 	hotelidQueryField     = "hotelID_qf"
 	returnHostCommand     = true
 )
 
+// Address represents typical building addresses
 type Address struct {
 	City        string `xml:"CityName,omitempty"`
 	CountryCode string `xml:"CountryCode,omitempty"`
@@ -21,26 +46,41 @@ type Address struct {
 // QueryParams is a typed function to support optional query params on creation of new search criterion
 type QueryParams func(*HotelSearchCriteria) error
 
-//type HotelQueryParams map[string][]string
-type GeoQueryParams map[string][]string
-type AddressQueryParams map[string]string
+/*
+	Many criterion exist:
+		Award
+		ContactNumbers
+		CommissionProgram
+		HotelAmenity
+		Package
+		PointOfInterest
+		PropertyType
+		RefPoint
+		RoomAmenity
+	only implementing these for now
+*/
+//type HotelFeaturesCriterion map[string][]string
+type HotelRefCriterion map[string][]string
+type AddressCriterion map[string]string
 
-func NewHotelSearchCriteria(queryParams ...QueryParams) (*HotelSearchCriteria, error) {
+func NewHotelSearchCriteria(queryParams ...QueryParams) (HotelSearchCriteria, error) {
 	criteria := &HotelSearchCriteria{}
 	for _, qm := range queryParams {
 		err := qm(criteria)
 		if err != nil {
-			return &HotelSearchCriteria{}, err
+			return HotelSearchCriteria{}, err
 		}
 	}
-	return criteria, nil
+	return *criteria, nil
 }
 
-// AddressOption Sets the starting learning rate; default is 0.025 for skip-gram,  and 0.05 for CBOW.
-// Note, if you wanna change the learning rate for skip-gram you should do it AFTER cbow option has been set.
-func AddressOption(params AddressQueryParams) func(q *HotelSearchCriteria) error {
+// AddressOption todo...
+func AddressSearch(params AddressCriterion) func(q *HotelSearchCriteria) error {
 	return func(q *HotelSearchCriteria) error {
 		a := Address{}
+		if len(params) < 1 {
+			return fmt.Errorf("AddressSearch params cannot be empty: %v", params)
+		}
 		for k, v := range params {
 			switch k {
 			case streetQueryField:
@@ -53,13 +93,18 @@ func AddressOption(params AddressQueryParams) func(q *HotelSearchCriteria) error
 				a.CountryCode = v
 			}
 		}
-		q.Criterion.HotelRef = append(q.Criterion.HotelRef, HotelRef{Address: a})
+		q.Criterion.Address = a
 		return nil
 	}
 }
 
-func GeoOption(params GeoQueryParams) func(q *HotelSearchCriteria) error {
+// HotelRefSearch accepts HotelRef criterion and returns a function for hotel search critera.
+// Supports CityCode and HotelCode for now... later support for HotelName, Latitude, Longitude.
+func HotelRefSearch(params HotelRefCriterion) func(q *HotelSearchCriteria) error {
 	return func(q *HotelSearchCriteria) error {
+		if len(params) < 1 {
+			return fmt.Errorf("HotelRefCriterion params cannot be empty: %v", params)
+		}
 		for k, v := range params {
 			switch k {
 			case cityQueryField:
@@ -69,6 +114,11 @@ func GeoOption(params GeoQueryParams) func(q *HotelSearchCriteria) error {
 			case hotelidQueryField:
 				for _, code := range v {
 					q.Criterion.HotelRef = append(q.Criterion.HotelRef, HotelRef{HotelCode: code})
+				}
+			case latlngQueryField:
+				for _, l := range v {
+					latlng := strings.Split(l, ",")
+					q.Criterion.HotelRef = append(q.Criterion.HotelRef, HotelRef{Latitude: latlng[0], Longitude: latlng[1]})
 				}
 			}
 		}
@@ -115,16 +165,4 @@ func buildAddress(params AddressQueryParams) Address {
 	}
 	return a
 }
-*/
-
-/*
-	propertyQueryField = "property"
-	locationQueryField = "location"
-	amenityQueryField  = "amenity"
-	airportQueryField  = "airport"
-	creditQueryField   = "creditcard"
-	diningTypeField    = "Dining"
-	alertTypeField     = "Alerts"
-
-	sabreHotelContentVersion = "1.0.0"
 */
