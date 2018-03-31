@@ -1,21 +1,23 @@
 package sbrhotel
 
 import (
-	"encoding/xml"
 	"testing"
-
-	"github.com/ailgroup/sbrweb"
 )
 
 var (
-	hqbad               = make(HotelQueryParams)
-	hqcity              = make(HotelQueryParams)
-	hqids               = make(HotelQueryParams)
+	hqbad               = make(GeoQueryParams)
+	hqcity              = make(GeoQueryParams)
+	hqids               = make(GeoQueryParams)
+	addr                = make(AddressQueryParams)
 	sampleCorpID        = "12345"
 	sampleNoCorpID      = ""
 	sampleHotelCode     = []string{"0012", "19876", "1109", "445098", "000034"}
 	sampleHotelCityCode = []string{"DFW", "CHC"}
 	sampleGuestCount    = 2
+	sampleStreet        = "2031 N. 100 W"
+	sampleCity          = "Nowhere"
+	samplePostal        = "999908"
+	sampleCountryCode   = "US"
 
 	//sampleAvailRQHotelIDS = []byte(``)
 
@@ -25,11 +27,38 @@ var (
 func init() {
 	hqbad[cityQueryField] = sampleHotelCityCode
 	hqbad[hotelidQueryField] = sampleHotelCode
-
 	hqcity[cityQueryField] = sampleHotelCityCode
 	hqids[hotelidQueryField] = sampleHotelCode
+
+	addr[streetQueryField] = sampleStreet
+	addr[cityQueryField] = sampleCity
+	addr[postalQueryField] = samplePostal
+	addr[countryCodeQueryField] = sampleCountryCode
 }
 
+func TestAddressSearchCriteria(t *testing.T) {
+	address := AddressOption(addr)
+	a, err := NewHotelSearchCriteria(address)
+
+	if err != nil {
+		t.Errorf("NewHotelSearchCriteria with AddressOption error %v", err)
+	}
+
+	if a.Criterion.HotelRef[0].Address.Street != sampleStreet {
+		t.Error("buildAddress street not correct")
+	}
+	if a.Criterion.HotelRef[0].Address.City != sampleCity {
+		t.Error("buildAddress city not correct")
+	}
+	if a.Criterion.HotelRef[0].Address.Postal != samplePostal {
+		t.Error("buildAddress postal not correct")
+	}
+	if a.Criterion.HotelRef[0].Address.CountryCode != sampleCountryCode {
+		t.Error("buildAddress country code not correct")
+	}
+}
+
+/*
 func TestBuildHotelSearchReturnError(t *testing.T) {
 	_, err := buildHotelSearch(hqbad)
 	if err == nil {
@@ -133,11 +162,9 @@ func TestBuildHotelSearchWithIDSMarshal(t *testing.T) {
 	if err != nil {
 		t.Error("Error marshaling get hotel content", err)
 	}
-	/*
 		if string(b) != string(sampleAvailRQHotelIDS) {
 			t.Errorf("Expected marshal hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQHotelIDS), string(b))
 		}
-	*/
 	//fmt.Printf("content marshal \n%s\n", b)
 }
 func TestBuildHotelSearchWithCitiesMarshal(t *testing.T) {
@@ -153,10 +180,9 @@ func TestBuildHotelSearchWithCitiesMarshal(t *testing.T) {
 	if err != nil {
 		t.Error("Error marshaling get hotel content", err)
 	}
-	/*
 		if string(b) != string(sampleAvailRQCities) {
 			t.Errorf("Expected marshal hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQCities), string(b))
 		}
-	*/
 	//fmt.Printf("content marshal \n%s\n", b)
 }
+*/

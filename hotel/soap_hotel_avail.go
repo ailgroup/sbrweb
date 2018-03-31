@@ -2,7 +2,6 @@ package sbrhotel
 
 import (
 	"encoding/xml"
-	"fmt"
 
 	"github.com/ailgroup/sbrweb"
 )
@@ -41,35 +40,14 @@ type HotelSearchCriteria struct {
 type CriterionElem struct {
 	HotelRef []HotelRef
 }
+
 type HotelRef struct {
 	HotelCityCode string `xml:",attr,omitempty"`
 	HotelCode     string `xml:",attr,omitempty"`
+	Address              //see xml_set.go
 	//HotelName     string `xml:",attr,omitempty"`
-	//Latitude     string `xml:",attr,omitempty"`
+	//Latitude      string `xml:",attr,omitempty"`
 	//Longitude     string `xml:",attr,omitempty"`
-}
-
-type HotelQueryParams map[string][]string
-
-func buildHotelSearch(params HotelQueryParams) (HotelSearchCriteria, error) {
-	q := HotelSearchCriteria{}
-	if len(params) > 1 {
-		return q, fmt.Errorf("Cannot use more than 1 search type criteria, have %v", params)
-	}
-	for k, v := range params {
-		switch k {
-		case cityQueryField:
-			for _, city := range v {
-				q.Criterion.HotelRef = append(q.Criterion.HotelRef, HotelRef{HotelCityCode: city})
-			}
-		case hotelidQueryField:
-			for _, code := range v {
-				q.Criterion.HotelRef = append(q.Criterion.HotelRef, HotelRef{HotelCode: code})
-			}
-		}
-	}
-
-	return q, nil
 }
 
 func BuildHotelAvailRq(corpID string, guestCount int, query HotelSearchCriteria) OTA_HotelAvailRQ {
