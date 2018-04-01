@@ -57,9 +57,9 @@ type GuestCounts struct {
 }
 
 type Customer struct {
-	XMLName    xml.Name `xml:"Customer,omitempty"`
-	Corporate  *Corporate
-	CustomerID *CustomerID
+	XMLName    xml.Name    `xml:"Customer,omitempty"`
+	Corporate  *Corporate  //nil pointer ignored if empty
+	CustomerID *CustomerID //nil pointer ignored if empty
 }
 
 type CustomerID struct {
