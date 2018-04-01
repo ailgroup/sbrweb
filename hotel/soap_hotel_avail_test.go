@@ -2,9 +2,9 @@ package sbrhotel
 
 import (
 	"encoding/xml"
-	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/ailgroup/sbrweb"
 )
@@ -15,8 +15,7 @@ var (
 	hqids               = make(HotelRefCriterion)
 	hqltln              = make(HotelRefCriterion)
 	addr                = make(AddressCriterion)
-	sampleCorpID        = "12345"
-	sampleNoCorpID      = ""
+	sampleCID           = "12345"
 	sampleLatLang       = []string{"32.78,-96.81", "54.87,-102.96"}
 	sampleHotelCode     = []string{"0012", "19876", "1109", "445098", "000034"}
 	sampleHotelCityCode = []string{"DFW", "CHC", "LA"}
@@ -25,12 +24,14 @@ var (
 	sampleCity          = "Nowhere"
 	samplePostal        = "999908"
 	sampleCountryCode   = "US"
+	sampleArrive        = time.Now().Add(48 * time.Hour)
+	sampleDepart        = sampleArrive.Add(72 * time.Hour)
 
-	//sampleAvailRQHotelIDSCoprID = []byte(``)
+	sampleAvailRQHotelIDSCoprID = []byte(`<OTA_HotelAvailRQ version="2.3.0" xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><ReturnHostCommand>true</ReturnHostCommand><AvailRequestSegment><Customer><Corporate><ID>12345</ID></Corporate></Customer><GuestCounts Count="4"></GuestCounts><HotelSearchCriteria><Criterion><HotelRef HotelCode="0012"></HotelRef><HotelRef HotelCode="19876"></HotelRef><HotelRef HotelCode="1109"></HotelRef><HotelRef HotelCode="445098"></HotelRef><HotelRef HotelCode="000034"></HotelRef><Address></Address></Criterion></HotelSearchCriteria><TimeSpan><End>04-05</End><Start>04-02</Start></TimeSpan></AvailRequestSegment></OTA_HotelAvailRQ>`)
 
-	//sampleAvailRQCities = []byte(``)
+	sampleAvailRQCitiesCustNumber = []byte(`<OTA_HotelAvailRQ version="2.3.0" xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><ReturnHostCommand>true</ReturnHostCommand><AvailRequestSegment><Customer><ID><Number>12345</Number></ID></Customer><GuestCounts Count="3"></GuestCounts><HotelSearchCriteria><Criterion><HotelRef HotelCityCode="DFW"></HotelRef><HotelRef HotelCityCode="CHC"></HotelRef><HotelRef HotelCityCode="LA"></HotelRef><Address></Address></Criterion></HotelSearchCriteria><TimeSpan><End>04-05</End><Start>04-02</Start></TimeSpan></AvailRequestSegment></OTA_HotelAvailRQ>`)
 
-	//sampleAvailRQLatLng = []byte(``)
+	sampleAvailRQLatLng = []byte(`<OTA_HotelAvailRQ version="2.3.0" xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><ReturnHostCommand>true</ReturnHostCommand><AvailRequestSegment><GuestCounts Count="2"></GuestCounts><HotelSearchCriteria><Criterion><HotelRef Latitude="32.78" Longitude="-96.81"></HotelRef><HotelRef Latitude="54.87" Longitude="-102.96"></HotelRef><Address></Address></Criterion></HotelSearchCriteria><TimeSpan><End>04-05</End><Start>04-02</Start></TimeSpan></AvailRequestSegment></OTA_HotelAvailRQ>`)
 )
 
 func init() {
@@ -144,15 +145,6 @@ func TestMultipleCriteriaCriteria(t *testing.T) {
 		t.Errorf("NewHotelSearchCriteria with all criteria error %v", err)
 	}
 
-	/*
-		avail := BuildHotelAvailRq(sampleCorpID, sampleGuestCount, r)
-		b, err := xml.Marshal(avail)
-		if err != nil {
-			t.Error("Error marshaling get hotel content", err)
-		}
-		fmt.Printf("\n%s\n", b)
-	*/
-
 	counter := 0
 	for _, code := range sampleHotelCode {
 		if r.Criterion.HotelRef[counter].HotelCode != code {
@@ -190,10 +182,20 @@ func TestMultipleCriteriaCriteria(t *testing.T) {
 		}
 		counter++
 	}
+	/*
+		avail := BuildHotelAvailRq(sampleCorpID, sampleGuestCount, r)
+		b, err := xml.Marshal(avail)
+		if err != nil {
+			t.Error("Error marshaling get hotel content", err)
+		}
+		fmt.Printf("\n%s\n", b)
+	*/
+
 }
 
 func TestBuildHotelSearchMarshal(t *testing.T) {
-	avail := BuildHotelAvailRq(sampleCorpID, sampleGuestCount, HotelSearchCriteria{})
+	avail := BuildHotelAvailRq(sampleGuestCount, HotelSearchCriteria{}, sampleArrive, sampleDepart)
+	avail.addCorporateID(sampleCID)
 
 	if avail.XMLNSXsi != sbrweb.BaseXSINamespace {
 		t.Errorf("BuildHotelAvailRq XMLNSXsi expect: %s, got %s", sbrweb.BaseXSINamespace, avail.XMLNSXsi)
@@ -204,8 +206,8 @@ func TestBuildHotelSearchMarshal(t *testing.T) {
 	if avail.Avail.GuestCounts.Count != sampleGuestCount {
 		t.Errorf("BuildHotelAvailRq GuestCounts.Count expect: %d, got %d", sampleGuestCount, avail.Avail.GuestCounts.Count)
 	}
-	if avail.Avail.Customer.Corporate.ID != sampleCorpID {
-		t.Errorf("BuildHotelAvailRq Customer.Corporate.ID expect: %s, got %s", sampleCorpID, avail.Avail.Customer.Corporate.ID)
+	if avail.Avail.Customer.Corporate.ID != sampleCID {
+		t.Errorf("BuildHotelAvailRq Customer.Corporate.ID expect: %s, got %s", sampleCID, avail.Avail.Customer.Corporate.ID)
 	}
 
 	_, err := xml.Marshal(avail)
@@ -214,18 +216,19 @@ func TestBuildHotelSearchMarshal(t *testing.T) {
 	}
 }
 
-func TestBuildHotelSearchNoCorpIDMarshal(t *testing.T) {
-	avail := BuildHotelAvailRq(sampleNoCorpID, sampleGuestCount, HotelSearchCriteria{})
-	customer := Customer{}
+func TestBuildHotelSearchCorpID(t *testing.T) {
+	avail := BuildHotelAvailRq(sampleGuestCount, HotelSearchCriteria{}, sampleArrive, sampleDepart)
 
-	if avail.Avail.Customer != customer {
-		t.Errorf("BuildHotelAvailRq Customer for empty corporate ID should be empty expect: %v, got %v", customer, avail.Avail.Customer)
+	avail.addCorporateID(sampleCID)
+	if avail.Avail.Customer.Corporate.ID != sampleCID {
+		t.Errorf("BuildHotelAvailRq Customer.Corporate.ID  expect: %s, got %s", sampleCID, avail.Avail.Customer.Corporate.ID)
 	}
 
-	_, err := xml.Marshal(avail)
-	if err != nil {
-		t.Error("Error marshaling get hotel content", err)
+	avail.addCorporateID(sampleCID)
+	if avail.Avail.Customer.Corporate.ID != sampleCID {
+		t.Errorf("BuildHotelAvailRq Customer.Corporate.ID  expect: %s, got %s", sampleCID, avail.Avail.Customer.Corporate.ID)
 	}
+
 }
 
 func TestBuildHotelSearchWithIDSMarshal(t *testing.T) {
@@ -233,7 +236,8 @@ func TestBuildHotelSearchWithIDSMarshal(t *testing.T) {
 		HotelRefSearch(hqids),
 	)
 	gcount := 4
-	avail := BuildHotelAvailRq(sampleCorpID, gcount, q)
+	avail := BuildHotelAvailRq(gcount, q, sampleArrive, sampleDepart)
+	avail.addCorporateID(sampleCID)
 
 	if avail.Avail.GuestCounts.Count != gcount {
 		t.Errorf("BuildHotelAvailRq GuestCounts.Count expect: %d, got %d", gcount, avail.Avail.GuestCounts.Count)
@@ -247,21 +251,19 @@ func TestBuildHotelSearchWithIDSMarshal(t *testing.T) {
 	if err != nil {
 		t.Error("Error marshaling get hotel content", err)
 	}
-	/*
-		if string(b) != string(sampleAvailRQHotelIDSCoprID) {
-			t.Errorf("Expected marshal hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQHotelIDSCoprID), string(b))
-		}
-	*/
-	fmt.Printf("content marshal \n%s\n", b)
+	if string(b) != string(sampleAvailRQHotelIDSCoprID) {
+		t.Errorf("Expected marshal hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQHotelIDSCoprID), string(b))
+	}
+	//fmt.Printf("content marshal \n%s\n", b)
 }
 
-/*
 func TestBuildHotelSearchWithCitiesMarshal(t *testing.T) {
 	q, _ := NewHotelSearchCriteria(
 		HotelRefSearch(hqcity),
 	)
 	gcount := 3
-	avail := BuildHotelAvailRq(sampleNoCorpID, gcount, q)
+	avail := BuildHotelAvailRq(gcount, q, sampleArrive, sampleDepart)
+	avail.addCustomerID(sampleCID)
 
 	if avail.Avail.GuestCounts.Count != gcount {
 		t.Errorf("BuildHotelAvailRq GuestCounts.Count expect: %d, got %d", gcount, avail.Avail.GuestCounts.Count)
@@ -275,8 +277,8 @@ func TestBuildHotelSearchWithCitiesMarshal(t *testing.T) {
 	if err != nil {
 		t.Error("Error marshaling get hotel content", err)
 	}
-	if string(b) != string(sampleAvailRQCities) {
-		t.Errorf("Expected marshal hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQCities), string(b))
+	if string(b) != string(sampleAvailRQCitiesCustNumber) {
+		t.Errorf("Expected marshal hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQCitiesCustNumber), string(b))
 	}
 	//fmt.Printf("content marshal \n%s\n", b)
 }
@@ -285,7 +287,7 @@ func TestBuildHotelSearchWithLatLngMarshal(t *testing.T) {
 	q, _ := NewHotelSearchCriteria(
 		HotelRefSearch(hqltln),
 	)
-	avail := BuildHotelAvailRq(sampleNoCorpID, sampleGuestCount, q)
+	avail := BuildHotelAvailRq(sampleGuestCount, q, sampleArrive, sampleDepart)
 
 	if avail.Avail.GuestCounts.Count != sampleGuestCount {
 		t.Errorf("BuildHotelAvailRq GuestCounts.Count expect: %d, got %d", sampleGuestCount, avail.Avail.GuestCounts.Count)
@@ -304,4 +306,3 @@ func TestBuildHotelSearchWithLatLngMarshal(t *testing.T) {
 	}
 	//fmt.Printf("content marshal \n%s\n", b)
 }
-*/

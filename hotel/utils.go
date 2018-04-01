@@ -25,6 +25,7 @@ import (
 
 const (
 	hotelAvailVersion = "2.3.0"
+	timeSpanFormatter = "01-02"
 
 	streetQueryField      = "street_qf"
 	cityQueryField        = "city_qf"

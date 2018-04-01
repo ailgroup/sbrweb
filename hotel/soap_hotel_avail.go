@@ -2,6 +2,7 @@ package sbrhotel
 
 import (
 	"encoding/xml"
+	"time"
 
 	"github.com/ailgroup/sbrweb"
 )
@@ -18,40 +19,76 @@ type OTA_HotelAvailRQ struct {
 }
 
 type AvailRequestSegment struct {
-	XMLName xml.Name `xml:"AvailRequestSegment"`
-	Customer
+	XMLName             xml.Name  `xml:"AvailRequestSegment"`
+	Customer            *Customer //nil pointer ignored if empty
 	GuestCounts         GuestCounts
 	HotelSearchCriteria HotelSearchCriteria
+	ArriveDepart        TimeSpan `xml:"TimeSpan"`
 }
-
-type GuestCounts struct {
-	Count int `xml:",attr"`
-}
-type Customer struct {
-	Corporate struct {
-		ID string `xml:",omitempty"`
-	} `xml:",omitempty"`
+type TimeSpan struct {
+	XMLName xml.Name `xml:"TimeSpan"`
+	Depart  string   `xml:"End"`
+	Arrive  string   `xml:"Start"`
 }
 
 type HotelSearchCriteria struct {
-	Criterion CriterionElem
+	XMLName   xml.Name `xml:"HotelSearchCriteria"`
+	Criterion Criterion
 }
 
-type CriterionElem struct {
+type Criterion struct {
+	XMLName  xml.Name `xml:"Criterion"`
 	HotelRef []HotelRef
-	Address
+	Address  Address
 }
 
 type HotelRef struct {
-	HotelCityCode string `xml:",attr,omitempty"`
-	HotelCode     string `xml:",attr,omitempty"`
+	XMLName       xml.Name `xml:"HotelRef,omitempty"`
+	HotelCityCode string   `xml:",attr,omitempty"`
+	HotelCode     string   `xml:",attr,omitempty"`
 	//HotelName     string `xml:",attr,omitempty"`
 	Latitude  string `xml:",attr,omitempty"`
 	Longitude string `xml:",attr,omitempty"`
 }
 
-func BuildHotelAvailRq(corpID string, guestCount int, query HotelSearchCriteria) OTA_HotelAvailRQ {
-	rq := OTA_HotelAvailRQ{
+type GuestCounts struct {
+	XMLName xml.Name `xml:"GuestCounts"`
+	Count   int      `xml:",attr"`
+}
+
+type Customer struct {
+	XMLName    xml.Name `xml:"Customer,omitempty"`
+	Corporate  *Corporate
+	CustomerID *CustomerID
+}
+
+type CustomerID struct {
+	XMLName xml.Name `xml:"ID,omitempty"`
+	Number  string   `xml:"Number,omitempty"`
+}
+
+type Corporate struct {
+	XMLName xml.Name `xml:"Corporate,omitempty"`
+	ID      string   `xml:"ID,omitempty"`
+}
+
+func (a *OTA_HotelAvailRQ) addCorporateID(cID string) {
+	a.Avail.Customer = &Customer{
+		Corporate: &Corporate{
+			ID: cID,
+		},
+	}
+}
+func (a *OTA_HotelAvailRQ) addCustomerID(cID string) {
+	a.Avail.Customer = &Customer{
+		CustomerID: &CustomerID{
+			Number: cID,
+		},
+	}
+}
+
+func BuildHotelAvailRq(guestCount int, query HotelSearchCriteria, arrive, depart time.Time) OTA_HotelAvailRQ {
+	return OTA_HotelAvailRQ{
 		Version:           hotelAvailVersion,
 		XMLNS:             sbrweb.BaseWebServicesNS,
 		XMLNSXs:           sbrweb.BaseXSDNameSpace,
@@ -60,18 +97,10 @@ func BuildHotelAvailRq(corpID string, guestCount int, query HotelSearchCriteria)
 		Avail: AvailRequestSegment{
 			GuestCounts:         GuestCounts{Count: guestCount},
 			HotelSearchCriteria: query,
+			ArriveDepart: TimeSpan{
+				Depart: depart.Format(timeSpanFormatter),
+				Arrive: arrive.Format(timeSpanFormatter),
+			},
 		},
 	}
-
-	if len(corpID) > 0 {
-		rq.Avail.Customer = Customer{
-			Corporate: struct {
-				ID string `xml:",omitempty"`
-			}{
-				ID: corpID,
-			},
-		}
-	}
-
-	return rq
 }
