@@ -133,7 +133,7 @@ func TestHotelRefSearchLatLngCodeCriteria(t *testing.T) {
 	}
 }
 
-func TestMultipleCriteriaCriteria(t *testing.T) {
+func TestMultipleHotelCriteria(t *testing.T) {
 	r, err := NewHotelSearchCriteria(
 		HotelRefSearch(hqids),
 		HotelRefSearch(hqcity),
@@ -194,7 +194,7 @@ func TestMultipleCriteriaCriteria(t *testing.T) {
 }
 
 func TestBuildHotelSearchMarshal(t *testing.T) {
-	avail := BuildHotelAvailRq(sampleGuestCount, HotelSearchCriteria{}, sampleArrive, sampleDepart)
+	avail := SetHotelAvailRqStruct(sampleGuestCount, HotelSearchCriteria{}, sampleArrive, sampleDepart)
 	avail.addCorporateID(sampleCID)
 
 	if avail.XMLNSXsi != sbrweb.BaseXSINamespace {
@@ -217,7 +217,7 @@ func TestBuildHotelSearchMarshal(t *testing.T) {
 }
 
 func TestBuildHotelSearchCorpID(t *testing.T) {
-	avail := BuildHotelAvailRq(sampleGuestCount, HotelSearchCriteria{}, sampleArrive, sampleDepart)
+	avail := SetHotelAvailRqStruct(sampleGuestCount, HotelSearchCriteria{}, sampleArrive, sampleDepart)
 
 	avail.addCorporateID(sampleCID)
 	if avail.Avail.Customer.Corporate.ID != sampleCID {
@@ -236,7 +236,7 @@ func TestBuildHotelSearchWithIDSMarshal(t *testing.T) {
 		HotelRefSearch(hqids),
 	)
 	gcount := 4
-	avail := BuildHotelAvailRq(gcount, q, sampleArrive, sampleDepart)
+	avail := SetHotelAvailRqStruct(gcount, q, sampleArrive, sampleDepart)
 	avail.addCorporateID(sampleCID)
 
 	if avail.Avail.GuestCounts.Count != gcount {
@@ -262,7 +262,7 @@ func TestBuildHotelSearchWithCitiesMarshal(t *testing.T) {
 		HotelRefSearch(hqcity),
 	)
 	gcount := 3
-	avail := BuildHotelAvailRq(gcount, q, sampleArrive, sampleDepart)
+	avail := SetHotelAvailRqStruct(gcount, q, sampleArrive, sampleDepart)
 	avail.addCustomerID(sampleCID)
 
 	if avail.Avail.GuestCounts.Count != gcount {
@@ -287,7 +287,7 @@ func TestBuildHotelSearchWithLatLngMarshal(t *testing.T) {
 	q, _ := NewHotelSearchCriteria(
 		HotelRefSearch(hqltln),
 	)
-	avail := BuildHotelAvailRq(sampleGuestCount, q, sampleArrive, sampleDepart)
+	avail := SetHotelAvailRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
 
 	if avail.Avail.GuestCounts.Count != sampleGuestCount {
 		t.Errorf("BuildHotelAvailRq GuestCounts.Count expect: %d, got %d", sampleGuestCount, avail.Avail.GuestCounts.Count)

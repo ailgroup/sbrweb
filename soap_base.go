@@ -14,28 +14,28 @@ import (
 )
 
 const (
-	//StatusErrorRS is the string value error response when SOAP request->response had an error, typically found in the Header.MessageHeader.Action. Usually, any SOAP response with Action="ErrorRS" will also have a SOAPFault body with more informative error codes. This can be used as an easy way to identify and error.
-	StatusErrorRS         = "ErrorRS"
-	StandardTimeFormatter = "2006-01-02T15:04:05Z"
-	BaseXSDNameSpace      = "http://www.w3.org/2001/XMLSchema"
+	BaseEBNameSpace       = "http://www.ebxml.org/namespaces/messageHeader"
+	BaseNS                = "http://schemas.xmlsoap.org/soap/envelope/"
 	BaseWebServicesNS     = "http://webservices.sabre.com/sabreXML/2011/10"
+	BaseWsse              = "http://schemas.xmlsoap.org/ws/2002/12/secext"
+	BaseWsuNameSpace      = "http://schemas.xmlsoap.org/ws/2002/12/utility"
+	BaseXSDNameSpace      = "http://www.w3.org/2001/XMLSchema"
 	BaseXSINamespace      = "http://www.w3.org/2001/XMLSchema-instance"
+	PartyIDTypeURN        = "urn:x12.org:IO5:01"
+	SabreEBVersion        = "2.0.0"
+	SabreMustUnderstand   = "1"
+	SabreToBase           = "webservices.sabre.com"
+	StandardTimeFormatter = "2006-01-02T15:04:05Z"
+	//StatusErrorRS is the string value error response when SOAP request->response had an error, typically found in the Header.MessageHeader.Action. Usually, any SOAP response with Action="ErrorRS" will also have a SOAPFault body with more informative error codes. This can be used as an easy way to identify and error.
+	StatusErrorRS = "ErrorRS"
 
-	letterBytes         = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	letterIdxBits       = 6                    // 6 bits to represent a letter index
-	letterIdxMask       = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
-	letterIdxMax        = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
-	sabreToBase         = "webservices.sabre.com"
-	sabreDefaultDomain  = "DEFAULT"
-	sabreMustUnderstand = "1"
-	sabreEBVersion      = "2.0.0"
-	partyIDTypeURN      = "urn:x12.org:IO5:01"
-	baseNS              = "http://schemas.xmlsoap.org/soap/envelope/"
-	baseEBNameSpace     = "http://www.ebxml.org/namespaces/messageHeader"
-	baseXlinkNameSpace  = "http://www.w3.org/2001/xlink"
-	baseWsse            = "http://schemas.xmlsoap.org/ws/2002/12/secext"
-	baseWsuNameSpace    = "http://schemas.xmlsoap.org/ws/2002/12/utility"
-	baseOTANameSpace    = "http://www.opentravel.org/OTA/2002/11"
+	baseOTANameSpace   = "http://www.opentravel.org/OTA/2002/11"
+	baseXlinkNameSpace = "http://www.w3.org/2001/xlink"
+	letterBytes        = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	letterIdxBits      = 6                    // 6 bits to represent a letter index
+	letterIdxMask      = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
+	letterIdxMax       = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
+	sabreDefaultDomain = "DEFAULT"
 )
 
 var (
@@ -257,10 +257,10 @@ type SOAPFault struct {
 }
 
 // helper to crete message header
-func createEnvelope() Envelope {
+func CreateEnvelope() Envelope {
 	return Envelope{
-		XMLNSbase:  baseNS,
-		XMLNSeb:    baseEBNameSpace,
+		XMLNSbase:  BaseNS,
+		XMLNSeb:    BaseEBNameSpace,
 		XMLNSxlink: baseXlinkNameSpace,
 		XMLNSxsd:   BaseXSDNameSpace,
 	}
@@ -277,8 +277,8 @@ func CreatePartyID(partyValue, partyType string) PartyIDElem {
 // CreateManifest helper
 func CreateManifest() Manifest {
 	return Manifest{
-		MustUnderstand: sabreMustUnderstand,
-		EbVersion:      sabreEBVersion,
+		MustUnderstand: SabreMustUnderstand,
+		EbVersion:      SabreEBVersion,
 		Reference: ReferenceElem{
 			Href: "cid:rootelement",
 			Type: "simple",
@@ -353,13 +353,13 @@ type SessionCreateRequest struct {
 // CPAID, Organization, and PseudoCityCode all use the PCC/iPCC. ConversationID is typically a contact email address with unique identifier to the request. MessageID is typically a timestamped identifier to locate specific queries: it should contai a company identifier.
 func BuildSessionCreateRequest(from, pcc, convid, mid, time, username, password string) SessionCreateRequest {
 	return SessionCreateRequest{
-		Envelope: createEnvelope(),
+		Envelope: CreateEnvelope(),
 		Header: SessionHeader{
 			MessageHeader: MessageHeader{
-				MustUnderstand: sabreMustUnderstand,
-				EbVersion:      sabreEBVersion,
-				From:           FromElem{PartyID: CreatePartyID(from, partyIDTypeURN)},
-				To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+				MustUnderstand: SabreMustUnderstand,
+				EbVersion:      SabreEBVersion,
+				From:           FromElem{PartyID: CreatePartyID(from, PartyIDTypeURN)},
+				To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 				CPAID:          pcc,
 				ConversationID: convid,
 				Service:        ServiceElem{"SessionCreateRQ", "OTA"},
@@ -370,8 +370,8 @@ func BuildSessionCreateRequest(from, pcc, convid, mid, time, username, password 
 				},
 			},
 			Security: Security{
-				XMLNSWsseBase: baseWsse,
-				XMLNSWsu:      baseWsuNameSpace,
+				XMLNSWsseBase: BaseWsse,
+				XMLNSWsu:      BaseWsuNameSpace,
 				UserNameToken: &UsernameTokenElem{
 					Username:     username,
 					Password:     password,
@@ -459,13 +459,13 @@ type SessionCloseRequest struct {
 // CPAID, Organization, and PseudoCityCode all use the PCC/iPCC. ConversationID, MessageID, BinarySecurityToken must be from the existing session you wish to close.
 func BuildSessionCloseRequest(from, pcc, binsectoken, convid, mid, time string) SessionCloseRequest {
 	return SessionCloseRequest{
-		Envelope: createEnvelope(),
+		Envelope: CreateEnvelope(),
 		Header: SessionHeader{
 			MessageHeader: MessageHeader{
-				MustUnderstand: sabreMustUnderstand,
-				EbVersion:      sabreEBVersion,
-				From:           FromElem{PartyID: CreatePartyID(from, partyIDTypeURN)},
-				To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+				MustUnderstand: SabreMustUnderstand,
+				EbVersion:      SabreEBVersion,
+				From:           FromElem{PartyID: CreatePartyID(from, PartyIDTypeURN)},
+				To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 				CPAID:          pcc,
 				ConversationID: convid,
 				Service:        ServiceElem{"SessionCloseRQ", "OTA"},
@@ -476,8 +476,8 @@ func BuildSessionCloseRequest(from, pcc, binsectoken, convid, mid, time string) 
 				},
 			},
 			Security: Security{
-				XMLNSWsseBase:       baseWsse,
-				XMLNSWsu:            baseWsuNameSpace,
+				XMLNSWsseBase:       BaseWsse,
+				XMLNSWsu:            BaseWsuNameSpace,
 				BinarySecurityToken: binsectoken,
 			},
 		},
@@ -556,13 +556,13 @@ type SessionValidateRequest struct {
 // CPAID, Organization, and PseudoCityCode all use the PCC/iPCC. ConversationID, MessageID, BinarySecurityToken must be from the existing session you wish to validate.
 func BuildSessionValidateRequest(from, pcc, binsectoken, convid, mid, time string) SessionValidateRequest {
 	return SessionValidateRequest{
-		Envelope: createEnvelope(),
+		Envelope: CreateEnvelope(),
 		Header: SessionHeader{
 			MessageHeader: MessageHeader{
-				MustUnderstand: sabreMustUnderstand,
-				EbVersion:      sabreEBVersion,
-				From:           FromElem{PartyID: CreatePartyID(from, partyIDTypeURN)},
-				To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+				MustUnderstand: SabreMustUnderstand,
+				EbVersion:      SabreEBVersion,
+				From:           FromElem{PartyID: CreatePartyID(from, PartyIDTypeURN)},
+				To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 				CPAID:          pcc,
 				ConversationID: convid,
 				Service:        ServiceElem{"SessionValidateRQ", "OTA"},
@@ -573,8 +573,8 @@ func BuildSessionValidateRequest(from, pcc, binsectoken, convid, mid, time strin
 				},
 			},
 			Security: Security{
-				XMLNSWsseBase:       baseWsse,
-				XMLNSWsu:            baseWsuNameSpace,
+				XMLNSWsseBase:       BaseWsse,
+				XMLNSWsu:            BaseWsuNameSpace,
 				BinarySecurityToken: binsectoken,
 			},
 		},

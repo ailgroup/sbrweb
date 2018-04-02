@@ -104,12 +104,12 @@ func TestLogSetup(t *testing.T) {
 
 func TestEnvelopeBaseMarshal(t *testing.T) {
 	envelope := Envelope{
-		XMLNSbase:  baseNS,
-		XMLNSeb:    baseEBNameSpace,
+		XMLNSbase:  BaseNS,
+		XMLNSeb:    BaseEBNameSpace,
 		XMLNSxlink: baseXlinkNameSpace,
 		XMLNSxsd:   BaseXSDNameSpace,
 	}
-	envelope2 := createEnvelope()
+	envelope2 := CreateEnvelope()
 
 	for _, env := range []Envelope{envelope, envelope2} {
 		//b, err := xml.MarshalIndent(env, "", "    ")
@@ -124,11 +124,11 @@ func TestEnvelopeBaseMarshal(t *testing.T) {
 }
 func BenchmarkCreateEnvelope(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		createEnvelope()
+		CreateEnvelope()
 	}
 }
 func BenchmarkEnvelopeMarshal(b *testing.B) {
-	envelope := createEnvelope()
+	envelope := CreateEnvelope()
 	for n := 0; n < b.N; n++ {
 		xml.Marshal(envelope)
 	}
@@ -144,11 +144,11 @@ func TestEnvelopeBaseUnmarshal(t *testing.T) {
 	if env.XMLName.Local != "Envelope" {
 		t.Errorf("Envelope xml Local wrong: expected: %s, got: %s", "Envelope", env.XMLName.Local)
 	}
-	if env.XMLName.Space != baseNS {
-		t.Errorf("Envelope xml Space wrong: expected: %s, got: %s", baseNS, env.XMLName.Space)
+	if env.XMLName.Space != BaseNS {
+		t.Errorf("Envelope xml Space wrong: expected: %s, got: %s", BaseNS, env.XMLName.Space)
 	}
-	if env.XMLNSbase != baseNS {
-		t.Errorf("Envelope XMLNSbase expected: %s, got: %s", baseNS, env.XMLNSbase)
+	if env.XMLNSbase != BaseNS {
+		t.Errorf("Envelope XMLNSbase expected: %s, got: %s", BaseNS, env.XMLNSbase)
 	}
 	//fmt.Printf("SAMPLE: %s\n", sampleEnvelope)
 	//fmt.Printf("CURRENT: %+v\n", env)
@@ -230,9 +230,9 @@ func BenchmarkSabreTokenParse(b *testing.B) {
 func TestMessageHeaderBaseMarshal(t *testing.T) {
 	mh := MessageHeader{
 		MustUnderstand: "1",
-		EbVersion:      sabreEBVersion,
-		From:           FromElem{PartyID: CreatePartyID(samplefrom, partyIDTypeURN)},
-		To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+		EbVersion:      SabreEBVersion,
+		From:           FromElem{PartyID: CreatePartyID(samplefrom, PartyIDTypeURN)},
+		To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 		CPAID:          samplepcc,
 		ConversationID: sampleconvid,
 		Service:        ServiceElem{sampleservice, "OTA"},
@@ -244,9 +244,9 @@ func TestMessageHeaderBaseMarshal(t *testing.T) {
 	}
 	mh2 := MessageHeader{
 		MustUnderstand: "1",
-		EbVersion:      sabreEBVersion,
-		From:           FromElem{PartyID: CreatePartyID(samplefrom, partyIDTypeURN)},
-		To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+		EbVersion:      SabreEBVersion,
+		From:           FromElem{PartyID: CreatePartyID(samplefrom, PartyIDTypeURN)},
+		To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 		CPAID:          samplepcc,
 		ConversationID: sampleconvid,
 		Service:        ServiceElem{sampleservice, "OTA"},
@@ -271,9 +271,9 @@ func TestMessageHeaderBaseMarshal(t *testing.T) {
 func BenchmarkMessageHeaderBaseMarshal(b *testing.B) {
 	mh := MessageHeader{
 		MustUnderstand: "1",
-		EbVersion:      sabreEBVersion,
-		From:           FromElem{PartyID: CreatePartyID(samplefrom, partyIDTypeURN)},
-		To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+		EbVersion:      SabreEBVersion,
+		From:           FromElem{PartyID: CreatePartyID(samplefrom, PartyIDTypeURN)},
+		To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 		CPAID:          samplepcc,
 		ConversationID: sampleconvid,
 		Service:        ServiceElem{sampleservice, "OTA"},
@@ -303,8 +303,8 @@ func TestMessageHeaderBaseUnmarshal(t *testing.T) {
 	if mh.MustUnderstand != "1" {
 		t.Error("MustUnderstand shoudl be 1")
 	}
-	if mh.EbVersion != sabreEBVersion {
-		t.Error("EbVersion should be ", sabreEBVersion)
+	if mh.EbVersion != SabreEBVersion {
+		t.Error("EbVersion should be ", SabreEBVersion)
 	}
 	if mh.From.XMLName.Space != "eb" {
 		t.Errorf("From xml Space wrong: expected: %s, got: %s", "eb", mh.From.XMLName.Space)
@@ -324,8 +324,8 @@ func BenchmarkMessageHeaderBaseUnmarshal(b *testing.B) {
 
 func TestSecurityBaseMarshal(t *testing.T) {
 	sec := Security{
-		XMLNSWsseBase: baseWsse,
-		XMLNSWsu:      baseWsuNameSpace,
+		XMLNSWsseBase: BaseWsse,
+		XMLNSWsu:      BaseWsuNameSpace,
 		UserNameToken: &UsernameTokenElem{
 			Username:     sampleusername,
 			Password:     samplepassword,
@@ -334,8 +334,8 @@ func TestSecurityBaseMarshal(t *testing.T) {
 		},
 	}
 	sec2 := Security{
-		XMLNSWsseBase: baseWsse,
-		XMLNSWsu:      baseWsuNameSpace,
+		XMLNSWsseBase: BaseWsse,
+		XMLNSWsu:      BaseWsuNameSpace,
 		UserNameToken: &UsernameTokenElem{
 			Username:     sampleusername,
 			Password:     samplepassword,
@@ -356,8 +356,8 @@ func TestSecurityBaseMarshal(t *testing.T) {
 }
 func BenchmarkSecurityBaseMarshal(b *testing.B) {
 	sec := Security{
-		XMLNSWsseBase: baseWsse,
-		XMLNSWsu:      baseWsuNameSpace,
+		XMLNSWsseBase: BaseWsse,
+		XMLNSWsu:      BaseWsuNameSpace,
 		UserNameToken: &UsernameTokenElem{
 			Username:     sampleusername,
 			Password:     samplepassword,
@@ -380,11 +380,11 @@ func TestSecurityBaseUnmarshal(t *testing.T) {
 	if sec.XMLName.Local != "Security" {
 		t.Errorf("Security xml Local wrong: expected: %s, got: %s", "Security", sec.XMLName.Local)
 	}
-	if sec.XMLName.Space != baseWsse {
-		t.Errorf("Security xml Space wrong: expected: %s, got: %s", baseWsse, sec.XMLName.Space)
+	if sec.XMLName.Space != BaseWsse {
+		t.Errorf("Security xml Space wrong: expected: %s, got: %s", BaseWsse, sec.XMLName.Space)
 	}
-	if sec.XMLNSWsseBase != baseWsse {
-		t.Errorf("XMLNSWsseBase expected: %s, got: %s", baseWsse, sec.XMLNSWsseBase)
+	if sec.XMLNSWsseBase != BaseWsse {
+		t.Errorf("XMLNSWsseBase expected: %s, got: %s", BaseWsse, sec.XMLNSWsseBase)
 	}
 	if sec.BinarySecurityToken.Value != samplebinsectoken {
 		t.Errorf("BinarySecurityToken.Value expected: %s, got: %s", samplebinsectoken, sec.BinarySecurityToken)
@@ -408,7 +408,7 @@ func BenchmarkSecurityBaseUnmarshal(b *testing.B) {
 func TestManifestMarshal(t *testing.T) {
 	mnf := Manifest{
 		MustUnderstand: "1",
-		EbVersion:      sabreEBVersion,
+		EbVersion:      SabreEBVersion,
 		Reference: ReferenceElem{
 			Href: "cid:rootelement",
 			Type: "simple",
@@ -473,10 +473,10 @@ func BenchmarkSessionCreateRQMarshal(b *testing.B) {
 func TestSessionHeaderMarshal(t *testing.T) {
 	shdr := SessionHeader{
 		MessageHeader: MessageHeader{
-			MustUnderstand: sabreMustUnderstand,
-			EbVersion:      sabreEBVersion,
-			From:           FromElem{PartyID: CreatePartyID(samplefrom, partyIDTypeURN)},
-			To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+			MustUnderstand: SabreMustUnderstand,
+			EbVersion:      SabreEBVersion,
+			From:           FromElem{PartyID: CreatePartyID(samplefrom, PartyIDTypeURN)},
+			To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 			CPAID:          samplepcc,
 			ConversationID: samplefrom,
 			Service:        ServiceElem{"SessionCreateRQ", "OTA"},
@@ -487,8 +487,8 @@ func TestSessionHeaderMarshal(t *testing.T) {
 			},
 		},
 		Security: Security{
-			XMLNSWsseBase: baseWsse,
-			XMLNSWsu:      baseWsuNameSpace,
+			XMLNSWsseBase: BaseWsse,
+			XMLNSWsu:      BaseWsuNameSpace,
 			UserNameToken: &UsernameTokenElem{
 				Username:     sampleusername,
 				Password:     samplepassword,
@@ -509,10 +509,10 @@ func TestSessionHeaderMarshal(t *testing.T) {
 func BenchmarkSessionHeaderMarshal(b *testing.B) {
 	shdr := SessionHeader{
 		MessageHeader: MessageHeader{
-			MustUnderstand: sabreMustUnderstand,
-			EbVersion:      sabreEBVersion,
-			From:           FromElem{PartyID: CreatePartyID(samplefrom, partyIDTypeURN)},
-			To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+			MustUnderstand: SabreMustUnderstand,
+			EbVersion:      SabreEBVersion,
+			From:           FromElem{PartyID: CreatePartyID(samplefrom, PartyIDTypeURN)},
+			To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 			CPAID:          samplepcc,
 			ConversationID: samplefrom,
 			Service:        ServiceElem{"SessionCreateRQ", "OTA"},
@@ -523,8 +523,8 @@ func BenchmarkSessionHeaderMarshal(b *testing.B) {
 			},
 		},
 		Security: Security{
-			XMLNSWsseBase: baseWsse,
-			XMLNSWsu:      baseWsuNameSpace,
+			XMLNSWsseBase: BaseWsse,
+			XMLNSWsu:      BaseWsuNameSpace,
 			UserNameToken: &UsernameTokenElem{
 				Username:     sampleusername,
 				Password:     samplepassword,
@@ -558,13 +558,13 @@ func TestSessionCreateRQBodyMarshal(t *testing.T) {
 
 func TestSessionCreateRequest(t *testing.T) {
 	sessionRequest := SessionCreateRequest{
-		Envelope: createEnvelope(),
+		Envelope: CreateEnvelope(),
 		Header: SessionHeader{
 			MessageHeader: MessageHeader{
-				MustUnderstand: sabreMustUnderstand,
-				EbVersion:      sabreEBVersion,
-				From:           FromElem{PartyID: CreatePartyID(samplefrom, partyIDTypeURN)},
-				To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+				MustUnderstand: SabreMustUnderstand,
+				EbVersion:      SabreEBVersion,
+				From:           FromElem{PartyID: CreatePartyID(samplefrom, PartyIDTypeURN)},
+				To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 				CPAID:          samplepcc,
 				ConversationID: samplefrom,
 				Service:        ServiceElem{"SessionCreateRQ", "OTA"},
@@ -575,8 +575,8 @@ func TestSessionCreateRequest(t *testing.T) {
 				},
 			},
 			Security: Security{
-				XMLNSWsseBase: baseWsse,
-				XMLNSWsu:      baseWsuNameSpace,
+				XMLNSWsseBase: BaseWsse,
+				XMLNSWsu:      BaseWsuNameSpace,
 				UserNameToken: &UsernameTokenElem{
 					Username:     sampleusername,
 					Password:     samplepassword,
@@ -607,13 +607,13 @@ func TestSessionCreateRequest(t *testing.T) {
 }
 func BenchmarkSessionCreateRequestMarshal(b *testing.B) {
 	sessionRequest := SessionCreateRequest{
-		Envelope: createEnvelope(),
+		Envelope: CreateEnvelope(),
 		Header: SessionHeader{
 			MessageHeader: MessageHeader{
-				MustUnderstand: sabreMustUnderstand,
-				EbVersion:      sabreEBVersion,
-				From:           FromElem{PartyID: CreatePartyID(samplefrom, partyIDTypeURN)},
-				To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+				MustUnderstand: SabreMustUnderstand,
+				EbVersion:      SabreEBVersion,
+				From:           FromElem{PartyID: CreatePartyID(samplefrom, PartyIDTypeURN)},
+				To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 				CPAID:          samplepcc,
 				ConversationID: samplefrom,
 				Service:        ServiceElem{"SessionCreateRQ", "OTA"},
@@ -624,8 +624,8 @@ func BenchmarkSessionCreateRequestMarshal(b *testing.B) {
 				},
 			},
 			Security: Security{
-				XMLNSWsseBase: baseWsse,
-				XMLNSWsu:      baseWsuNameSpace,
+				XMLNSWsseBase: BaseWsse,
+				XMLNSWsu:      BaseWsuNameSpace,
 				UserNameToken: &UsernameTokenElem{
 					Username:     sampleusername,
 					Password:     samplepassword,
@@ -763,13 +763,13 @@ func TestSessionCreateResponseUnAuth(t *testing.T) {
 
 func TestSessionCloseRequest(t *testing.T) {
 	close := SessionCloseRequest{
-		Envelope: createEnvelope(),
+		Envelope: CreateEnvelope(),
 		Header: SessionHeader{
 			MessageHeader: MessageHeader{
-				MustUnderstand: sabreMustUnderstand,
-				EbVersion:      sabreEBVersion,
-				From:           FromElem{PartyID: CreatePartyID(samplefrom, partyIDTypeURN)},
-				To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+				MustUnderstand: SabreMustUnderstand,
+				EbVersion:      SabreEBVersion,
+				From:           FromElem{PartyID: CreatePartyID(samplefrom, PartyIDTypeURN)},
+				To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 				CPAID:          samplepcc,
 				ConversationID: sampleconvid,
 				Service:        ServiceElem{"SessionCloseRQ", "OTA"},
@@ -780,8 +780,8 @@ func TestSessionCloseRequest(t *testing.T) {
 				},
 			},
 			Security: Security{
-				XMLNSWsseBase:       baseWsse,
-				XMLNSWsu:            baseWsuNameSpace,
+				XMLNSWsseBase:       BaseWsse,
+				XMLNSWsu:            BaseWsuNameSpace,
 				BinarySecurityToken: samplebinsectoken,
 			},
 		},
