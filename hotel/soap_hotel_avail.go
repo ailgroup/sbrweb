@@ -196,8 +196,16 @@ func (a *OTAHotelAvailRQ) addCustomerID(cID string) {
 	}
 }
 
+// arriveDepartParser parse string data value into time value.
+func arriveDepartParser(arrive, depart string) (time.Time, time.Time) {
+	a, _ := time.Parse(timeSpanFormatter, arrive)
+	d, _ := time.Parse(timeSpanFormatter, depart)
+	return a, d
+}
+
 // SetHotelAvailRqStruct hotel availability request using input parameters
-func SetHotelAvailRqStruct(guestCount int, query HotelSearchCriteria, arrive, depart time.Time) OTAHotelAvailRQ {
+func SetHotelAvailRqStruct(guestCount int, query HotelSearchCriteria, arrive, depart string) OTAHotelAvailRQ {
+	a, d := arriveDepartParser(arrive, depart)
 	return OTAHotelAvailRQ{
 		Version:           hotelAvailVersion,
 		XMLNS:             sbrweb.BaseWebServicesNS,
@@ -208,8 +216,8 @@ func SetHotelAvailRqStruct(guestCount int, query HotelSearchCriteria, arrive, de
 			GuestCounts:         GuestCounts{Count: guestCount},
 			HotelSearchCriteria: query,
 			ArriveDepart: TimeSpan{
-				Depart: depart.Format(timeSpanFormatter),
-				Arrive: arrive.Format(timeSpanFormatter),
+				Depart: d.Format(timeSpanFormatter),
+				Arrive: a.Format(timeSpanFormatter),
 			},
 		},
 	}
