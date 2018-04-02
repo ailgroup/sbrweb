@@ -38,6 +38,8 @@ var (
 	sampleAvailRQCitiesCustNumber = []byte(`<OTA_HotelAvailRQ version="2.3.0" xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><ReturnHostCommand>true</ReturnHostCommand><AvailRequestSegment><Customer><ID><Number>12345</Number></ID></Customer><GuestCounts Count="3"></GuestCounts><HotelSearchCriteria><Criterion><HotelRef HotelCityCode="DFW"></HotelRef><HotelRef HotelCityCode="CHC"></HotelRef><HotelRef HotelCityCode="LA"></HotelRef><Address></Address></Criterion></HotelSearchCriteria><TimeSpan><End>04-05</End><Start>04-02</Start></TimeSpan></AvailRequestSegment></OTA_HotelAvailRQ>`)
 
 	sampleAvailRQLatLng = []byte(`<OTA_HotelAvailRQ version="2.3.0" xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><ReturnHostCommand>true</ReturnHostCommand><AvailRequestSegment><GuestCounts Count="2"></GuestCounts><HotelSearchCriteria><Criterion><HotelRef Latitude="32.78" Longitude="-96.81"></HotelRef><HotelRef Latitude="54.87" Longitude="-102.96"></HotelRef><Address></Address></Criterion></HotelSearchCriteria><TimeSpan><End>04-05</End><Start>04-02</Start></TimeSpan></AvailRequestSegment></OTA_HotelAvailRQ>`)
+
+	sampleAvailRQHotelIDS = []byte(`<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" xmlns:xlink="http://www.w3.org/2001/xlink" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap-env:Header><eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:From><eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId></eb:From><eb:To><eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="OTA">OTA_HotelAvailRQ</eb:Service><eb:Action>OTA_HotelAvailRQ</eb:Action><eb:MessageData><eb:MessageId>mid:20180207-20:19:07.25|QVbg0</eb:MessageId><eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp><eb:TimeToLive></eb:TimeToLive></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility"><wsse:BinarySecurityToken>Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><OTA_HotelAvailRQ version="2.3.0" xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><ReturnHostCommand>true</ReturnHostCommand><AvailRequestSegment><GuestCounts Count="2"></GuestCounts><HotelSearchCriteria><Criterion><HotelRef HotelCode="0012"></HotelRef><HotelRef HotelCode="19876"></HotelRef><HotelRef HotelCode="1109"></HotelRef><HotelRef HotelCode="445098"></HotelRef><HotelRef HotelCode="000034"></HotelRef><Address></Address></Criterion></HotelSearchCriteria><TimeSpan><End>04-05</End><Start>04-02</Start></TimeSpan></AvailRequestSegment></OTA_HotelAvailRQ></soap-env:Envelope>`)
 )
 
 func init() {
@@ -308,7 +310,7 @@ func TestSetHotelAvailRqStructCriteriaMarshal(t *testing.T) {
 		t.Error("Error marshaling get hotel content", err)
 	}
 	if string(b) != string(sampleAvailRQLatLng) {
-		t.Errorf("Expected marshal hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQLatLng), string(b))
+		t.Errorf("Expected marshal set hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQLatLng), string(b))
 	}
 	//fmt.Printf("content marshal \n%s\n", b)
 }
@@ -320,9 +322,13 @@ func TestBuildHotelAvailRequestMarshal(t *testing.T) {
 	avail := SetHotelAvailRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
 	req := BuildHotelAvailRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, avail)
 
-	_, err := xml.Marshal(req)
+	b, err := xml.Marshal(req)
 	if err != nil {
 		t.Error("Error marshaling get hotel content", err)
+	}
+
+	if string(b) != string(sampleAvailRQHotelIDS) {
+		t.Errorf("Expected marshal SOAP hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQHotelIDS), string(b))
 	}
 	//fmt.Printf("content marshal \n%s\n", b)
 }
