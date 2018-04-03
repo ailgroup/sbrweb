@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><soap-env:Header><eb:MessageHeader xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" eb:version="1.0" soap-env:mustUnderstand="1"><eb:From><eb:PartyId eb:type="URI">webservices.sabre.com</eb:PartyId></eb:From><eb:To><eb:PartyId eb:type="URI">www.rentsomewheels.com</eb:PartyId></eb:To><eb:CPAId>DG7F</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="sabreXML">OTA_HotelAvailRQ</eb:Service><eb:Action>OTA_HotelAvailLLSRS</eb:Action><eb:MessageData><eb:MessageId>1374478129129220211</eb:MessageId><eb:Timestamp>2018-04-03T03:35:13</eb:Timestamp><eb:RefToMessageId>mid:20180216-07:18:42.3|14oUa</eb:RefToMessageId></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext"><wsse:BinarySecurityToken valueType="String" EncodingType="wsse:Base64Binary">Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESF!ICESMSLB\/RES.LB!-3161638152750045809!1191725!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><OTA_HotelAvailRS xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:stl="http://services.sabre.com/STL/v01" Version="2.3.0">
+ <stl:ApplicationResults status="Complete">
+  <stl:Success timeStamp="2018-04-02T22:35:13-05:00">
+   <stl:SystemSpecificResults>
+    <stl:HostCommand LNIATA="222222">HOTPRPL-1/02APR-05APR2</stl:HostCommand>
+   </stl:SystemSpecificResults>
+  </stl:Success>
+ </stl:ApplicationResults>
+ <AdditionalAvail Ind="false"/>
+ <AvailabilityOptions>
+  <AvailabilityOption RPH="001">
+   <BasicPropertyInfo AreaID="000" ChainCode="HY" Distance="M" GEO_ConfidenceLevel="1" HotelCityCode="TUL" HotelCode="0000001" HotelName="HYATT REGENCY TULSA" Latitude="36.154800" Longitude="-95.990356">
+    <Address>
+     <AddressLine>100 E SECOND STREET</AddressLine>
+     <AddressLine>TULSA OK 74103</AddressLine>
+    </Address>
+    <ContactNumbers>
+     <ContactNumber Fax="1-918-560-2232" Phone="1-918-234-1234"/>
+    </ContactNumbers>
+    <DirectConnect>
+     <Alt_Avail Ind="false"/>
+     <DC_AvailParticipant Ind="true"/>
+     <DC_SellParticipant Ind="true"/>
+     <RatesExceedMax Ind="false"/>
+     <UnAvail Ind="false"/>
+    </DirectConnect>
+    <LocationDescription>
+     <Text>TULSA OK</Text>
+    </LocationDescription>
+    <Property Rating="NTM">
+     <Text>4 CROWN</Text>
+    </Property>
+    <PropertyOptionInfo>
+     <ADA_Accessible Ind="true"/>
+     <AdultsOnly Ind="false"/>
+     <BeachFront Ind="false"/>
+     <Breakfast Ind="false"/>
+     <BusinessCenter Ind="true"/>
+     <BusinessReady Ind="false"/>
+     <Conventions Ind="true"/>
+     <Dataport Ind="true"/>
+     <Dining Ind="true"/>
+     <DryClean Ind="false"/>
+     <EcoCertified Ind="false"/>
+     <ExecutiveFloors Ind="true"/>
+     <FitnessCenter Ind="true"/>
+     <FreeLocalCalls Ind="false"/>
+     <FreeParking Ind="false"/>
+     <FreeShuttle Ind="true"/>
+     <FreeWifiInMeetingRooms Ind="false"/>
+     <FreeWifiInPublicSpaces Ind="false"/>
+     <FreeWifiInRooms Ind="true"/>
+     <FullServiceSpa Ind="true"/>
+     <GameFacilities Ind="false"/>
+     <Golf Ind="false"/>
+     <HighSpeedInternet Ind="true"/>
+     <HypoallergenicRooms Ind="true"/>
+     <IndoorPool Ind="true"/>
+     <InRoomCoffeeTea Ind="true"/>
+     <InRoomMiniBar Ind="false"/>
+     <InRoomRefrigerator Ind="false"/>
+     <InRoomSafe Ind="true"/>
+     <InteriorDoorways Ind="false"/>
+     <Jacuzzi Ind="false"/>
+     <KidsFacilities Ind="false"/>
+     <KitchenFacilities Ind="false"/>
+     <MealService Ind="false"/>
+     <MeetingFacilities Ind="true"/>
+     <NoAdultTV Ind="false"/>
+     <NonSmoking Ind="true"/>
+     <OutdoorPool Ind="true"/>
+     <Pets Ind="true"/>
+     <Pool Ind="true"/>
+     <PublicTransportationAdjacent Ind="false"/>
+     <RateAssured Ind="true"/>
+     <Recreation Ind="false"/>
+     <RestrictedRoomAccess Ind="true"/>
+     <RoomService Ind="true"/>
+     <RoomService24Hours Ind="false"/>
+     <RoomsWithBalcony Ind="false"/>
+     <SkiInOutProperty Ind="false"/>
+     <SmokeFree Ind="true"/>
+     <SmokingRoomsAvail Ind="false"/>
+     <Tennis Ind="false"/>
+     <WaterPurificationSystem Ind="false"/>
+     <Wheelchair Ind="true"/>
+    </PropertyOptionInfo>
+    <RateRange CurrencyCode="USD" Max="289.00" Min="134.00"/>
+    <RoomRate RateLevelCode="RAC">
+     <AdditionalInfo>
+      <CancelPolicy Numeric="00"/>
+     </AdditionalInfo>
+     <HotelRateCode>RAC</HotelRateCode>
+    </RoomRate>
+    <SpecialOffers Ind="false"/>
+   </BasicPropertyInfo>
+  </AvailabilityOption>
+ </AvailabilityOptions>
+</OTA_HotelAvailRS></soap-env:Body></soap-env:Envelope>

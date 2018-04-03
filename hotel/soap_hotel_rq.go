@@ -315,45 +315,35 @@ func BuildHotelAvailRequest(from, pcc, binsectoken, convid, mid, time string, ot
 	}
 }
 
-// CallSessionValidate to sabre web services
-func CallHotelAvail(serviceURL string, req HotelAvailRequest) error { //(SessionValidateResponse, error) {
-	//sessionResponse := SessionValidateResponse{}
-	//construct payload
+type HotelAvailResponse struct {
+}
 
+// CallSessionValidate to sabre web services
+func CallHotelAvail(serviceURL string, req HotelAvailRequest) (HotelAvailResponse, error) {
+	availResp := HotelAvailResponse{}
+	//construct payload
 	byteReq, _ := xml.Marshal(req)
 	fmt.Printf("\n\nREQUEST: %s\n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
 	if err != nil {
-		return fmt.Errorf("CallHotelAvail http.Post(). %v", err)
+		return availResp, fmt.Errorf("CallHotelAvail http.Post(). %v", err)
 	}
 
+	// parse payload body into []byte buffer from net Response.ReadCloser
+	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
 	io.Copy(bodyBuffer, resp.Body)
+	fmt.Printf("\n\nBODYbuffer: %v\n\n", bodyBuffer)
 	resp.Body.Close()
 
-	fmt.Printf("\n\nRESPONSE: %+v\n\n", resp)
-	fmt.Printf("\n\nTLS: %+v\n\n", resp.Body)
-	fmt.Printf("\n\nBODYbuffer: %v\n\n", bodyBuffer)
-
-	return nil
-
-	/*
-		//parse payload body into []byte buffer from net Response.ReadCloser
-		// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
-		bodyBuffer := new(bytes.Buffer)
-		io.Copy(bodyBuffer, resp.Body)
-		//defer func() { resp.Body.Close() }()
-		resp.Body.Close()
-
-		//marshal byte body sabre response body into session envelope response struct
-		err = xml.Unmarshal(bodyBuffer.Bytes(), &sessionResponse)
-		if err != nil {
-			return sessionResponse, fmt.Errorf("CallSessionValidate Unmarshal(,&sessionResponse). %v", err)
-		}
-		return sessionResponse, nil
-	*/
+	//marshal bytes sabre response body into availResp response struct
+	err = xml.Unmarshal(bodyBuffer.Bytes(), &availResp)
+	if err != nil {
+		return availResp, fmt.Errorf("CallHotelAvail Unmarshal(bytes, &availResp): %v", err)
+	}
+	return availResp, nil
 }
 
 func (c *HotelSearchCriteria) validatePropertyRequest() error {
