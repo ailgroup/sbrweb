@@ -1,0 +1,12 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><soap-env:Header><eb:MessageHeader xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" eb:version="1.0" soap-env:mustUnderstand="1"><eb:From><eb:PartyId eb:type="URI">webservices.sabre.com</eb:PartyId></eb:From><eb:To><eb:PartyId eb:type="URI">www.z.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="sabreXML">OTA_HotelAvailRQ</eb:Service><eb:Action>OTA_HotelAvailLLSRS</eb:Action><eb:MessageData><eb:MessageId>5938015533871980192</eb:MessageId><eb:Timestamp>2018-04-03T14:49:47</eb:Timestamp><eb:RefToMessageId>mid:20180216-07:18:42.3|14oUa</eb:RefToMessageId></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext"><wsse:BinarySecurityToken valueType="String" EncodingType="wsse:Base64Binary">Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESH!ICESMSLB\/RES.LB!-3161472370095807867!858335!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><OTA_HotelAvailRS xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:stl="http://services.sabre.com/STL/v01" Version="2.3.0">
+ <stl:ApplicationResults status="NotProcessed">
+  <stl:Error type="BusinessLogic" timeStamp="2018-04-03T09:49:47-05:00">
+   <stl:SystemSpecificResults>
+    <stl:HostCommand LNIATA="222222">HOTPRPL-1/02APR-05APR2</stl:HostCommand>
+    <stl:Message>CK DATE</stl:Message>
+    <stl:ShortText>ERR.SWS.HOST.ERROR_IN_RESPONSE</stl:ShortText>
+   </stl:SystemSpecificResults>
+  </stl:Error>
+ </stl:ApplicationResults>
+</OTA_HotelAvailRS></soap-env:Body></soap-env:Envelope>
