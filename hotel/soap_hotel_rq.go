@@ -356,8 +356,31 @@ func CallHotelAvail(serviceURL string, req HotelAvailRequest) error { //(Session
 	*/
 }
 
+func (c *HotelSearchCriteria) validatePropertyRequest() error {
+	for _, criterion := range c.Criterion.HotelRef {
+		if len(criterion.HotelCityCode) > 0 {
+			return fmt.Errorf("HotelCityCode not allowed in HotelPropertyDescription have %d for %v", len(criterion.HotelCityCode), criterion.HotelCityCode)
+		}
+		if len(criterion.Latitude) > 0 {
+			return fmt.Errorf("Latitude not allowed in HotelPropertyDescription have %d for %v", len(criterion.Latitude), criterion.Latitude)
+		}
+		if len(criterion.Longitude) > 0 {
+			return fmt.Errorf("Latitude not allowed in HotelPropertyDescription have %d for %v", len(criterion.Longitude), criterion.Longitude)
+		}
+
+		if len(c.Criterion.HotelRef) > 1 {
+			return fmt.Errorf("Criterion.HotelRef cannot be greater than 1 for HotelPropertyDescription have %d for %v", len(c.Criterion.HotelRef), c.Criterion.HotelRef)
+		}
+	}
+	return nil
+}
+
 // SetHotelPropDescRqStruct hotel availability request using input parameters
-func SetHotelPropDescRqStruct(guestCount int, query HotelSearchCriteria, arrive, depart string) HotelPropDescBody {
+func SetHotelPropDescRqStruct(guestCount int, query HotelSearchCriteria, arrive, depart string) (HotelPropDescBody, error) {
+	err := query.validatePropertyRequest()
+	if err != nil {
+		return HotelPropDescBody{}, err
+	}
 	a, d := arriveDepartParser(arrive, depart)
 	return HotelPropDescBody{
 		HotelPropDescRQ: HotelPropDescRQ{
@@ -375,7 +398,7 @@ func SetHotelPropDescRqStruct(guestCount int, query HotelSearchCriteria, arrive,
 				},
 			},
 		},
-	}
+	}, nil
 }
 
 // BuildHotelPropDescRequest to make hotel property description request, which will have rate availability information on the response.
