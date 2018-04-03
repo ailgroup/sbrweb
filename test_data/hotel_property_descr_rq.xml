@@ -1,0 +1,11 @@
+<HotelPropertyDescriptionRQ Version="2.3.0">
+    <AvailRequestSegment>
+        <GuestCounts Count="2" />
+        <HotelSearchCriteria>
+            <Criterion>
+                <HotelRef HotelCode="1" />
+            </Criterion>
+        </HotelSearchCriteria>
+        <TimeSpan End="11-24" Start="11-22" />
+    </AvailRequestSegment>
+</HotelPropertyDescriptionRQ>
