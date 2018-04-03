@@ -36,7 +36,7 @@ type HotelAvailBody struct {
 	OTAHotelAvailRQ OTAHotelAvailRQ
 }
 
-// OTAHotelAvailRQ retrieve sabre hotel content using various query criteria, see SearchCriteria
+// OTAHotelAvailRQ retrieve sabre hotel availability using various query criteria, see SearchCriteria
 type OTAHotelAvailRQ struct {
 	XMLName           xml.Name `xml:"OTA_HotelAvailRQ"`
 	Version           string   `xml:"Version,attr"`
@@ -315,7 +315,29 @@ func BuildHotelAvailRequest(from, pcc, binsectoken, convid, mid, time string, ot
 	}
 }
 
+// OTAHotelAvailRS parse sabre hotel availability
+type OTAHotelAvailRS struct {
+	XMLName         xml.Name `xml:"OTA_HotelAvailRS"`
+	XMLNS           string   `xml:"xmlns,attr"`
+	XMLNSXs         string   `xml:"xs,attr"`
+	XMLNSXsi        string   `xml:"xsi,attr"`
+	XMLNSStl        string   `xml:"stl,attr"`
+	Version         string   `xml:"Version,attr"`
+	Result          ApplicationResults
+	AdditionalAvail struct {
+		Ind bool `xml:",attr"`
+	} `xml:"AdditionalAvail,attr"`
+	AvailOpts AvailabilityOptions
+}
+
+// HotelAvailResponse is wrapper with namespace prefix definitions for payload
 type HotelAvailResponse struct {
+	Envelope sbrweb.EnvelopeUnMarsh
+	Header   sbrweb.SessionHeaderUnmarsh
+	Body     struct {
+		HotelAvail OTAHotelAvailRS
+		Fault      sbrweb.SOAPFault
+	}
 }
 
 // CallSessionValidate to sabre web services
@@ -365,6 +387,7 @@ func (c *HotelSearchCriteria) validatePropertyRequest() error {
 	return nil
 }
 
+/*
 // SetHotelPropDescRqStruct hotel availability request using input parameters
 func SetHotelPropDescRqStruct(guestCount int, query HotelSearchCriteria, arrive, depart string) (HotelPropDescBody, error) {
 	err := query.validatePropertyRequest()
@@ -444,3 +467,4 @@ func CallHotelProp(serviceURL string, req HotelPropDescRequest) error {
 	fmt.Printf("\n\nBODYbuffer: %v\n\n", bodyBuffer)
 	return nil
 }
+*/
