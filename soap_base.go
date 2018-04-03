@@ -114,8 +114,8 @@ type ToElemUnmarsh struct {
 type MessageDataElem struct {
 	XMLName    xml.Name `xml:"eb:MessageData"`
 	MessageID  string   `xml:"eb:MessageId"`
-	Timestamp  string   `xml:"eb:Timestamp"`
-	TimeToLive string   `xml:"eb:TimeToLive"`
+	Timestamp  string   `xml:"eb:Timestamp,omitempty"`
+	TimeToLive string   `xml:"eb:TimeToLive,omitempty"`
 }
 
 //MessageDataElemUnmarsh holds unique identifiers coupled with time

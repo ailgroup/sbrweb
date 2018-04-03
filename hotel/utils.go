@@ -1,4 +1,4 @@
-package sbrhotel
+package hotel
 
 /*
 	propertyQueryField = "property"
@@ -19,7 +19,7 @@ package sbrhotel
 */
 
 const (
-	hotelAvailVersion = "2.3.0"
+	hotelRQVersion    = "2.3.0"
 	timeSpanFormatter = "01-02"
 
 	streetQueryField      = "street_qf"
