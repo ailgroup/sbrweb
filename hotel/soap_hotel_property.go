@@ -2,15 +2,6 @@ package hotel
 
 import "encoding/xml"
 
-type AvailabilityOptions struct {
-	XMLName          xml.Name             `xml:"AvailabilityOptions"`
-	AvailableOptions []AvailabilityOption `xml:"AvailabilityOption"`
-}
-
-type AvailabilityOption struct {
-	RPH          int `xml:"RPH,attr"` //string? 001 versus 1
-	PropertyInfo BasicPropertyInfo
-}
 type BasicPropertyInfo struct {
 	XMLName             xml.Name `xml:"BasicPropertyInfo"`
 	AreadID             string   `xml:"AreadID,attr"`
