@@ -2,6 +2,7 @@ package hotel
 
 import (
 	"encoding/xml"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -496,4 +497,5 @@ func TestHotelAvailUnmarshal(t *testing.T) {
 
 	//fmt.Printf("SAMPLE: %s\n", sampleEnvelope)
 	//fmt.Printf("CURRENT: %+v\n", success)
+	fmt.Printf("CURRENT: %+v\n", avail)
 }

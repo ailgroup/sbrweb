@@ -1,21 +1,29 @@
 package hotel
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+)
 
 type BasicPropertyInfo struct {
-	XMLName             xml.Name `xml:"BasicPropertyInfo"`
-	AreadID             string   `xml:"AreadID,attr"`
-	ChainCode           string   `xml:"ChainCode,attr"`
-	Distance            string   `xml:"Distance,attr"`
-	GEO_ConfidenceLevel string   `xml:"GEO_ConfidenceLevel,attr"`
-	HotelCityCode       string   `xml:"HotelCityCode,attr"`
-	HotelCode           string   `xml:"HotelCode,attr"`
-	HotelName           string   `xml:"HotelName,attr"`
-	Latitude            string   `xml:"Latitude,attr"`
-	Longitude           string   `xml:"Longitude,attr"`
-	Address             struct {
+	XMLName         xml.Name `xml:"BasicPropertyInfo"`
+	AreadID         string   `xml:"AreadID,attr"`
+	ChainCode       string   `xml:"ChainCode,attr"`
+	Distance        string   `xml:"Distance,attr"`
+	GEO_ConfAvail   string   `xml:"GEO_ConfidenceLevel,attr"` //ugh
+	GeoConfPropDesc string   `xml:"GeoConfidenceLevel,attr"`  //ugh
+	HotelCityCode   string   `xml:"HotelCityCode,attr"`
+	HotelCode       string   `xml:"HotelCode,attr"`
+	HotelName       string   `xml:"HotelName,attr"`
+	Latitude        string   `xml:"Latitude,attr"`
+	Longitude       string   `xml:"Longitude,attr"`
+	Address         struct {
 		Line []string `xml:"AddressLine"`
 	} `xml:"Address"`
+	Awards struct {
+		AwardProvider string `xml:"AwardProvider"`
+	} `xml:"Awards"`
+	CheckIn        string `xml:"CheckInTime"`
+	CheckOut       string `xml:"CheckOutTime"`
 	ContactNumbers struct {
 		Number ContactNumber `xml:"ContactNumber"`
 	} `xml:"ContactNumbers"`
@@ -23,7 +31,8 @@ type BasicPropertyInfo struct {
 	LocDesc   struct {
 		Text string `xml:"Text"`
 	} `xml:"LocationDescription"`
-	Prop struct {
+	IndexDatum []IndexD `xml:"IndexData>Index"`
+	Prop       struct {
 		Rating string `xml:"Rating,attr"`
 		Text   string `xml:"Text"`
 	} `xml:"Property"`
@@ -37,6 +46,15 @@ type BasicPropertyInfo struct {
 	SpecialOffers struct {
 		Ind bool `xml:"Ind,attr"`
 	} `xml:"SpecialOffers"`
+}
+
+type IndexD struct {
+	XMLName            xml.Name `xml:"Index"`
+	CountryState       string   `xml:"CountryState,attr"`
+	DistanceDirection  string   `xml:"DistanceDirection,attr"`
+	LocationCode       string   `xml:"LocationCode,attr"`
+	Point              string   `xml:"Point,attr"`
+	TransportationCode string   `xml:"TransportationCode,attr"`
 }
 
 type RoomRate struct {

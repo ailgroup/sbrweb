@@ -3,6 +3,7 @@ package hotel
 import (
 	"bytes"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -52,20 +53,24 @@ func (a *HotelPropDescRQ) addCustomerID(cID string) {
 	}
 }
 
+var (
+	ErrPropDescCityCode  = errors.New("HotelCityCode not allowed in HotelPropertyDescription")
+	ErrPropDescLatLng    = errors.New("Latitude or Longitude not allowed in HotelPropertyDescription")
+	ErrPropDescHotelRefs = errors.New("Criterion.HotelRef cannot be greater than 1, can only search using one criterion")
+)
+
+// validatePropertyRequest ensures property description requests are well-formed
 func (c *HotelSearchCriteria) validatePropertyRequest() error {
 	for _, criterion := range c.Criterion.HotelRefs {
 		if len(criterion.HotelCityCode) > 0 {
-			return fmt.Errorf("HotelCityCode not allowed in HotelPropertyDescription have %d for %v", len(criterion.HotelCityCode), criterion.HotelCityCode)
+			return ErrPropDescCityCode
 		}
-		if len(criterion.Latitude) > 0 {
-			return fmt.Errorf("Latitude not allowed in HotelPropertyDescription have %d for %v", len(criterion.Latitude), criterion.Latitude)
-		}
-		if len(criterion.Longitude) > 0 {
-			return fmt.Errorf("Latitude not allowed in HotelPropertyDescription have %d for %v", len(criterion.Longitude), criterion.Longitude)
+		if (len(criterion.Latitude) > 0) || (len(criterion.Longitude) > 0) {
+			return ErrPropDescLatLng
 		}
 
 		if len(c.Criterion.HotelRefs) > 1 {
-			return fmt.Errorf("Criterion.HotelRef cannot be greater than 1 for HotelPropertyDescription have %d for %v", len(c.Criterion.HotelRefs), c.Criterion.HotelRefs)
+			return ErrPropDescHotelRefs
 		}
 	}
 	return nil
@@ -130,9 +135,35 @@ func BuildHotelPropDescRequest(from, pcc, binsectoken, convid, mid, time string,
 	}
 }
 
-// CallHotelProp to sabre web services
-func CallHotelProp(serviceURL string, req HotelPropDescRequest) error {
+type RoomStay struct {
+	XMLName           xml.Name `xml:"RoomStay"`
+	BasicPropertyInfo BasicPropertyInfo
+}
 
+// OTAHotelAvailRS parse sabre hotel availability
+type HotelPropertyDescriptionRS struct {
+	XMLName  xml.Name `xml:"HotelPropertyDescriptionRS"`
+	XMLNS    string   `xml:"xmlns,attr"`
+	XMLNSXs  string   `xml:"xs,attr"`
+	XMLNSXsi string   `xml:"xsi,attr"`
+	XMLNSStl string   `xml:"stl,attr"`
+	Version  string   `xml:"Version,attr"`
+	Result   ApplicationResults
+	RoomStay RoomStay
+}
+
+// HotelAvailResponse is wrapper with namespace prefix definitions for payload
+type HotelPropDescResponse struct {
+	Envelope sbrweb.EnvelopeUnMarsh
+	Header   sbrweb.SessionHeaderUnmarsh
+	Body     struct {
+		HotelDesc HotelPropertyDescriptionRS
+		Fault     sbrweb.SOAPFault
+	}
+}
+
+// CallHotelProp to sabre web services
+func CallHotelProperty(serviceURL string, req HotelPropDescRequest) error {
 	byteReq, _ := xml.Marshal(req)
 	fmt.Printf("\n\nREQUEST: %s\n\n", byteReq)
 
