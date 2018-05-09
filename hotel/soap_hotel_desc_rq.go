@@ -138,6 +138,12 @@ func BuildHotelPropDescRequest(from, pcc, binsectoken, convid, mid, time string,
 type RoomStay struct {
 	XMLName           xml.Name `xml:"RoomStay"`
 	BasicPropertyInfo BasicPropertyInfo
+	RoomRates         []RoomRate `xml:"RoomRates>RoomRate"`
+	TimeSpan          struct {
+		Duration int    `xml:"Duration,attr"` //string 0001 or int 1?
+		End      string `xml:"End,attr"`
+		Start    string `xml:"Start,attr"`
+	} `xml:"TimeSpan"`
 }
 
 // OTAHotelAvailRS parse sabre hotel availability

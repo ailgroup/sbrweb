@@ -495,6 +495,29 @@ func TestHotelAvailUnmarshal(t *testing.T) {
 		t.Errorf("System.HostCommand.LNIATA for success expect: %v, got: %v", "222222", success.System.HostCommand.LNIATA)
 	}
 
+	options := avail.Body.HotelAvail.AvailOpts.AvailableOptions[0]
+	if options.RPH != 1 {
+		t.Errorf("First Availability option should be 1")
+	}
+	rr := options.PropertyInfo.RoomRateAvail
+	if rr.RateLevelCode != "RAC" {
+		t.Errorf("RateLevelCode should be: %s, got: %s", "RAC", rr.RateLevelCode)
+	}
+	if rr.HotelRateCode != "RAC" {
+		t.Errorf("HotelRateCode should be: %s, got: %s", "RAC", rr.HotelRateCode)
+	}
+
+	rateRange := options.PropertyInfo.RateRange
+	if rateRange.CurrencyCode != "USD" {
+		t.Errorf("RateRange CurrencyCode should be %s, got %s", "USD", rateRange.CurrencyCode)
+	}
+	if rateRange.Max != "289.00" {
+		t.Errorf("RateRange Max should be %s, got %s", "USD", rateRange.Max)
+	}
+	if rateRange.Min != "134.00" {
+		t.Errorf("RateRange Min should be %s, got %s", "USD", rateRange.Min)
+	}
+
 	//fmt.Printf("SAMPLE: %s\n", sampleEnvelope)
 	//fmt.Printf("CURRENT: %+v\n", success)
 	fmt.Printf("CURRENT: %+v\n", avail)

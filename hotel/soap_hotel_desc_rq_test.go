@@ -2,7 +2,6 @@ package hotel
 
 import (
 	"encoding/xml"
-	"fmt"
 	"testing"
 )
 
@@ -951,22 +950,83 @@ func TestPropDescBuildHotelPropDescMarshal(t *testing.T) {
 	//fmt.Printf("content marshal \n%s\n", b)
 }
 
+var rateSamples = []struct {
+	direct       string
+	surcharge    string
+	guarrate     string
+	iatachar     string
+	iataprod     string
+	lowinventory string
+	ratecode     string
+	rph          int
+	ratechange   string
+	rateconv     string
+	specialoff   string
+	rates        []Rate
+}{
+	{
+		direct:       "",
+		surcharge:    "G",
+		guarrate:     "false",
+		iatachar:     "P1KRAC",
+		iataprod:     "FULLY FLEXIBLE-",
+		lowinventory: "false",
+		ratecode:     "",
+		rph:          1,
+		ratechange:   "false",
+		rateconv:     "false",
+		specialoff:   "false",
+		rates: []Rate{
+			Rate{
+				Amount: "285.00",
+				AdditionalGuestAmounts: []AdditionalGuestAmount{
+					AdditionalGuestAmount{
+						Charges: []Charge{
+							Charge{
+								ExtraPerson: "80.00",
+							},
+						},
+					},
+				},
+				HotelPricing: HotelPricing{
+					Amount: "335.45",
+					TotalSurcharges: TotalSurcharges{
+						Amount: "28.50",
+					},
+					TotalTaxes: TotalTaxes{
+						Amount: "21.95",
+					},
+				},
+			},
+		},
+	},
+}
+
 func TestPropDescUnmarshal(t *testing.T) {
 	prop := HotelPropDescResponse{}
 	err := xml.Unmarshal(samplePropDescRS, &prop)
 	if err != nil {
 		t.Errorf("Error unmarshaling hotel avail %s \nERROR: %v", sampleHotelAvailRSgood, err)
 	}
+	reqError := prop.Body.HotelDesc.Result.Error
+	if reqError.Type != "" {
+		t.Errorf("Request error %v should not have message %s", reqError, reqError.System.Message)
+	}
+	success := prop.Body.HotelDesc.Result.Success
+	if success.System.HostCommand.LNIATA != "222222" {
+		t.Errorf("System.HostCommand.LNIATA for success expect: %v, got: %v", "222222", success.System.HostCommand.LNIATA)
+	}
+
+	rate := prop.Body.HotelDesc.RoomStay.RoomRates[0]
+	sample := rateSamples[0]
+	if rate.RPH != sample.rph {
+		t.Errorf("RPH expected %d, got %d", sample.rph, rate.RPH)
+	}
 	/*
-		reqError := avail.Body.HotelAvail.Result.Error
-		if reqError.Type != "" {
-			t.Errorf("Request error %v should not have message %s", reqError, reqError.System.Message)
-		}
-		success := avail.Body.HotelAvail.Result.Success
-		if success.System.HostCommand.LNIATA != "222222" {
-			t.Errorf("System.HostCommand.LNIATA for success expect: %v, got: %v", "222222", success.System.HostCommand.LNIATA)
+		for i, rate := range prop.Body.HotelDesc.RoomStay.RoomRates {
+			fmt.Printf("%d %+v\n\n", i, rate)
 		}
 	*/
-
-	fmt.Printf("CURRENT: %+v\n", prop)
+	//fmt.Printf("CURRENT: %+v\n", prop)
+	//fmt.Printf("RATES COUNT: %d\n", len(prop.Body.HotelDesc.RoomStay.RoomRates))
 }

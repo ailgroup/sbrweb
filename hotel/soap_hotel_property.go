@@ -9,8 +9,8 @@ type BasicPropertyInfo struct {
 	AreadID         string   `xml:"AreadID,attr"`
 	ChainCode       string   `xml:"ChainCode,attr"`
 	Distance        string   `xml:"Distance,attr"`
-	GEO_ConfAvail   string   `xml:"GEO_ConfidenceLevel,attr"` //ugh
-	GeoConfPropDesc string   `xml:"GeoConfidenceLevel,attr"`  //ugh
+	GEO_ConfAvail   string   `xml:"GEO_ConfidenceLevel,attr"` //hotel avail
+	GeoConfPropDesc string   `xml:"GeoConfidenceLevel,attr"`  //property description
 	HotelCityCode   string   `xml:"HotelCityCode,attr"`
 	HotelCode       string   `xml:"HotelCode,attr"`
 	HotelName       string   `xml:"HotelName,attr"`
@@ -36,16 +36,162 @@ type BasicPropertyInfo struct {
 		Rating string `xml:"Rating,attr"`
 		Text   string `xml:"Text"`
 	} `xml:"Property"`
-	PropOptInfo PropertyOptionInfo `xml:"PropertyOptionInfo"`
-	RateRange   struct {
+	PropertyOptionInfo PropertyOptionInfo `xml:"PropertyOptionInfo"`
+	PropertyTypeInfo   PropertyTypeInfo   `xml:"PropertyTypeInfo"`
+	SpecialOffers      struct {
+		Ind bool `xml:"Ind,attr"`
+	} `xml:"SpecialOffers"`
+	VendorMessages VendorMessages
+	RateRange      struct {
 		CurrencyCode string `xml:"CurrencyCode,attr"`
 		Max          string `xml:"Max,attr"`
 		Min          string `xml:"Min,attr"`
 	} `xml:"RateRange"`
-	RoomRate      RoomRate
-	SpecialOffers struct {
-		Ind bool `xml:"Ind,attr"`
-	} `xml:"SpecialOffers"`
+	RoomRateAvail RoomRate //hotel avail
+}
+type Charge struct {
+	//XMLName     xml.Name `xml:"Charges"`
+	Crib        string `xml:"Crib,attr"`
+	ExtraPerson string `xml:"ExtraPerson,attr"`
+}
+
+type AdditionalGuestAmount struct {
+	XMLName        xml.Name `xml:"AdditionalGuestAmount"`
+	MaxExtraPerson int      `xml:"MaxExtraPersonsAllowed,attr"`
+	NumCribs       int      `xml:"NumCribs,attr"`
+	Charges        []Charge `xml:"Charges"`
+}
+
+type TotalSurcharges struct {
+	XMLName xml.Name `xml:"TotalSurcharges"`
+	Amount  string   `xml:"Amount,attr"`
+}
+type TotalTaxes struct {
+	XMLName xml.Name `xml:"TotalTaxes"`
+	Amount  string   `xml:"Amount,attr"`
+}
+
+type HotelPricing struct {
+	XMLName         xml.Name `xml:"HotelTotalPricing"`
+	Amount          string   `xml:"Amount,attr"`
+	Disclaimer      string   `xml:"Disclaimer"`
+	TotalSurcharges TotalSurcharges
+	TotalTaxes      TotalTaxes
+}
+
+type Rate struct {
+	XMLName                xml.Name                `xml:"Rate"`
+	Amount                 string                  `xml:"Amount,attr"`
+	ChangeIndicator        string                  `xml:"ChangeIndicator,attr"`
+	CurrencyCode           string                  `xml:"CurrencyCode,attr"`
+	HRD_RequiredForSell    string                  `xml:"HRD_RequiredForSell,attr"`
+	PackageIndicator       string                  `xml:"PackageIndicator,attr"`
+	RateConversionInd      string                  `xml:"RateConversionInd,attr"`
+	ReturnOfRateInd        string                  `xml:"ReturnOfRateInd,attr"`
+	RoomOnRequest          string                  `xml:"RoomOnRequest,attr"`
+	AdditionalGuestAmounts []AdditionalGuestAmount `xml:"AdditionalGuestAmounts>AdditionalGuestAmount"`
+	HotelPricing           HotelPricing
+}
+
+type RoomRate struct {
+	XMLName            xml.Name `xml:"RoomRate"`
+	DirectConnect      string   `xml:"RDirectConnect,attr"`
+	GuaranteeSurcharge string   `xml:"GuaranteeSurchargeRequired,attr"`
+	GuaranteedRate     string   `xml:"GuaranteedRateProgram,attr"`
+	IATA_Character     string   `xml:"IATA_CharacteristicIdentification,attr"`
+	IATA_Product       string   `xml:"IATA_ProductIdentification,attr"`
+	LowInventory       string   `xml:"LowInventoryThreshold,attr"`
+	RateLevelCode      string   `xml:"RateLevelCode,attr"`
+	RPH                int      `xml:"RPH,attr"`
+	RateChangeInd      string   `xml:"RateChangeInd,attr"`
+	RateConversionInd  string   `xml:"RateConversionInd,attr"`
+	SpecialOffer       string   `xml:"SpecialOffer,attr"`
+	Rates              []Rate   `xml:"Rates>Rate"`
+	AdditionalInfo     struct {
+		CancelPolicy struct {
+			Numeric int    `xml:"Numeric,attr"` //string? 001 versus 1
+			Option  string `xml:"Option,attr"`
+		} `xml:"CancelPolicy"`
+		Text []string `xml:"Text"`
+	} `xml:"AdditionalInfo"`
+	HotelRateCode string `xml:"HotelRateCode"`
+}
+
+type VendorMessages struct {
+	XMLName              xml.Name             `xml:"VendorMessages"`
+	Attractions          Attractions          `xml:"Attractions"`
+	Awards               Awards               `xml:"Awards"`
+	Cancellation         Cancellation         `xml:"Cancellation"`
+	Deposit              Deposit              `xml:"Deposit"`
+	Description          Description          `xnl:"Description"`
+	Dining               Dining               `xml:"Dining"`
+	Directions           Directions           `xml:"Directions"`
+	Facilities           Facilities           `xml:"Facilities"`
+	Guarantee            Guarantee            `xml:"Guarantee"`
+	Location             Location             `xml:"Location"`
+	MarketingInformation MarketingInformation `xml:"MarketingInformation"`
+	MiscServices         MiscServices         `xml:"MiscServices"`
+	Policies             Policies             `xml:"Policies"`
+	Recreation           Recreation           `xml:"Recreation"`
+	Rooms                Rooms                `xml:"Rooms"`
+	Safety               Safety               `xml:"Safety"`
+	Services             Services             `xml:"Services"`
+	Transportation       Transportation       `xml:"Transportation"`
+}
+
+type Transportation struct {
+	Text []string `xml:"Text"`
+}
+type Services struct {
+	Text []string `xml:"Text"`
+}
+type Safety struct {
+	Text []string `xml:"Text"`
+}
+type Rooms struct {
+	Text []string `xml:"Text"`
+}
+type Recreation struct {
+	Text []string `xml:"Text"`
+}
+type Policies struct {
+	Text []string `xml:"Text"`
+}
+type MiscServices struct {
+	Text []string `xml:"Text"`
+}
+type MarketingInformation struct {
+	Text []string `xml:"Text"`
+}
+type Location struct {
+	Text []string `xml:"Text"`
+}
+type Guarantee struct {
+	Text []string `xml:"Text"`
+}
+type Facilities struct {
+	Text []string `xml:"Text"`
+}
+type Directions struct {
+	Text []string `xml:"Text"`
+}
+type Dining struct {
+	Text []string `xml:"Text"`
+}
+type Description struct {
+	Text []string `xml:"Text"`
+}
+type Deposit struct {
+	Text []string `xml:"Text"`
+}
+type Cancellation struct {
+	Text []string `xml:"Text"`
+}
+type Awards struct {
+	Text []string `xml:"Text"`
+}
+type Attractions struct {
+	Text []string `xml:"Text"`
 }
 
 type IndexD struct {
@@ -55,17 +201,6 @@ type IndexD struct {
 	LocationCode       string   `xml:"LocationCode,attr"`
 	Point              string   `xml:"Point,attr"`
 	TransportationCode string   `xml:"TransportationCode,attr"`
-}
-
-type RoomRate struct {
-	XMLName        xml.Name `xml:"RoomRate"`
-	RateLevelCode  string   `xml:"RateLevelCode,attr"`
-	AdditionalInfo struct {
-		CancelPolicy struct {
-			Numeric int `xml:"Numeric,attr"` //string? 001 versus 1
-		} `xml:"CancelPolicy"`
-	} `xml:"AdditionalInfo"`
-	HotelRateCode string `xml:"HotelRateCode"`
 }
 
 type DirectConnect struct {
@@ -117,6 +252,48 @@ type SystemResults struct {
 type HostCommand struct {
 	LNIATA  string `xml:"LNIATA,attr,omitempty"`
 	Cryptic string `xml:",chardata"`
+}
+
+type PropertyTypeInfo struct {
+	AllInclusive struct {
+		Ind bool `xml:"Ind,attr"`
+	} `xml:"AllInclusive"`
+	Apartments struct {
+		Ind bool `xml:"Ind,attr"`
+	} `xml:"Apartments"`
+	BedBreakfast struct {
+		Ind bool `xml:"Ind,attr"`
+	} `xml:"BedBreakfast"`
+	Castle struct {
+		Ind bool `xml:"Ind,attr"`
+	} `xml:"Castle"`
+	Conventions struct {
+		Ind bool `xml:"Ind,attr"`
+	} `xml:"Conventions"`
+	Economy struct {
+		Ind bool `xml:"Ind,attr"`
+	} `xml:"Economy"`
+	ExtendedStay struct {
+		Ind bool `xml:"Ind,attr"`
+	} `xml:"ExtendedStay"`
+	Farm struct {
+		Ind bool `xml:"Ind,attr"`
+	} `xml:"Farm"`
+	Luxury struct {
+		Ind bool `xml:"Ind,attr"`
+	} `xml:"Luxury"`
+	Moderate struct {
+		Ind bool `xml:"Ind,attr"`
+	} `xml:"Moderate"`
+	Motel struct {
+		Ind bool `xml:"Ind,attr"`
+	} `xml:"Motel"`
+	Resort struct {
+		Ind bool `xml:"Ind,attr"`
+	} `xml:"Resort"`
+	Suites struct {
+		Ind bool `xml:"Ind,attr"`
+	} `xml:"Suites"`
 }
 
 type PropertyOptionInfo struct {
