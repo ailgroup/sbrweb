@@ -1,4 +1,4 @@
-package hotel
+package hotelws
 
 import (
 	"encoding/xml"

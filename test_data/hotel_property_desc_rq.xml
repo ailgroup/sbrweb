@@ -6,24 +6,24 @@
     <soap-env:Header>
         <eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0">
             <eb:From>
-                <eb:PartyId type="urn:x12.org:IO5:01">www.rentsomewheels.com</eb:PartyId>
+                <eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId>
             </eb:From>
             <eb:To>
                 <eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId>
             </eb:To>
-            <eb:CPAId>DG7F</eb:CPAId>
+            <eb:CPAId>7TZA</eb:CPAId>
             <eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId>
             <eb:Service eb:type="sabreXML">HotelPropertyDescription</eb:Service>
             <eb:Action>HotelPropertyDescriptionLLSRQ</eb:Action>
             <eb:MessageData>
-                <eb:MessageId>mid:20180216-07:18:42.3|14oUa</eb:MessageId>
-                <eb:Timestamp>2018-05-07T20:05:20Z</eb:Timestamp>
+                <eb:MessageId>mid:20180207-20:19:07.25|QVbg0</eb:MessageId>
+                <eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp>
             </eb:MessageData>
         </eb:MessageHeader>
         <wsse:Security 
             xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" 
             xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility">
-            <wsse:BinarySecurityToken>Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESH!ICESMSLB\/RES.LB!-3149273937205173624!1424935!0</wsse:BinarySecurityToken>
+            <wsse:BinarySecurityToken>Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken>
         </wsse:Security>
     </soap-env:Header>
     <soap-env:Body>
@@ -35,10 +35,10 @@
                 <GuestCounts Count="2"></GuestCounts>
                 <HotelSearchCriteria>
                     <Criterion>
-                        <HotelRef HotelCode="4"></HotelRef>
+                        <HotelRef HotelCode="10"></HotelRef>
                     </Criterion>
                 </HotelSearchCriteria>
-                <TimeSpan End="05-12" Start="05-11"></TimeSpan>
+                <TimeSpan End="04-05" Start="04-02"></TimeSpan>
             </AvailRequestSegment>
         </HotelPropertyDescriptionRQ>
     </soap-env:Body>

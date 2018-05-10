@@ -1,6 +1,4 @@
-/* Package hotel implements Sabre hotel searching SOAP payloads through various criterion. Many criterion exist that are not yet implemented: (Award, ContactNumbers, CommissionProgram, HotelAmenity, Package, PointOfInterest, PropertyType, RefPoint, RoomAmenity, HotelFeaturesCriterion,). To add more criterion create a criterion type (e.g, XCriterion) as well as its accomponying function to handle the data parms (e.g., XSearch).
- */
-package hotel
+package hotelws
 
 import (
 	"bytes"

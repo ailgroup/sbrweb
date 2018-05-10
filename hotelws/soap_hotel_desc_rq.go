@@ -1,4 +1,4 @@
-package hotel
+package hotelws
 
 import (
 	"bytes"
@@ -9,6 +9,12 @@ import (
 	"net/http"
 
 	"github.com/ailgroup/sbrweb"
+)
+
+var (
+	ErrPropDescCityCode  = errors.New("HotelCityCode not allowed in HotelPropertyDescription")
+	ErrPropDescLatLng    = errors.New("Latitude or Longitude not allowed in HotelPropertyDescription")
+	ErrPropDescHotelRefs = errors.New("Criterion.HotelRef cannot be greater than 1, can only search using one criterion")
 )
 
 // HotelPropDescRequest for soap package on HotelPropertyDescriptionRQ service
@@ -35,6 +41,23 @@ type HotelPropDescRQ struct {
 	Avail             AvailRequestSegment
 }
 
+// validatePropertyRequest ensures property description requests are well-formed
+func (c *HotelSearchCriteria) validatePropertyRequest() error {
+	for _, criterion := range c.Criterion.HotelRefs {
+		if len(criterion.HotelCityCode) > 0 {
+			return ErrPropDescCityCode
+		}
+		if (len(criterion.Latitude) > 0) || (len(criterion.Longitude) > 0) {
+			return ErrPropDescLatLng
+		}
+
+		if len(c.Criterion.HotelRefs) > 1 {
+			return ErrPropDescHotelRefs
+		}
+	}
+	return nil
+}
+
 // addCorporateID to the existing avail struct for a corporate customer
 func (a *HotelPropDescRQ) addCorporateID(cID string) {
 	a.Avail.Customer = &Customer{
@@ -51,29 +74,6 @@ func (a *HotelPropDescRQ) addCustomerID(cID string) {
 			Number: cID,
 		},
 	}
-}
-
-var (
-	ErrPropDescCityCode  = errors.New("HotelCityCode not allowed in HotelPropertyDescription")
-	ErrPropDescLatLng    = errors.New("Latitude or Longitude not allowed in HotelPropertyDescription")
-	ErrPropDescHotelRefs = errors.New("Criterion.HotelRef cannot be greater than 1, can only search using one criterion")
-)
-
-// validatePropertyRequest ensures property description requests are well-formed
-func (c *HotelSearchCriteria) validatePropertyRequest() error {
-	for _, criterion := range c.Criterion.HotelRefs {
-		if len(criterion.HotelCityCode) > 0 {
-			return ErrPropDescCityCode
-		}
-		if (len(criterion.Latitude) > 0) || (len(criterion.Longitude) > 0) {
-			return ErrPropDescLatLng
-		}
-
-		if len(c.Criterion.HotelRefs) > 1 {
-			return ErrPropDescHotelRefs
-		}
-	}
-	return nil
 }
 
 // SetHotelPropDescRqStruct hotel availability request using input parameters
@@ -168,7 +168,7 @@ type HotelPropDescResponse struct {
 	}
 }
 
-// CallHotelProp to sabre web services
+// CallHotelProperty to sabre web services
 func CallHotelProperty(serviceURL string, req HotelPropDescRequest) error {
 	byteReq, _ := xml.Marshal(req)
 	fmt.Printf("\n\nREQUEST: %s\n\n", byteReq)
