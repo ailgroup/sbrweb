@@ -43,15 +43,6 @@ type OTAHotelAvailRQ struct {
 	Avail             AvailRequestSegment
 }
 
-// AvailAvailRequestSegment holds basic hotel availability params: customer ids, guest count, hotel search criteria and arrival departure
-type AvailRequestSegment struct {
-	XMLName             xml.Name  `xml:"AvailRequestSegment"`
-	Customer            *Customer //nil pointer ignored if empty
-	GuestCounts         GuestCounts
-	HotelSearchCriteria HotelSearchCriteria
-	ArriveDepart        TimeSpan `xml:"TimeSpan"`
-}
-
 // addCorporateID to the existing avail struct for a corporate customer
 func (a *OTAHotelAvailRQ) addCorporateID(cID string) {
 	a.Avail.Customer = &Customer{

@@ -152,7 +152,7 @@ func TestPropDescCall(t *testing.T) {
 	prop, _ := SetHotelPropDescRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
 	req := BuildHotelPropDescRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, prop)
 
-	resp, err := CallHotelProperty(serverHotelPropertyDesc.URL, req)
+	resp, err := CallHotelPropDesc(serverHotelPropertyDesc.URL, req)
 	if err != nil {
 		t.Error("Error making request CallHotelProperty", err)
 	}
@@ -220,7 +220,7 @@ func TestHotelPropDescCallDown(t *testing.T) {
 	prop, _ := SetHotelPropDescRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
 	req := BuildHotelPropDescRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, prop)
 
-	resp, err := CallHotelProperty(serverHotelDown.URL, req)
+	resp, err := CallHotelPropDesc(serverHotelDown.URL, req)
 	if err == nil {
 		t.Error("Expected error making request to serverHotelDown")
 	}
@@ -244,7 +244,7 @@ func TestHotelPropDescCallBadResponseBody(t *testing.T) {
 	prop, _ := SetHotelPropDescRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
 	req := BuildHotelPropDescRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, prop)
 
-	resp, err := CallHotelProperty(serverBadBody.URL, req)
+	resp, err := CallHotelPropDesc(serverBadBody.URL, req)
 	if err == nil {
 		t.Error("Expected error making request to sserverBadBody")
 	}

@@ -1,6 +1,6 @@
-/* Package hotelws (Hotel Web Services) implements Sabre hotel searching SOAP payloads through various criterion for hotel availability as well as hotel property descriptions. Many criterion exist that are not yet implemented: (Award, ContactNumbers, CommissionProgram, HotelAmenity, Package, PointOfInterest, PropertyType, RefPoint, RoomAmenity, HotelFeaturesCriterion,). To add more criterion create a criterion type (e.g, XCriterion) as well as its accompanying function to handle the data parms (e.g., XSearch).
+/* Package hotelws (Hotel Web Services) implements Sabre SOAP hotel booking through availability, property and rate descriptions, passenger details (PNR), reservation, and transaction Web Services. It handles exclusively the XML-based Simple Object Access Protocol endpoints the Sabre supports. Look elsewhere for support of Sabre rest services.
 
-#Workflow definition from Sabre Web Services
+# Typical Workflow definition from Sabre Web Services
 	Book Hotel Reservation
 	The following workflow allows you to search and book a hotel room.
 	Steps
@@ -39,13 +39,16 @@ const (
 	latlngQueryField      = "latlng_qf"
 	hotelidQueryField     = "hotelID_qf"
 	returnHostCommand     = true
-	ErrCallHotelAvail     = "Error CallHotelAvailability"
-	ErrCallHotelPropDesc  = "Error CallHotelPropertyDescription"
+	ErrCallHotelAvail     = "Error CallHotelAvail::OTA_HotelAvailLLSRQ"
+	ErrCallHotelPropDesc  = "Error CallHotelPropDesc::HotelPropertyDescriptionLLSRQ"
+	ErrCallHotelRateDesc  = "Error CallHotelRateDesc::HotelRateDescriptionLLSRQ"
+	//ErrCallPNRDetails     = "Error CallPNRDetails::PassengerDetailsRQ" TODO in its own package
+	ErrCallHotelRes = "Error CallHotelRes::OTA_HotelResLLSRQ"
 )
 
 var (
-	ErrPropDescCityCode  = errors.New("HotelCityCode not allowed in HotelPropertyDescription")
-	ErrPropDescLatLng    = errors.New("Latitude or Longitude not allowed in HotelPropertyDescription")
+	ErrPropDescCityCode  = errors.New("HotelCityCode not allowed in HotelPropDesc")
+	ErrPropDescLatLng    = errors.New("Latitude or Longitude not allowed in HotelPropDesc")
 	ErrPropDescHotelRefs = errors.New("Criterion.HotelRef cannot be greater than 1, can only search using one criterion")
 )
 

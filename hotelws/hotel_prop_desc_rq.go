@@ -33,23 +33,6 @@ type HotelPropDescRQ struct {
 	Avail             AvailRequestSegment
 }
 
-// validatePropertyRequest ensures property description requests are well-formed
-func (c *HotelSearchCriteria) validatePropertyRequest() error {
-	for _, criterion := range c.Criterion.HotelRefs {
-		if len(criterion.HotelCityCode) > 0 {
-			return ErrPropDescCityCode
-		}
-		if (len(criterion.Latitude) > 0) || (len(criterion.Longitude) > 0) {
-			return ErrPropDescLatLng
-		}
-
-		if len(c.Criterion.HotelRefs) > 1 {
-			return ErrPropDescHotelRefs
-		}
-	}
-	return nil
-}
-
 // addCorporateID to the existing avail struct for a corporate customer
 func (a *HotelPropDescRQ) addCorporateID(cID string) {
 	a.Avail.Customer = &Customer{
@@ -162,8 +145,8 @@ type HotelPropDescResponse struct {
 	ErrorSabreXML     ErrorSabreXML
 }
 
-// CallHotelProperty to sabre web services retrieve hotel rates using HotelPropertyDescriptionLLSRQ.
-func CallHotelProperty(serviceURL string, req HotelPropDescRequest) (HotelPropDescResponse, error) {
+// CallHotelPropDesc to sabre web services retrieve hotel rates using HotelPropertyDescriptionLLSRQ.
+func CallHotelPropDesc(serviceURL string, req HotelPropDescRequest) (HotelPropDescResponse, error) {
 	propResp := HotelPropDescResponse{}
 	byteReq, _ := xml.Marshal(req)
 
