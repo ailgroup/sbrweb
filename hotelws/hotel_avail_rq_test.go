@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ailgroup/sbrweb"
+	"github.com/ailgroup/sbrweb/srvc"
 )
 
 func TestAddressSearchReturnError(t *testing.T) {
@@ -178,8 +178,8 @@ func TestSetHotelAvailRqStructMarshal(t *testing.T) {
 	avail := availBody.OTAHotelAvailRQ
 	avail.addCorporateID(sampleCID)
 
-	if avail.XMLNSXsi != sbrweb.BaseXSINamespace {
-		t.Errorf("SetHotelAvailRqStruct XMLNSXsi expect: %s, got %s", sbrweb.BaseXSINamespace, avail.XMLNSXsi)
+	if avail.XMLNSXsi != srvc.BaseXSINamespace {
+		t.Errorf("SetHotelAvailRqStruct XMLNSXsi expect: %s, got %s", srvc.BaseXSINamespace, avail.XMLNSXsi)
 	}
 	if avail.Version != hotelRQVersion {
 		t.Errorf("SetHotelAvailRqStruct Version expect: %s, got %s", hotelRQVersion, avail.Version)

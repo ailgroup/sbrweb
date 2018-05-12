@@ -42,8 +42,8 @@ const (
 	ErrCallHotelAvail     = "Error CallHotelAvail::OTA_HotelAvailLLSRQ"
 	ErrCallHotelPropDesc  = "Error CallHotelPropDesc::HotelPropertyDescriptionLLSRQ"
 	ErrCallHotelRateDesc  = "Error CallHotelRateDesc::HotelRateDescriptionLLSRQ"
+	ErrCallHotelRes       = "Error CallHotelRes::OTA_HotelResLLSRQ"
 	//ErrCallPNRDetails     = "Error CallPNRDetails::PassengerDetailsRQ" TODO in its own package
-	ErrCallHotelRes = "Error CallHotelRes::OTA_HotelResLLSRQ"
 )
 
 var (

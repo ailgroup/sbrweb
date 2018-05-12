@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ailgroup/sbrweb"
+	"github.com/ailgroup/sbrweb/srvc"
 )
 
 type AvailabilityOptions struct {
@@ -21,8 +21,8 @@ type AvailabilityOption struct {
 
 // HotelAvailRequest for soap package on OTA_HotelAvailRQ service
 type HotelAvailRequest struct {
-	sbrweb.Envelope
-	Header sbrweb.SessionHeader
+	srvc.Envelope
+	Header srvc.SessionHeader
 	Body   HotelAvailBody
 }
 
@@ -67,9 +67,9 @@ func SetHotelAvailRqStruct(guestCount int, query HotelSearchCriteria, arrive, de
 	return HotelAvailBody{
 		OTAHotelAvailRQ: OTAHotelAvailRQ{
 			Version:           hotelRQVersion,
-			XMLNS:             sbrweb.BaseWebServicesNS,
-			XMLNSXs:           sbrweb.BaseXSDNameSpace,
-			XMLNSXsi:          sbrweb.BaseXSINamespace,
+			XMLNS:             srvc.BaseWebServicesNS,
+			XMLNSXs:           srvc.BaseXSDNameSpace,
+			XMLNSXsi:          srvc.BaseXSINamespace,
 			ReturnHostCommand: returnHostCommand,
 			Avail: AvailRequestSegment{
 				GuestCounts:         GuestCounts{Count: guestCount},
@@ -86,29 +86,29 @@ func SetHotelAvailRqStruct(guestCount int, query HotelSearchCriteria, arrive, de
 // BuildHotelAvailRequest to make hotel availability request.
 func BuildHotelAvailRequest(from, pcc, binsectoken, convid, mid, time string, otaHotelAvail HotelAvailBody) HotelAvailRequest {
 	return HotelAvailRequest{
-		Envelope: sbrweb.CreateEnvelope(),
-		Header: sbrweb.SessionHeader{
-			MessageHeader: sbrweb.MessageHeader{
-				MustUnderstand: sbrweb.SabreMustUnderstand,
-				EbVersion:      sbrweb.SabreEBVersion,
-				From: sbrweb.FromElem{
-					PartyID: sbrweb.CreatePartyID(from, sbrweb.PartyIDTypeURN),
+		Envelope: srvc.CreateEnvelope(),
+		Header: srvc.SessionHeader{
+			MessageHeader: srvc.MessageHeader{
+				MustUnderstand: srvc.SabreMustUnderstand,
+				EbVersion:      srvc.SabreEBVersion,
+				From: srvc.FromElem{
+					PartyID: srvc.CreatePartyID(from, srvc.PartyIDTypeURN),
 				},
-				To: sbrweb.ToElem{
-					PartyID: sbrweb.CreatePartyID(sbrweb.SabreToBase, sbrweb.PartyIDTypeURN),
+				To: srvc.ToElem{
+					PartyID: srvc.CreatePartyID(srvc.SabreToBase, srvc.PartyIDTypeURN),
 				},
 				CPAID:          pcc,
 				ConversationID: convid,
-				Service:        sbrweb.ServiceElem{Value: "OTA_HotelAvailRQ", Type: "sabreXML"},
+				Service:        srvc.ServiceElem{Value: "OTA_HotelAvailRQ", Type: "sabreXML"},
 				Action:         "OTA_HotelAvailLLSRQ",
-				MessageData: sbrweb.MessageDataElem{
+				MessageData: srvc.MessageDataElem{
 					MessageID: mid,
 					Timestamp: time,
 				},
 			},
-			Security: sbrweb.Security{
-				XMLNSWsseBase:       sbrweb.BaseWsse,
-				XMLNSWsu:            sbrweb.BaseWsuNameSpace,
+			Security: srvc.Security{
+				XMLNSWsseBase:       srvc.BaseWsse,
+				XMLNSWsu:            srvc.BaseWsuNameSpace,
 				BinarySecurityToken: binsectoken,
 			},
 		},
@@ -133,11 +133,11 @@ type OTAHotelAvailRS struct {
 
 // HotelAvailResponse is wrapper with namespace prefix definitions for payload
 type HotelAvailResponse struct {
-	Envelope sbrweb.EnvelopeUnMarsh
-	Header   sbrweb.SessionHeaderUnmarsh
+	Envelope srvc.EnvelopeUnMarsh
+	Header   srvc.SessionHeaderUnmarsh
 	Body     struct {
 		HotelAvail OTAHotelAvailRS
-		Fault      sbrweb.SOAPFault
+		Fault      srvc.SOAPFault
 	}
 	ErrorSabreService ErrorSabreService
 	ErrorSabreXML     ErrorSabreXML

@@ -1,4 +1,4 @@
-package sbrweb
+package srvc
 
 import (
 	"bytes"

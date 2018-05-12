@@ -6,13 +6,13 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ailgroup/sbrweb"
+	"github.com/ailgroup/sbrweb/srvc"
 )
 
 // HotelRateDescRequest for soap package on HotelRateertyDescriptionRQ service
 type HotelRateDescRequest struct {
-	sbrweb.Envelope
-	Header sbrweb.SessionHeader
+	srvc.Envelope
+	Header srvc.SessionHeader
 	Body   HotelRateDescBody
 }
 
@@ -61,9 +61,9 @@ func SetHotelRateDescRqStruct(guestCount int, query HotelSearchCriteria, arrive,
 	return HotelRateDescBody{
 		HotelRateDescRQ: HotelRateDescRQ{
 			Version:           hotelRQVersion,
-			XMLNS:             sbrweb.BaseWebServicesNS,
-			XMLNSXs:           sbrweb.BaseXSDNameSpace,
-			XMLNSXsi:          sbrweb.BaseXSINamespace,
+			XMLNS:             srvc.BaseWebServicesNS,
+			XMLNSXs:           srvc.BaseXSDNameSpace,
+			XMLNSXsi:          srvc.BaseXSINamespace,
 			ReturnHostCommand: true,
 			Avail: AvailRequestSegment{
 				GuestCounts:         GuestCounts{Count: guestCount},
@@ -80,29 +80,29 @@ func SetHotelRateDescRqStruct(guestCount int, query HotelSearchCriteria, arrive,
 // BuildHotelRateDescRequest to make hotel property description request, which will have rate availability information on the response.
 func BuildHotelRateDescRequest(from, pcc, binsectoken, convid, mid, time string, propDesc HotelRateDescBody) HotelRateDescRequest {
 	return HotelRateDescRequest{
-		Envelope: sbrweb.CreateEnvelope(),
-		Header: sbrweb.SessionHeader{
-			MessageHeader: sbrweb.MessageHeader{
-				MustUnderstand: sbrweb.SabreMustUnderstand,
-				EbVersion:      sbrweb.SabreEBVersion,
-				From: sbrweb.FromElem{
-					PartyID: sbrweb.CreatePartyID(from, sbrweb.PartyIDTypeURN),
+		Envelope: srvc.CreateEnvelope(),
+		Header: srvc.SessionHeader{
+			MessageHeader: srvc.MessageHeader{
+				MustUnderstand: srvc.SabreMustUnderstand,
+				EbVersion:      srvc.SabreEBVersion,
+				From: srvc.FromElem{
+					PartyID: srvc.CreatePartyID(from, srvc.PartyIDTypeURN),
 				},
-				To: sbrweb.ToElem{
-					PartyID: sbrweb.CreatePartyID(sbrweb.SabreToBase, sbrweb.PartyIDTypeURN),
+				To: srvc.ToElem{
+					PartyID: srvc.CreatePartyID(srvc.SabreToBase, srvc.PartyIDTypeURN),
 				},
 				CPAID:          pcc,
 				ConversationID: convid,
-				Service:        sbrweb.ServiceElem{Value: "HotelRateertyDescription", Type: "sabreXML"},
+				Service:        srvc.ServiceElem{Value: "HotelRateertyDescription", Type: "sabreXML"},
 				Action:         "HotelRateertyDescriptionLLSRQ",
-				MessageData: sbrweb.MessageDataElem{
+				MessageData: srvc.MessageDataElem{
 					MessageID: mid,
 					Timestamp: time,
 				},
 			},
-			Security: sbrweb.Security{
-				XMLNSWsseBase:       sbrweb.BaseWsse,
-				XMLNSWsu:            sbrweb.BaseWsuNameSpace,
+			Security: srvc.Security{
+				XMLNSWsseBase:       srvc.BaseWsse,
+				XMLNSWsu:            srvc.BaseWsuNameSpace,
 				BinarySecurityToken: binsectoken,
 			},
 		},
@@ -124,11 +124,11 @@ type HotelRateDescriptionRS struct {
 
 // HotelAvailResponse is wrapper with namespace prefix definitions for payload
 type HotelRateDescResponse struct {
-	Envelope sbrweb.EnvelopeUnMarsh
-	Header   sbrweb.SessionHeaderUnmarsh
+	Envelope srvc.EnvelopeUnMarsh
+	Header   srvc.SessionHeaderUnmarsh
 	Body     struct {
 		HotelDesc HotelRateDescriptionRS
-		Fault     sbrweb.SOAPFault
+		Fault     srvc.SOAPFault
 	}
 	ErrorSabreService ErrorSabreService
 	ErrorSabreXML     ErrorSabreXML
