@@ -3,18 +3,10 @@ package hotelws
 import (
 	"bytes"
 	"encoding/xml"
-	"errors"
-	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/ailgroup/sbrweb"
-)
-
-var (
-	ErrPropDescCityCode  = errors.New("HotelCityCode not allowed in HotelPropertyDescription")
-	ErrPropDescLatLng    = errors.New("Latitude or Longitude not allowed in HotelPropertyDescription")
-	ErrPropDescHotelRefs = errors.New("Criterion.HotelRef cannot be greater than 1, can only search using one criterion")
 )
 
 // HotelPropDescRequest for soap package on HotelPropertyDescriptionRQ service
@@ -166,24 +158,32 @@ type HotelPropDescResponse struct {
 		HotelDesc HotelPropertyDescriptionRS
 		Fault     sbrweb.SOAPFault
 	}
+	ErrorSabreService ErrorSabreService
+	ErrorSabreXML     ErrorSabreXML
 }
 
-// CallHotelProperty to sabre web services
-func CallHotelProperty(serviceURL string, req HotelPropDescRequest) error {
+// CallHotelProperty to sabre web services retrieve hotel rates using HotelPropertyDescriptionLLSRQ.
+func CallHotelProperty(serviceURL string, req HotelPropDescRequest) (HotelPropDescResponse, error) {
+	propResp := HotelPropDescResponse{}
 	byteReq, _ := xml.Marshal(req)
-	fmt.Printf("\n\nREQUEST: %s\n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
 	if err != nil {
-		return fmt.Errorf("CallHotelAvail http.Post(). %v", err)
+		propResp.ErrorSabreService = NewErrorSabreService(err.Error(), ErrCallHotelPropDesc, BadService)
+		return propResp, propResp.ErrorSabreService
 	}
+	// parse payload body into []byte buffer from net Response.ReadCloser
+	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
 	io.Copy(bodyBuffer, resp.Body)
 	resp.Body.Close()
 
-	fmt.Printf("\n\nRESPONSE: %+v\n\n", resp)
-	fmt.Printf("\n\nTLS: %+v\n\n", resp.Body)
-	fmt.Printf("\n\nBODYbuffer: %v\n\n", bodyBuffer)
-	return nil
+	//marshal bytes sabre response body into availResp response struct
+	err = xml.Unmarshal(bodyBuffer.Bytes(), &propResp)
+	if err != nil {
+		propResp.ErrorSabreXML = NewErrorErrorSabreXML(err.Error(), ErrCallHotelPropDesc, BadParse)
+		return propResp, propResp.ErrorSabreXML
+	}
+	return propResp, nil
 }

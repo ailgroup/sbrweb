@@ -371,3 +371,46 @@ func TestHotelAvailUnmarshal(t *testing.T) {
 	//fmt.Printf("CURRENT: %+v\n", success)
 	//fmt.Printf("CURRENT: %+v\n", avail)
 }
+
+func TestHotelAvailCallByIDs(t *testing.T) {
+	q, _ := NewHotelSearchCriteria(
+		HotelRefSearch(hqids),
+	)
+	avail := SetHotelAvailRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
+	req := BuildHotelAvailRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, avail)
+	resp, err := CallHotelAvail(serverHotelAvailability.URL, req)
+	if err != nil {
+		t.Error("Error making request CallHotelAvail", err)
+	}
+	if resp.Body.Fault.String != "" {
+		t.Errorf("Body.Fault.String expect empty: '%s', got: %s", "", resp.Body.Fault.String)
+	}
+
+	for idx, o := range resp.Body.HotelAvail.AvailOpts.AvailableOptions {
+		if o.RPH != idx+1 {
+			t.Errorf("AvailableOptions %d RPH expected %d, got %d", idx, idx+1, o.RPH)
+		}
+		if o.PropertyInfo.HotelCityCode != "TUL" {
+			t.Errorf("AvailableOptions %d HotelCityCode expected %s, got %s", idx, "TUL", o.PropertyInfo.HotelCityCode)
+		}
+
+	}
+}
+
+func TestHotelAvailCallDown(t *testing.T) {
+	q, _ := NewHotelSearchCriteria(
+		HotelRefSearch(hqids),
+	)
+	avail := SetHotelAvailRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
+	req := BuildHotelAvailRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, avail)
+	resp, err := CallHotelAvail(serverHotelDown.URL, req)
+	if err == nil {
+		t.Error("Expected error making request to serverHotelDown")
+	}
+	if resp.ErrorSabreService.Code != BadService {
+		t.Errorf("Expect %d got %d", BadService, resp.ErrorSabreService.Code)
+	}
+	if resp.ErrorSabreService.AppMessage != ErrCallHotelAvail {
+		t.Errorf("Expect %s got %s", ErrCallHotelAvail, resp.ErrorSabreService.AppMessage)
+	}
+}

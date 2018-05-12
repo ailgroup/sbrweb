@@ -55,8 +55,8 @@ func TestPropDescBuildHotelPropDescMarshal(t *testing.T) {
 		t.Error("Error marshaling get hotel content", err)
 	}
 
-	if string(b) != string(sampleHotelPropRQIDs) {
-		t.Errorf("Expected marshal SOAP hotel property description for hotel ids \n sample: %s \n result: %s", string(sampleHotelPropRQIDs), string(b))
+	if string(b) != string(samplePropRQIDs) {
+		t.Errorf("Expected marshal SOAP hotel property description for hotel ids \n sample: %s \n result: %s", string(samplePropRQIDs), string(b))
 	}
 	//fmt.Printf("content marshal \n%s\n", b)
 }
@@ -79,7 +79,7 @@ func TestSetHotelPropDescRqStructCorpID(t *testing.T) {
 
 func TestPropDescUnmarshal(t *testing.T) {
 	prop := HotelPropDescResponse{}
-	err := xml.Unmarshal(samplePropDescRS, &prop)
+	err := xml.Unmarshal(sampleHotelPropDescRSgood, &prop)
 	if err != nil {
 		t.Errorf("Error unmarshaling hotel avail %s \nERROR: %v", sampleHotelAvailRSgood, err)
 	}
@@ -141,4 +141,93 @@ func TestPropDescUnmarshal(t *testing.T) {
 	}
 	//fmt.Printf("CURRENT: %+v\n", prop)
 	//fmt.Printf("RATES COUNT: %d\n", len(prop.Body.HotelDesc.RoomStay.RoomRates))
+}
+
+func TestPropDescCall(t *testing.T) {
+	var hotelid = make(HotelRefCriterion)
+	hotelid[hotelidQueryField] = []string{"10"}
+	q, _ := NewHotelSearchCriteria(
+		HotelRefSearch(hotelid),
+	)
+	prop, _ := SetHotelPropDescRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
+	req := BuildHotelPropDescRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, prop)
+
+	resp, err := CallHotelProperty(serverHotelPropertyDesc.URL, req)
+	if err != nil {
+		t.Error("Error making request CallHotelProperty", err)
+	}
+	if resp.Body.Fault.String != "" {
+		t.Errorf("Body.Fault.String expect empty: '%s', got: %s", "", resp.Body.Fault.String)
+	}
+	roomStayRates := resp.Body.HotelDesc.RoomStay.RoomRates
+	numRoomRates := len(roomStayRates)
+	if numRoomRates != 16 {
+		t.Error("Number of rates is wrong")
+	}
+
+	for idx, rr := range roomStayRates {
+		if rr.IATA_Character != iataCharSample[idx] {
+			t.Errorf("IATA_Character %d expected %s, got %s", idx, iataCharSample[idx], rr.IATA_Character)
+		}
+		if rr.GuaranteeSurcharge != "G" {
+			t.Errorf("GuaranteeSurcharge %d expected %s, got %s", idx, "G", rr.GuaranteeSurcharge)
+		}
+		cnum := rr.AdditionalInfo.CancelPolicy.Numeric
+		copt := rr.AdditionalInfo.CancelPolicy.Option
+		if cnum != 2 {
+			t.Errorf("RoomRate %d expected cancel policy numeric %d, got %d", idx, 2, cnum)
+		}
+		if copt != "D" {
+			t.Errorf("RoomRate %d expected cancel policy option %s, got %s", idx, "D", copt)
+		}
+	}
+
+	indexRoomRate := numRoomRates - 1
+	numRates := len(roomStayRates[indexRoomRate].Rates)
+	if numRates != 1 {
+		t.Error("Number of rates is wrong")
+	}
+	for _, rate := range roomStayRates[indexRoomRate].Rates {
+		if rate.Amount != "400.00" {
+			t.Errorf("Rate expected %s, got %s", "400.00", rate.Amount)
+		}
+		if rate.CurrencyCode != "SGD" {
+			t.Errorf("CurrencyCode expected %s, got %s", "SGD", rate.CurrencyCode)
+		}
+		if rate.HRD_RequiredForSell != "false" {
+			t.Errorf("CurrencyCode expected %s, got %s", "false", rate.HRD_RequiredForSell)
+		}
+
+		hprice := rate.HotelPricing
+		if hprice.Amount != "470.80" {
+			t.Errorf("HotelPricing expected %s, got %s", "470.80", hprice.Amount)
+		}
+		if hprice.TotalSurcharges.Amount != "40.00" {
+			t.Errorf("TotalSurcharges expected %s, got %s", "40.00", hprice.TotalSurcharges.Amount)
+		}
+		if hprice.TotalTaxes.Amount != "30.80" {
+			t.Errorf("TotalTaxes expected %s, got %s", "30.80", hprice.TotalTaxes.Amount)
+		}
+	}
+}
+
+func TestHotelPropDescCallDown(t *testing.T) {
+	var hotelid = make(HotelRefCriterion)
+	hotelid[hotelidQueryField] = []string{"10"}
+	q, _ := NewHotelSearchCriteria(
+		HotelRefSearch(hotelid),
+	)
+	prop, _ := SetHotelPropDescRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
+	req := BuildHotelPropDescRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, prop)
+
+	resp, err := CallHotelProperty(serverHotelDown.URL, req)
+	if err == nil {
+		t.Error("Expected error making request to serverHotelDown")
+	}
+	if resp.ErrorSabreService.Code != BadService {
+		t.Errorf("Expect %d got %d", BadService, resp.ErrorSabreService.Code)
+	}
+	if resp.ErrorSabreService.AppMessage != ErrCallHotelPropDesc {
+		t.Errorf("Expect %s got %s", ErrCallHotelPropDesc, resp.ErrorSabreService.AppMessage)
+	}
 }

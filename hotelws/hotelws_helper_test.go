@@ -1,7 +1,32 @@
 package hotelws
 
-// init data chunks
+import (
+	"net/http"
+	"net/http/httptest"
+)
+
+/*
+TESTING NOTES:
+	- all data variables use for mocking tests are downcase and start with sample*
+	- functions used in a test have their tests come first
+	- Benchmarks come after tests using testable functionality
+	- Benchmarks have same name as test that is benchmarked (sans Test/Benchmark prefix)
+*/
+
+var (
+	//serverHotelDown server mocks unavailable service
+	serverHotelDown = &httptest.Server{}
+	//serverHotelAvailability server for retrieve hotel availability using OTA_HotelAvailLLSRQ.
+	serverHotelAvailability = &httptest.Server{}
+	//serverHotelPropertyDesc server for retrieve hotel rates using HotelPropertyDescriptionLLSRQ.
+	serverHotelPropertyDesc = &httptest.Server{}
+	//serverHotelRateDesc server for retrieve hotel rules and policies using HotelRateDescriptionLLSRQ.
+	//serverHotelRateDesc = &httptest.Server{}
+)
+
+//Initialize Mock Sabre Web Servers and test data
 func init() {
+	// init data chunks...
 	hqcity[cityQueryField] = sampleHotelCityCode
 	hqids[hotelidQueryField] = sampleHotelCode
 	hqltln[latlngQueryField] = sampleLatLang
@@ -10,6 +35,45 @@ func init() {
 	addr[cityQueryField] = sampleCity
 	addr[postalQueryField] = samplePostal
 	addr[countryCodeQueryField] = sampleCountryCode
+
+	// init test servers...
+	serverHotelDown = httptest.NewServer(
+		http.HandlerFunc(
+			func(rs http.ResponseWriter, rq *http.Request) {
+				rs.Write(sampleHotelAvailRSgood)
+			},
+		),
+	)
+	defer func() { serverHotelDown.Close() }()
+
+	serverHotelAvailability = httptest.NewServer(
+		http.HandlerFunc(
+			func(rs http.ResponseWriter, rq *http.Request) {
+				rs.Write(sampleHotelAvailRSgood)
+			},
+		),
+	)
+	//defer func() { serverHotelAvailability.Close() }()
+
+	serverHotelPropertyDesc = httptest.NewServer(
+		http.HandlerFunc(
+			func(rs http.ResponseWriter, rq *http.Request) {
+				rs.Write(sampleHotelPropDescRSgood)
+			},
+		),
+	)
+	//defer func() { serverHotelPropertyDesc.Close() }()
+
+	/*
+		serverHotelRateDesc = httptest.NewServer(
+			http.HandlerFunc(
+				func(rs http.ResponseWriter, rq *http.Request) {
+					rs.Write(sampleSessionCloseRespSuccess)
+				},
+			),
+		)
+		//defer func() { serverHotelRateDesc.Close() }()
+	*/
 }
 
 // data chunks for testing
@@ -39,6 +103,8 @@ var (
 	samplemid           = "mid:20180207-20:19:07.25|QVbg0"
 	sampletime          = "2018-02-16T07:18:42Z"
 )
+
+var iataCharSample = []string{"P1KRAC", "D1KRAC", "L1KRAC", "P1KBRF", "T1KRAC", "P2TRAC", "K1KRAC", "L2TRAC", "E2DRAC", "E1KRAC", "D2DRAC", "C1KRAC", "U1QRAC", "A2TRAC", "N1KRAC", "N1QRAC"}
 
 // table test for room rates on property description
 var rateSamples = []struct {
@@ -96,7 +162,7 @@ var rateSamples = []struct {
 
 // XML blobs for testing
 var (
-	sampleHotelPropRQIDs = []byte(`<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" xmlns:xlink="http://www.w3.org/2001/xlink" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap-env:Header><eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:From><eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId></eb:From><eb:To><eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="sabreXML">HotelPropertyDescription</eb:Service><eb:Action>HotelPropertyDescriptionLLSRQ</eb:Action><eb:MessageData><eb:MessageId>mid:20180207-20:19:07.25|QVbg0</eb:MessageId><eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility"><wsse:BinarySecurityToken>Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><HotelPropertyDescriptionRQ Version="2.3.0" xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ReturnHostCommand="true"><AvailRequestSegment><GuestCounts Count="2"></GuestCounts><HotelSearchCriteria><Criterion><HotelRef HotelCode="10"></HotelRef></Criterion></HotelSearchCriteria><TimeSpan End="04-05" Start="04-02"></TimeSpan></AvailRequestSegment></HotelPropertyDescriptionRQ></soap-env:Body></soap-env:Envelope>`)
+	samplePropRQIDs = []byte(`<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" xmlns:xlink="http://www.w3.org/2001/xlink" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap-env:Header><eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:From><eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId></eb:From><eb:To><eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="sabreXML">HotelPropertyDescription</eb:Service><eb:Action>HotelPropertyDescriptionLLSRQ</eb:Action><eb:MessageData><eb:MessageId>mid:20180207-20:19:07.25|QVbg0</eb:MessageId><eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility"><wsse:BinarySecurityToken>Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><HotelPropertyDescriptionRQ Version="2.3.0" xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ReturnHostCommand="true"><AvailRequestSegment><GuestCounts Count="2"></GuestCounts><HotelSearchCriteria><Criterion><HotelRef HotelCode="10"></HotelRef></Criterion></HotelSearchCriteria><TimeSpan End="04-05" Start="04-02"></TimeSpan></AvailRequestSegment></HotelPropertyDescriptionRQ></soap-env:Body></soap-env:Envelope>`)
 
 	sampleAvailRQHotelIDSCoprID = []byte(`<OTA_HotelAvailRQ Version="2.3.0" xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ReturnHostCommand="true"><AvailRequestSegment><Customer><Corporate><ID>12345</ID></Corporate></Customer><GuestCounts Count="4"></GuestCounts><HotelSearchCriteria><Criterion><HotelRef HotelCode="0012"></HotelRef><HotelRef HotelCode="19876"></HotelRef><HotelRef HotelCode="1109"></HotelRef><HotelRef HotelCode="445098"></HotelRef><HotelRef HotelCode="000034"></HotelRef></Criterion></HotelSearchCriteria><TimeSpan End="04-05" Start="04-02"></TimeSpan></AvailRequestSegment></OTA_HotelAvailRQ>`)
 
@@ -209,7 +275,7 @@ var (
 		 </AvailabilityOptions>
 		</OTA_HotelAvailRS></soap-env:Body></soap-env:Envelope>`)
 
-	samplePropDescRS = []byte(`<?xml version="1.0" encoding="UTF-8"?>
+	sampleHotelPropDescRSgood = []byte(`<?xml version="1.0" encoding="UTF-8"?>
 	<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><soap-env:Header><eb:MessageHeader xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" eb:version="1.0" soap-env:mustUnderstand="1"><eb:From><eb:PartyId eb:type="URI">webservices.sabre.com</eb:PartyId></eb:From><eb:To><eb:PartyId eb:type="URI">www.z.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="sabreXML">HotelPropertyDescription</eb:Service><eb:Action>HotelPropertyDescriptionLLSRS</eb:Action><eb:MessageData><eb:MessageId>775733075202330295</eb:MessageId><eb:Timestamp>2018-05-08T02:05:24</eb:Timestamp><eb:RefToMessageId>mid:20180207-20:19:07.25|QVbg0</eb:RefToMessageId></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext"><wsse:BinarySecurityToken valueType="String" EncodingType="wsse:Base64Binary">Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><HotelPropertyDescriptionRS xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:stl="http://services.sabre.com/STL/v01" Version="2.3.0">
 			 <stl:ApplicationResults status="Complete">
 			  <stl:Success timeStamp="2018-02-16T07:18:42Z">

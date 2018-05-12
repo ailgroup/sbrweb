@@ -3,7 +3,6 @@ package hotelws
 import (
 	"bytes"
 	"encoding/xml"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -149,32 +148,33 @@ type HotelAvailResponse struct {
 		HotelAvail OTAHotelAvailRS
 		Fault      sbrweb.SOAPFault
 	}
+	ErrorSabreService ErrorSabreService
+	ErrorSabreXML     ErrorSabreXML
 }
 
-// CallSessionValidate to sabre web services
+// CallHotelAvail to sabre web services
 func CallHotelAvail(serviceURL string, req HotelAvailRequest) (HotelAvailResponse, error) {
 	availResp := HotelAvailResponse{}
 	//construct payload
 	byteReq, _ := xml.Marshal(req)
-	fmt.Printf("\n\nREQUEST: %s\n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
 	if err != nil {
-		return availResp, fmt.Errorf("CallHotelAvail http.Post(). %v", err)
+		availResp.ErrorSabreService = NewErrorSabreService(err.Error(), ErrCallHotelAvail, BadService)
+		return availResp, availResp.ErrorSabreService
 	}
-
 	// parse payload body into []byte buffer from net Response.ReadCloser
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
 	io.Copy(bodyBuffer, resp.Body)
-	fmt.Printf("\n\nBODYbuffer: %v\n\n", bodyBuffer)
 	resp.Body.Close()
 
 	//marshal bytes sabre response body into availResp response struct
 	err = xml.Unmarshal(bodyBuffer.Bytes(), &availResp)
 	if err != nil {
-		return availResp, fmt.Errorf("CallHotelAvail Unmarshal(bytes, &availResp): %v", err)
+		availResp.ErrorSabreXML = NewErrorErrorSabreXML(err.Error(), ErrCallHotelAvail, BadParse)
+		return availResp, availResp.ErrorSabreXML
 	}
 	return availResp, nil
 }
