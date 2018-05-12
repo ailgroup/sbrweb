@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	Unknown uint8 = iota
+	Unknown uint8 = 1 << (2 * iota)
 	BadService
 	BadParse
 )

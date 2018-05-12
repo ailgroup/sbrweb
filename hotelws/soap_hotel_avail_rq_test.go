@@ -407,10 +407,34 @@ func TestHotelAvailCallDown(t *testing.T) {
 	if err == nil {
 		t.Error("Expected error making request to serverHotelDown")
 	}
+	if err.Error() != resp.ErrorSabreService.ErrMessage {
+		t.Error("Error() message should match resp.ErrorSabreService.ErrMessage")
+	}
 	if resp.ErrorSabreService.Code != BadService {
 		t.Errorf("Expect %d got %d", BadService, resp.ErrorSabreService.Code)
 	}
 	if resp.ErrorSabreService.AppMessage != ErrCallHotelAvail {
 		t.Errorf("Expect %s got %s", ErrCallHotelAvail, resp.ErrorSabreService.AppMessage)
+	}
+}
+
+func TestHotelAvailCallBadResponseBody(t *testing.T) {
+	q, _ := NewHotelSearchCriteria(
+		HotelRefSearch(hqids),
+	)
+	avail := SetHotelAvailRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
+	req := BuildHotelAvailRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, avail)
+	resp, err := CallHotelAvail(serverBadBody.URL, req)
+	if err == nil {
+		t.Error("Expected error making request to sserverBadBody")
+	}
+	if err.Error() != resp.ErrorSabreXML.ErrMessage {
+		t.Error("Error() message should match resp.ErrorSabreService.ErrMessage")
+	}
+	if resp.ErrorSabreXML.Code != BadParse {
+		t.Errorf("Expect %d got %d", BadParse, resp.ErrorSabreXML.Code)
+	}
+	if resp.ErrorSabreXML.AppMessage != ErrCallHotelAvail {
+		t.Errorf("Expect %s got %s", ErrCallHotelAvail, resp.ErrorSabreXML.AppMessage)
 	}
 }

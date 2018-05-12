@@ -224,10 +224,37 @@ func TestHotelPropDescCallDown(t *testing.T) {
 	if err == nil {
 		t.Error("Expected error making request to serverHotelDown")
 	}
+	if err.Error() != resp.ErrorSabreService.ErrMessage {
+		t.Error("Error() message should match resp.ErrorSabreService.ErrMessage")
+	}
 	if resp.ErrorSabreService.Code != BadService {
 		t.Errorf("Expect %d got %d", BadService, resp.ErrorSabreService.Code)
 	}
 	if resp.ErrorSabreService.AppMessage != ErrCallHotelPropDesc {
 		t.Errorf("Expect %s got %s", ErrCallHotelPropDesc, resp.ErrorSabreService.AppMessage)
+	}
+}
+
+func TestHotelPropDescCallBadResponseBody(t *testing.T) {
+	var hotelid = make(HotelRefCriterion)
+	hotelid[hotelidQueryField] = []string{"10"}
+	q, _ := NewHotelSearchCriteria(
+		HotelRefSearch(hotelid),
+	)
+	prop, _ := SetHotelPropDescRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
+	req := BuildHotelPropDescRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, prop)
+
+	resp, err := CallHotelProperty(serverBadBody.URL, req)
+	if err == nil {
+		t.Error("Expected error making request to sserverBadBody")
+	}
+	if err.Error() != resp.ErrorSabreXML.ErrMessage {
+		t.Error("Error() message should match resp.ErrorSabreService.ErrMessage")
+	}
+	if resp.ErrorSabreXML.Code != BadParse {
+		t.Errorf("Expect %d got %d", BadParse, resp.ErrorSabreXML.Code)
+	}
+	if resp.ErrorSabreXML.AppMessage != ErrCallHotelPropDesc {
+		t.Errorf("Expect %s got %s", ErrCallHotelPropDesc, resp.ErrorSabreXML.AppMessage)
 	}
 }

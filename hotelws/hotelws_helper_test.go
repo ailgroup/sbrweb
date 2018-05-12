@@ -16,6 +16,8 @@ TESTING NOTES:
 var (
 	//serverHotelDown server mocks unavailable service
 	serverHotelDown = &httptest.Server{}
+	//serverBadBody mocks a server that returns malformed body
+	serverBadBody = &httptest.Server{}
 	//serverHotelAvailability server for retrieve hotel availability using OTA_HotelAvailLLSRQ.
 	serverHotelAvailability = &httptest.Server{}
 	//serverHotelPropertyDesc server for retrieve hotel rates using HotelPropertyDescriptionLLSRQ.
@@ -45,6 +47,17 @@ func init() {
 		),
 	)
 	defer func() { serverHotelDown.Close() }()
+
+	serverBadBody = httptest.NewServer(
+		http.HandlerFunc(
+			func(rs http.ResponseWriter, rq *http.Request) {
+				//rs.Header()
+				//rs.WriteHeader(500)
+				//rs.Write(sampleBadBody)
+				rs.Write([]byte(`<!# SOME BAD--XML_/__.*__\\fhji(*&^%^%<Boo<HA/>/>$%^&Y*(J)OPKL:/>`))
+			},
+		),
+	)
 
 	serverHotelAvailability = httptest.NewServer(
 		http.HandlerFunc(
