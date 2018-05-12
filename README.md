@@ -1,5 +1,25 @@
-#srbweb
-Connects to sabre web services endpoints, both SOAP and REST.
+#sbrweb
+Connects to Sabre Web services endpoints, both SOAP and REST.
+
+## Big'n
+This is a large project with organized subprojects. To get a sense of the number of lines of code, tests, and other files you can `wc -l 'find sbrweb/hotelws -type f'`. 
+
+1. `srvc` (service)
+  * Basic SOAP
+    * envelope
+    * message header
+    * security
+    * soap fault
+  * Sessions
+    * create, close, validate
+    * buffered queue as session pool
+1. `hotelws` (hotel web service)
+  * Availability, Property and Rate descriptions, Reservation services.
+  * common struct/xml building and parsing
+  * common logic for dealing with data formats like timestamps and cancellation policies
+1. `pnr` (passenger name record)
+1. `hotelrest` (hotel rest)
+
 
 ## Tests and Benchmarks
 Examples for running coverage reports as well as the tests themselves.
