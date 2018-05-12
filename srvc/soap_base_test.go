@@ -1,4 +1,4 @@
-package sbrweb
+package srvc
 
 /*
 TESTING NOTES:
@@ -46,9 +46,9 @@ var (
 	sampleSessionInvalidTokenFaultCode  = "soap-env:Client.InvalidSecurityToken"
 	sampleSessionInvalidTokenStackTrace = "com.sabre.universalservices.base.session.SessionException: errors.session.USG_INVALID_SECURITY_TOKEN"
 
-	sampleEnvelope = []byte(`<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsd="http://www.w3.org/1999/XMLSchema"></soap-env:Envelope>`)
+	sampleEnvelope = []byte(`<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" xmlns:xlink="http://www.w3.org/2001/xlink" xmlns:xsd="http://www.w3.org/2001/XMLSchema"></soap-env:Envelope>`)
 
-	sampleMessageHeader = []byte(`<eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:From><eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId></eb:From><eb:To><eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="OTA">SessionCreateRQ</eb:Service><eb:Action>SessionCreateRQ</eb:Action><eb:MessageData><eb:MessageId>mid:20180216-07:18:42.3|14oUa</eb:MessageId><eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp><eb:TimeToLive></eb:TimeToLive></eb:MessageData></eb:MessageHeader>`)
+	sampleMessageHeader = []byte(`<eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:From><eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId></eb:From><eb:To><eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="OTA">SessionCreateRQ</eb:Service><eb:Action>SessionCreateRQ</eb:Action><eb:MessageData><eb:MessageId>mid:20180216-07:18:42.3|14oUa</eb:MessageId><eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp></eb:MessageData></eb:MessageHeader>`)
 
 	sampleSecurityRequest = []byte(`<wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility"><wsse:UsernameToken><wsse:Username>773400</wsse:Username><wsse:Password>PASSWORD_GOES_HER</wsse:Password><Organization>7TZA</Organization><Domain>DEFAULT</Domain></wsse:UsernameToken></wsse:Security>`)
 
@@ -58,32 +58,32 @@ var (
 
 	sampleSecurityResponse = []byte(`<wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext"><wsse:BinarySecurityToken valueType="String" EncodingType="wsse:Base64Binary">Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken></wsse:Security>`)
 
-	sampleSessionRQHeader = []byte(`<soap-env:Header><eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:From><eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId></eb:From><eb:To><eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>www.z.com</eb:ConversationId><eb:Service eb:type="OTA">SessionCreateRQ</eb:Service><eb:Action>SessionCreateRQ</eb:Action><eb:MessageData><eb:MessageId>mid:20180216-07:18:42.3|14oUa</eb:MessageId><eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp><eb:TimeToLive></eb:TimeToLive></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility"><wsse:UsernameToken><wsse:Username>773400</wsse:Username><wsse:Password>PASSWORD_GOES_HER</wsse:Password><Organization>7TZA</Organization><Domain>DEFAULT</Domain></wsse:UsernameToken></wsse:Security></soap-env:Header>`)
+	sampleSessionRQHeader = []byte(`<soap-env:Header><eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:From><eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId></eb:From><eb:To><eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>www.z.com</eb:ConversationId><eb:Service eb:type="OTA">SessionCreateRQ</eb:Service><eb:Action>SessionCreateRQ</eb:Action><eb:MessageData><eb:MessageId>mid:20180216-07:18:42.3|14oUa</eb:MessageId><eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility"><wsse:UsernameToken><wsse:Username>773400</wsse:Username><wsse:Password>PASSWORD_GOES_HER</wsse:Password><Organization>7TZA</Organization><Domain>DEFAULT</Domain></wsse:UsernameToken></wsse:Security></soap-env:Header>`)
 
 	sampleSessionCreateRQBody = []byte(`<soap-env:Body><eb:Manifest soap-env:mustUnderstand="" eb:version=""><eb:Reference xlink:href="" xlink:type=""></eb:Reference></eb:Manifest><ns:SessionCreateRQ xmlns:ns=""><POS><Source PseudoCityCode=""></Source></POS></ns:SessionCreateRQ></soap-env:Body>`)
 
-	sampleSessionEnvelope = []byte(`<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsd="http://www.w3.org/1999/XMLSchema"><soap-env:Header><eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:From><eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId></eb:From><eb:To><eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>www.z.com</eb:ConversationId><eb:Service eb:type="OTA">SessionCreateRQ</eb:Service><eb:Action>SessionCreateRQ</eb:Action><eb:MessageData><eb:MessageId>mid:20180216-07:18:42.3|14oUa</eb:MessageId><eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp><eb:TimeToLive></eb:TimeToLive></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility"><wsse:UsernameToken><wsse:Username>773400</wsse:Username><wsse:Password>PASSWORD_GOES_HER</wsse:Password><Organization>7TZA</Organization><Domain>DEFAULT</Domain></wsse:UsernameToken></wsse:Security></soap-env:Header><soap-env:Body><eb:Manifest soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:Reference xlink:href="cid:rootelement" xlink:type="simple"></eb:Reference></eb:Manifest><ns:SessionCreateRQ xmlns:ns="http://www.opentravel.org/OTA/2002/11"><POS><Source PseudoCityCode="7TZA"></Source></POS></ns:SessionCreateRQ></soap-env:Body></soap-env:Envelope>`)
+	sampleSessionEnvelope = []byte(`<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" xmlns:xlink="http://www.w3.org/2001/xlink" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap-env:Header><eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:From><eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId></eb:From><eb:To><eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>www.z.com</eb:ConversationId><eb:Service eb:type="OTA">SessionCreateRQ</eb:Service><eb:Action>SessionCreateRQ</eb:Action><eb:MessageData><eb:MessageId>mid:20180216-07:18:42.3|14oUa</eb:MessageId><eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility"><wsse:UsernameToken><wsse:Username>773400</wsse:Username><wsse:Password>PASSWORD_GOES_HER</wsse:Password><Organization>7TZA</Organization><Domain>DEFAULT</Domain></wsse:UsernameToken></wsse:Security></soap-env:Header><soap-env:Body><eb:Manifest soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:Reference xlink:href="cid:rootelement" xlink:type="simple"></eb:Reference></eb:Manifest><ns:SessionCreateRQ xmlns:ns="http://www.opentravel.org/OTA/2002/11"><POS><Source PseudoCityCode="7TZA"></Source></POS></ns:SessionCreateRQ></soap-env:Body></soap-env:Envelope>`)
 
-	sampleSessionEnvelopeWithValues = []byte(`<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsd="http://www.w3.org/1999/XMLSchema"><soap-env:Header><eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:From><eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId></eb:From><eb:To><eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="OTA">SessionCreateRQ</eb:Service><eb:Action>SessionCreateRQ</eb:Action><eb:MessageData><eb:MessageId>mid:20180216-07:18:42.3|14oUa</eb:MessageId><eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp><eb:TimeToLive></eb:TimeToLive></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility"><wsse:UsernameToken><wsse:Username>773400</wsse:Username><wsse:Password>PASSWORD_GOES_HER</wsse:Password><Organization>7TZA</Organization><Domain>DEFAULT</Domain></wsse:UsernameToken></wsse:Security></soap-env:Header><soap-env:Body><eb:Manifest soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:Reference xlink:href="cid:rootelement" xlink:type="simple"></eb:Reference></eb:Manifest><ns:SessionCreateRQ xmlns:ns="http://www.opentravel.org/OTA/2002/11"><POS><Source PseudoCityCode="7TZA"></Source></POS></ns:SessionCreateRQ></soap-env:Body></soap-env:Envelope>`)
+	sampleSessionEnvelopeWithValues = []byte(`<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" xmlns:xlink="http://www.w3.org/2001/xlink" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap-env:Header><eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:From><eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId></eb:From><eb:To><eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="OTA">SessionCreateRQ</eb:Service><eb:Action>SessionCreateRQ</eb:Action><eb:MessageData><eb:MessageId>mid:20180216-07:18:42.3|14oUa</eb:MessageId><eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility"><wsse:UsernameToken><wsse:Username>773400</wsse:Username><wsse:Password>PASSWORD_GOES_HER</wsse:Password><Organization>7TZA</Organization><Domain>DEFAULT</Domain></wsse:UsernameToken></wsse:Security></soap-env:Header><soap-env:Body><eb:Manifest soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:Reference xlink:href="cid:rootelement" xlink:type="simple"></eb:Reference></eb:Manifest><ns:SessionCreateRQ xmlns:ns="http://www.opentravel.org/OTA/2002/11"><POS><Source PseudoCityCode="7TZA"></Source></POS></ns:SessionCreateRQ></soap-env:Body></soap-env:Envelope>`)
 
 	sampleSessionSuccessResponse = []byte(`<?xml version="1.0" encoding="UTF-8"?>
-	<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><soap-env:Header><eb:MessageHeader xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" eb:version="2.0.0" soap-env:mustUnderstand="1"><eb:From><eb:PartyId eb:type="URI">webservices.sabre.com</eb:PartyId></eb:From><eb:To><eb:PartyId eb:type="URI">www.z.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="sabreXML">Session</eb:Service><eb:Action>SessionCreateRS</eb:Action><eb:MessageData><eb:MessageId>4379957601383660213</eb:MessageId><eb:Timestamp>2018-02-18T16:42:18</eb:Timestamp><eb:RefToMessageId>mid:20180216-07:18:42.3|14oUa</eb:RefToMessageId><eb:TimeToLive></eb:TimeToLive></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext"><wsse:BinarySecurityToken valueType="String" EncodingType="wsse:Base64Binary">Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><SessionCreateRS xmlns="http://www.opentravel.org/OTA/2002/11" version="1" status="Approved">	<ConversationId>fds8789h|dev@z.com</ConversationId></SessionCreateRS></soap-env:Body></soap-env:Envelope>`)
+	<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><soap-env:Header><eb:MessageHeader xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" eb:version="2.0.0" soap-env:mustUnderstand="1"><eb:From><eb:PartyId eb:type="URI">webservices.sabre.com</eb:PartyId></eb:From><eb:To><eb:PartyId eb:type="URI">www.z.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="sabreXML">Session</eb:Service><eb:Action>SessionCreateRS</eb:Action><eb:MessageData><eb:MessageId>4379957601383660213</eb:MessageId><eb:Timestamp>2018-02-18T16:42:18</eb:Timestamp><eb:RefToMessageId>mid:20180216-07:18:42.3|14oUa</eb:RefToMessageId></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext"><wsse:BinarySecurityToken valueType="String" EncodingType="wsse:Base64Binary">Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><SessionCreateRS xmlns="http://www.opentravel.org/OTA/2002/11" version="1" status="Approved">	<ConversationId>fds8789h|dev@z.com</ConversationId></SessionCreateRS></soap-env:Body></soap-env:Envelope>`)
 
-	sampleSessionUnAuth = []byte(`<?xml version="1.0" encoding="UTF-8"?><soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><soap-env:Header><eb:MessageHeader xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" eb:version="2.0.0" soap-env:mustUnderstand="1"><eb:From><eb:PartyId eb:type="URI">webservices.sabre.com</eb:PartyId></eb:From><eb:To><eb:PartyId eb:type="URI">www.z.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service>Session</eb:Service><eb:Action>ErrorRS</eb:Action><eb:MessageData><eb:MessageId>4341295557539920551</eb:MessageId><eb:Timestamp>2018-02-18T15:29:14</eb:Timestamp><eb:RefToMessageId>mid:20180216-07:18:42.3|14oUa</eb:RefToMessageId><eb:TimeToLive></eb:TimeToLive></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" /></soap-env:Header><soap-env:Body><soap-env:Fault><faultcode>soap-env:Client.AuthenticationFailed</faultcode><faultstring>Authentication failed</faultstring><detail><StackTrace>com.sabre.universalservices.base.security.AuthenticationException: errors.authentication.USG_AUTHENTICATION_FAILED</StackTrace></detail></soap-env:Fault></soap-env:Body></soap-env:Envelope>`)
+	sampleSessionUnAuth = []byte(`<?xml version="1.0" encoding="UTF-8"?><soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><soap-env:Header><eb:MessageHeader xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" eb:version="2.0.0" soap-env:mustUnderstand="1"><eb:From><eb:PartyId eb:type="URI">webservices.sabre.com</eb:PartyId></eb:From><eb:To><eb:PartyId eb:type="URI">www.z.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service>Session</eb:Service><eb:Action>ErrorRS</eb:Action><eb:MessageData><eb:MessageId>4341295557539920551</eb:MessageId><eb:Timestamp>2018-02-18T15:29:14</eb:Timestamp><eb:RefToMessageId>mid:20180216-07:18:42.3|14oUa</eb:RefToMessageId></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" /></soap-env:Header><soap-env:Body><soap-env:Fault><faultcode>soap-env:Client.AuthenticationFailed</faultcode><faultstring>Authentication failed</faultstring><detail><StackTrace>com.sabre.universalservices.base.security.AuthenticationException: errors.authentication.USG_AUTHENTICATION_FAILED</StackTrace></detail></soap-env:Fault></soap-env:Body></soap-env:Envelope>`)
 
 	sampleSessionPoolMsgNoAuth = string([]byte(`Authentication failed-soap-env:Client.AuthenticationFailed: com.sabre.universalservices.base.security.AuthenticationException: errors.authentication.USG_AUTHENTICATION_FAILED`))
 
-	sampleSessionCloseRQ = []byte(`<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsd="http://www.w3.org/1999/XMLSchema"><soap-env:Header><eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:From><eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId></eb:From><eb:To><eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="OTA">SessionCloseRQ</eb:Service><eb:Action>SessionCloseRQ</eb:Action><eb:MessageData><eb:MessageId>mid:20180216-07:18:42.3|14oUa</eb:MessageId><eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp><eb:TimeToLive></eb:TimeToLive></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility"><wsse:BinarySecurityToken>Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><SessionCloseRQ><POS><Source PseudoCityCode="7TZA"></Source></POS></SessionCloseRQ></soap-env:Body></soap-env:Envelope>`)
+	sampleSessionCloseRQ = []byte(`<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" xmlns:xlink="http://www.w3.org/2001/xlink" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap-env:Header><eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:From><eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId></eb:From><eb:To><eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="OTA">SessionCloseRQ</eb:Service><eb:Action>SessionCloseRQ</eb:Action><eb:MessageData><eb:MessageId>mid:20180216-07:18:42.3|14oUa</eb:MessageId><eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility"><wsse:BinarySecurityToken>Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><SessionCloseRQ><POS><Source PseudoCityCode="7TZA"></Source></POS></SessionCloseRQ></soap-env:Body></soap-env:Envelope>`)
 
 	sampleSessionCloseRespSuccess = []byte(`<?xml version="1.0" encoding="UTF-8"?>
-	<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><soap-env:Header><eb:MessageHeader xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" eb:version="2.0.0" soap-env:mustUnderstand="1"><eb:From><eb:PartyId eb:type="URI">webservices.sabre.com</eb:PartyId></eb:From><eb:To><eb:PartyId eb:type="URI">www.z.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="sabreXML">Session</eb:Service><eb:Action>SessionCloseRS</eb:Action><eb:MessageData><eb:MessageId>5777927785778750193</eb:MessageId><eb:Timestamp>2018-02-18T21:49:37</eb:Timestamp><eb:RefToMessageId>mid:20180216-07:18:42.3|14oUa</eb:RefToMessageId><eb:TimeToLive></eb:TimeToLive></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext"><wsse:BinarySecurityToken valueType="String" EncodingType="wsse:Base64Binary">Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESC!ICESMSLB\/RES.LB!-3176941104583370867!441490!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><SessionCloseRS xmlns="http://www.opentravel.org/OTA/2002/11" version="1" status="Approved"/></soap-env:Body></soap-env:Envelope>`)
+	<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><soap-env:Header><eb:MessageHeader xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" eb:version="2.0.0" soap-env:mustUnderstand="1"><eb:From><eb:PartyId eb:type="URI">webservices.sabre.com</eb:PartyId></eb:From><eb:To><eb:PartyId eb:type="URI">www.z.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="sabreXML">Session</eb:Service><eb:Action>SessionCloseRS</eb:Action><eb:MessageData><eb:MessageId>5777927785778750193</eb:MessageId><eb:Timestamp>2018-02-18T21:49:37</eb:Timestamp><eb:RefToMessageId>mid:20180216-07:18:42.3|14oUa</eb:RefToMessageId></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext"><wsse:BinarySecurityToken valueType="String" EncodingType="wsse:Base64Binary">Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESC!ICESMSLB\/RES.LB!-3176941104583370867!441490!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><SessionCloseRS xmlns="http://www.opentravel.org/OTA/2002/11" version="1" status="Approved"/></soap-env:Body></soap-env:Envelope>`)
 
 	sampleSessionInvalidTokenString = string([]byte(`Invalid or Expired binary security token: Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0`))
 
 	sampleSessionCloseRespNoValidToken = []byte(`<?xml version="1.0" encoding="UTF-8"?>
 	<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><soap-env:Header><eb:MessageHeader xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" eb:version="2.0.0" soap-env:mustUnderstand="1"><eb:From><eb:PartyId eb:type="URI">webservices.sabre.com</eb:PartyId></eb:From><eb:To><eb:PartyId eb:type="URI">www.z.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="OTA">SessionCloseRQ</eb:Service><eb:Action>ErrorRS</eb:Action><eb:MessageData><eb:MessageId>6238327787953800281</eb:MessageId><eb:Timestamp>2018-02-18T21:53:15</eb:Timestamp><eb:RefToMessageId>mid:20180216-07:18:42.3|14oUa</eb:RefToMessageId></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext"><wsse:BinarySecurityToken valueType="String" EncodingType="wsse:Base64Binary">Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><soap-env:Fault><faultcode>soap-env:Client.InvalidSecurityToken</faultcode><faultstring>Invalid or Expired binary security token: Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</faultstring><detail><StackTrace>com.sabre.universalservices.base.session.SessionException: errors.session.USG_INVALID_SECURITY_TOKEN</StackTrace></detail></soap-env:Fault></soap-env:Body></soap-env:Envelope>`)
 
-	sampleSessionValidateRQ = []byte(`<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsd="http://www.w3.org/1999/XMLSchema"><soap-env:Header><eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:From><eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId></eb:From><eb:To><eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="OTA">SessionValidateRQ</eb:Service><eb:Action>SessionValidateRQ</eb:Action><eb:MessageData><eb:MessageId>mid:20180216-07:18:42.3|14oUa</eb:MessageId><eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp><eb:TimeToLive></eb:TimeToLive></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility"><wsse:BinarySecurityToken>Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><SessionValidateRQ><POS><Source PseudoCityCode="7TZA"></Source></POS></SessionValidateRQ></soap-env:Body></soap-env:Envelope>`)
+	sampleSessionValidateRQ = []byte(`<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" xmlns:xlink="http://www.w3.org/2001/xlink" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap-env:Header><eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:From><eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId></eb:From><eb:To><eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="OTA">SessionValidateRQ</eb:Service><eb:Action>SessionValidateRQ</eb:Action><eb:MessageData><eb:MessageId>mid:20180216-07:18:42.3|14oUa</eb:MessageId><eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility"><wsse:BinarySecurityToken>Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><SessionValidateRQ><POS><Source PseudoCityCode="7TZA"></Source></POS></SessionValidateRQ></soap-env:Body></soap-env:Envelope>`)
 
 	sampleSessionValidateRespSuccess = []byte(`<?xml version="1.0" encoding="UTF-8"?>
 	<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><soap-env:Header><eb:MessageHeader xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" eb:version="2.0.0" soap-env:mustUnderstand="1"><eb:From><eb:PartyId eb:type="URI">webservices.sabre.com</eb:PartyId></eb:From><eb:To><eb:PartyId eb:type="URI">www.z.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="sabreXML">Session</eb:Service><eb:Action>SessionValidateRS</eb:Action><eb:MessageData><eb:MessageId>931442098348670191</eb:MessageId><eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp><eb:RefToMessageId>mid:20180216-07:18:42.3|14oUa</eb:RefToMessageId></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext"><wsse:BinarySecurityToken valueType="String" EncodingType="wsse:Base64Binary">Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken><wsse:UsernameToken><wsse:Username>7971</wsse:Username><Organization>7TZA</Organization><Domain>DEFAULT</Domain></wsse:UsernameToken></wsse:Security></soap-env:Header><soap-env:Body><SessionValidateRS/></soap-env:Body></soap-env:Envelope>`)
@@ -104,12 +104,12 @@ func TestLogSetup(t *testing.T) {
 
 func TestEnvelopeBaseMarshal(t *testing.T) {
 	envelope := Envelope{
-		XMLNSbase:  baseNS,
-		XMLNSeb:    baseEBNameSpace,
+		XMLNSbase:  BaseNS,
+		XMLNSeb:    BaseEBNameSpace,
 		XMLNSxlink: baseXlinkNameSpace,
-		XMLNSxsd:   baseXSDNameSpace,
+		XMLNSxsd:   BaseXSDNameSpace,
 	}
-	envelope2 := createEnvelope()
+	envelope2 := CreateEnvelope()
 
 	for _, env := range []Envelope{envelope, envelope2} {
 		//b, err := xml.MarshalIndent(env, "", "    ")
@@ -124,11 +124,11 @@ func TestEnvelopeBaseMarshal(t *testing.T) {
 }
 func BenchmarkCreateEnvelope(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		createEnvelope()
+		CreateEnvelope()
 	}
 }
 func BenchmarkEnvelopeMarshal(b *testing.B) {
-	envelope := createEnvelope()
+	envelope := CreateEnvelope()
 	for n := 0; n < b.N; n++ {
 		xml.Marshal(envelope)
 	}
@@ -144,11 +144,11 @@ func TestEnvelopeBaseUnmarshal(t *testing.T) {
 	if env.XMLName.Local != "Envelope" {
 		t.Errorf("Envelope xml Local wrong: expected: %s, got: %s", "Envelope", env.XMLName.Local)
 	}
-	if env.XMLName.Space != baseNS {
-		t.Errorf("Envelope xml Space wrong: expected: %s, got: %s", baseNS, env.XMLName.Space)
+	if env.XMLName.Space != BaseNS {
+		t.Errorf("Envelope xml Space wrong: expected: %s, got: %s", BaseNS, env.XMLName.Space)
 	}
-	if env.XMLNSbase != baseNS {
-		t.Errorf("Envelope XMLNSbase expected: %s, got: %s", baseNS, env.XMLNSbase)
+	if env.XMLNSbase != BaseNS {
+		t.Errorf("Envelope XMLNSbase expected: %s, got: %s", BaseNS, env.XMLNSbase)
 	}
 	//fmt.Printf("SAMPLE: %s\n", sampleEnvelope)
 	//fmt.Printf("CURRENT: %+v\n", env)
@@ -230,9 +230,9 @@ func BenchmarkSabreTokenParse(b *testing.B) {
 func TestMessageHeaderBaseMarshal(t *testing.T) {
 	mh := MessageHeader{
 		MustUnderstand: "1",
-		EbVersion:      sabreEBVersion,
-		From:           FromElem{PartyID: CreatePartyID(samplefrom, partyIDTypeURN)},
-		To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+		EbVersion:      SabreEBVersion,
+		From:           FromElem{PartyID: CreatePartyID(samplefrom, PartyIDTypeURN)},
+		To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 		CPAID:          samplepcc,
 		ConversationID: sampleconvid,
 		Service:        ServiceElem{sampleservice, "OTA"},
@@ -244,9 +244,9 @@ func TestMessageHeaderBaseMarshal(t *testing.T) {
 	}
 	mh2 := MessageHeader{
 		MustUnderstand: "1",
-		EbVersion:      sabreEBVersion,
-		From:           FromElem{PartyID: CreatePartyID(samplefrom, partyIDTypeURN)},
-		To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+		EbVersion:      SabreEBVersion,
+		From:           FromElem{PartyID: CreatePartyID(samplefrom, PartyIDTypeURN)},
+		To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 		CPAID:          samplepcc,
 		ConversationID: sampleconvid,
 		Service:        ServiceElem{sampleservice, "OTA"},
@@ -271,9 +271,9 @@ func TestMessageHeaderBaseMarshal(t *testing.T) {
 func BenchmarkMessageHeaderBaseMarshal(b *testing.B) {
 	mh := MessageHeader{
 		MustUnderstand: "1",
-		EbVersion:      sabreEBVersion,
-		From:           FromElem{PartyID: CreatePartyID(samplefrom, partyIDTypeURN)},
-		To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+		EbVersion:      SabreEBVersion,
+		From:           FromElem{PartyID: CreatePartyID(samplefrom, PartyIDTypeURN)},
+		To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 		CPAID:          samplepcc,
 		ConversationID: sampleconvid,
 		Service:        ServiceElem{sampleservice, "OTA"},
@@ -303,8 +303,8 @@ func TestMessageHeaderBaseUnmarshal(t *testing.T) {
 	if mh.MustUnderstand != "1" {
 		t.Error("MustUnderstand shoudl be 1")
 	}
-	if mh.EbVersion != sabreEBVersion {
-		t.Error("EbVersion should be ", sabreEBVersion)
+	if mh.EbVersion != SabreEBVersion {
+		t.Error("EbVersion should be ", SabreEBVersion)
 	}
 	if mh.From.XMLName.Space != "eb" {
 		t.Errorf("From xml Space wrong: expected: %s, got: %s", "eb", mh.From.XMLName.Space)
@@ -324,8 +324,8 @@ func BenchmarkMessageHeaderBaseUnmarshal(b *testing.B) {
 
 func TestSecurityBaseMarshal(t *testing.T) {
 	sec := Security{
-		XMLNSWsseBase: baseWsse,
-		XMLNSWsu:      baseWsuNameSpace,
+		XMLNSWsseBase: BaseWsse,
+		XMLNSWsu:      BaseWsuNameSpace,
 		UserNameToken: &UsernameTokenElem{
 			Username:     sampleusername,
 			Password:     samplepassword,
@@ -334,8 +334,8 @@ func TestSecurityBaseMarshal(t *testing.T) {
 		},
 	}
 	sec2 := Security{
-		XMLNSWsseBase: baseWsse,
-		XMLNSWsu:      baseWsuNameSpace,
+		XMLNSWsseBase: BaseWsse,
+		XMLNSWsu:      BaseWsuNameSpace,
 		UserNameToken: &UsernameTokenElem{
 			Username:     sampleusername,
 			Password:     samplepassword,
@@ -356,8 +356,8 @@ func TestSecurityBaseMarshal(t *testing.T) {
 }
 func BenchmarkSecurityBaseMarshal(b *testing.B) {
 	sec := Security{
-		XMLNSWsseBase: baseWsse,
-		XMLNSWsu:      baseWsuNameSpace,
+		XMLNSWsseBase: BaseWsse,
+		XMLNSWsu:      BaseWsuNameSpace,
 		UserNameToken: &UsernameTokenElem{
 			Username:     sampleusername,
 			Password:     samplepassword,
@@ -380,11 +380,11 @@ func TestSecurityBaseUnmarshal(t *testing.T) {
 	if sec.XMLName.Local != "Security" {
 		t.Errorf("Security xml Local wrong: expected: %s, got: %s", "Security", sec.XMLName.Local)
 	}
-	if sec.XMLName.Space != baseWsse {
-		t.Errorf("Security xml Space wrong: expected: %s, got: %s", baseWsse, sec.XMLName.Space)
+	if sec.XMLName.Space != BaseWsse {
+		t.Errorf("Security xml Space wrong: expected: %s, got: %s", BaseWsse, sec.XMLName.Space)
 	}
-	if sec.XMLNSWsseBase != baseWsse {
-		t.Errorf("XMLNSWsseBase expected: %s, got: %s", baseWsse, sec.XMLNSWsseBase)
+	if sec.XMLNSWsseBase != BaseWsse {
+		t.Errorf("XMLNSWsseBase expected: %s, got: %s", BaseWsse, sec.XMLNSWsseBase)
 	}
 	if sec.BinarySecurityToken.Value != samplebinsectoken {
 		t.Errorf("BinarySecurityToken.Value expected: %s, got: %s", samplebinsectoken, sec.BinarySecurityToken)
@@ -408,7 +408,7 @@ func BenchmarkSecurityBaseUnmarshal(b *testing.B) {
 func TestManifestMarshal(t *testing.T) {
 	mnf := Manifest{
 		MustUnderstand: "1",
-		EbVersion:      sabreEBVersion,
+		EbVersion:      SabreEBVersion,
 		Reference: ReferenceElem{
 			Href: "cid:rootelement",
 			Type: "simple",
@@ -473,10 +473,10 @@ func BenchmarkSessionCreateRQMarshal(b *testing.B) {
 func TestSessionHeaderMarshal(t *testing.T) {
 	shdr := SessionHeader{
 		MessageHeader: MessageHeader{
-			MustUnderstand: sabreMustUnderstand,
-			EbVersion:      sabreEBVersion,
-			From:           FromElem{PartyID: CreatePartyID(samplefrom, partyIDTypeURN)},
-			To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+			MustUnderstand: SabreMustUnderstand,
+			EbVersion:      SabreEBVersion,
+			From:           FromElem{PartyID: CreatePartyID(samplefrom, PartyIDTypeURN)},
+			To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 			CPAID:          samplepcc,
 			ConversationID: samplefrom,
 			Service:        ServiceElem{"SessionCreateRQ", "OTA"},
@@ -487,8 +487,8 @@ func TestSessionHeaderMarshal(t *testing.T) {
 			},
 		},
 		Security: Security{
-			XMLNSWsseBase: baseWsse,
-			XMLNSWsu:      baseWsuNameSpace,
+			XMLNSWsseBase: BaseWsse,
+			XMLNSWsu:      BaseWsuNameSpace,
 			UserNameToken: &UsernameTokenElem{
 				Username:     sampleusername,
 				Password:     samplepassword,
@@ -509,10 +509,10 @@ func TestSessionHeaderMarshal(t *testing.T) {
 func BenchmarkSessionHeaderMarshal(b *testing.B) {
 	shdr := SessionHeader{
 		MessageHeader: MessageHeader{
-			MustUnderstand: sabreMustUnderstand,
-			EbVersion:      sabreEBVersion,
-			From:           FromElem{PartyID: CreatePartyID(samplefrom, partyIDTypeURN)},
-			To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+			MustUnderstand: SabreMustUnderstand,
+			EbVersion:      SabreEBVersion,
+			From:           FromElem{PartyID: CreatePartyID(samplefrom, PartyIDTypeURN)},
+			To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 			CPAID:          samplepcc,
 			ConversationID: samplefrom,
 			Service:        ServiceElem{"SessionCreateRQ", "OTA"},
@@ -523,8 +523,8 @@ func BenchmarkSessionHeaderMarshal(b *testing.B) {
 			},
 		},
 		Security: Security{
-			XMLNSWsseBase: baseWsse,
-			XMLNSWsu:      baseWsuNameSpace,
+			XMLNSWsseBase: BaseWsse,
+			XMLNSWsu:      BaseWsuNameSpace,
 			UserNameToken: &UsernameTokenElem{
 				Username:     sampleusername,
 				Password:     samplepassword,
@@ -558,13 +558,13 @@ func TestSessionCreateRQBodyMarshal(t *testing.T) {
 
 func TestSessionCreateRequest(t *testing.T) {
 	sessionRequest := SessionCreateRequest{
-		Envelope: createEnvelope(),
+		Envelope: CreateEnvelope(),
 		Header: SessionHeader{
 			MessageHeader: MessageHeader{
-				MustUnderstand: sabreMustUnderstand,
-				EbVersion:      sabreEBVersion,
-				From:           FromElem{PartyID: CreatePartyID(samplefrom, partyIDTypeURN)},
-				To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+				MustUnderstand: SabreMustUnderstand,
+				EbVersion:      SabreEBVersion,
+				From:           FromElem{PartyID: CreatePartyID(samplefrom, PartyIDTypeURN)},
+				To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 				CPAID:          samplepcc,
 				ConversationID: samplefrom,
 				Service:        ServiceElem{"SessionCreateRQ", "OTA"},
@@ -575,8 +575,8 @@ func TestSessionCreateRequest(t *testing.T) {
 				},
 			},
 			Security: Security{
-				XMLNSWsseBase: baseWsse,
-				XMLNSWsu:      baseWsuNameSpace,
+				XMLNSWsseBase: BaseWsse,
+				XMLNSWsu:      BaseWsuNameSpace,
 				UserNameToken: &UsernameTokenElem{
 					Username:     sampleusername,
 					Password:     samplepassword,
@@ -607,13 +607,13 @@ func TestSessionCreateRequest(t *testing.T) {
 }
 func BenchmarkSessionCreateRequestMarshal(b *testing.B) {
 	sessionRequest := SessionCreateRequest{
-		Envelope: createEnvelope(),
+		Envelope: CreateEnvelope(),
 		Header: SessionHeader{
 			MessageHeader: MessageHeader{
-				MustUnderstand: sabreMustUnderstand,
-				EbVersion:      sabreEBVersion,
-				From:           FromElem{PartyID: CreatePartyID(samplefrom, partyIDTypeURN)},
-				To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+				MustUnderstand: SabreMustUnderstand,
+				EbVersion:      SabreEBVersion,
+				From:           FromElem{PartyID: CreatePartyID(samplefrom, PartyIDTypeURN)},
+				To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 				CPAID:          samplepcc,
 				ConversationID: samplefrom,
 				Service:        ServiceElem{"SessionCreateRQ", "OTA"},
@@ -624,8 +624,8 @@ func BenchmarkSessionCreateRequestMarshal(b *testing.B) {
 				},
 			},
 			Security: Security{
-				XMLNSWsseBase: baseWsse,
-				XMLNSWsu:      baseWsuNameSpace,
+				XMLNSWsseBase: BaseWsse,
+				XMLNSWsu:      BaseWsuNameSpace,
 				UserNameToken: &UsernameTokenElem{
 					Username:     sampleusername,
 					Password:     samplepassword,
@@ -763,13 +763,13 @@ func TestSessionCreateResponseUnAuth(t *testing.T) {
 
 func TestSessionCloseRequest(t *testing.T) {
 	close := SessionCloseRequest{
-		Envelope: createEnvelope(),
+		Envelope: CreateEnvelope(),
 		Header: SessionHeader{
 			MessageHeader: MessageHeader{
-				MustUnderstand: sabreMustUnderstand,
-				EbVersion:      sabreEBVersion,
-				From:           FromElem{PartyID: CreatePartyID(samplefrom, partyIDTypeURN)},
-				To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+				MustUnderstand: SabreMustUnderstand,
+				EbVersion:      SabreEBVersion,
+				From:           FromElem{PartyID: CreatePartyID(samplefrom, PartyIDTypeURN)},
+				To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 				CPAID:          samplepcc,
 				ConversationID: sampleconvid,
 				Service:        ServiceElem{"SessionCloseRQ", "OTA"},
@@ -780,8 +780,8 @@ func TestSessionCloseRequest(t *testing.T) {
 				},
 			},
 			Security: Security{
-				XMLNSWsseBase:       baseWsse,
-				XMLNSWsu:            baseWsuNameSpace,
+				XMLNSWsseBase:       BaseWsse,
+				XMLNSWsu:            BaseWsuNameSpace,
 				BinarySecurityToken: samplebinsectoken,
 			},
 		},

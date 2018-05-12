@@ -1,4 +1,4 @@
-package sbrweb
+package srvc
 
 import (
 	"bytes"
@@ -13,29 +13,29 @@ import (
 	"time"
 )
 
-// This should parse out sabre tokens: \!-\d.*
-
 const (
-	letterBytes         = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	letterIdxBits       = 6                    // 6 bits to represent a letter index
-	letterIdxMask       = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
-	letterIdxMax        = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
-	sabreToBase         = "webservices.sabre.com"
-	sabreDefaultDomain  = "DEFAULT"
-	sabreMustUnderstand = "1"
-	sabreEBVersion      = "2.0.0"
-	partyIDTypeURN      = "urn:x12.org:IO5:01"
-	baseNS              = "http://schemas.xmlsoap.org/soap/envelope/"
-	baseEBNameSpace     = "http://www.ebxml.org/namespaces/messageHeader"
-	baseXlinkNameSpace  = "http://www.w3.org/1999/xlink"
-	baseXSDNameSpace    = "http://www.w3.org/1999/XMLSchema"
-	baseWsse            = "http://schemas.xmlsoap.org/ws/2002/12/secext"
-	baseWsuNameSpace    = "http://schemas.xmlsoap.org/ws/2002/12/utility"
-	baseOTANameSpace    = "http://www.opentravel.org/OTA/2002/11"
-
+	BaseEBNameSpace       = "http://www.ebxml.org/namespaces/messageHeader"
+	BaseNS                = "http://schemas.xmlsoap.org/soap/envelope/"
+	BaseWebServicesNS     = "http://webservices.sabre.com/sabreXML/2011/10"
+	BaseWsse              = "http://schemas.xmlsoap.org/ws/2002/12/secext"
+	BaseWsuNameSpace      = "http://schemas.xmlsoap.org/ws/2002/12/utility"
+	BaseXSDNameSpace      = "http://www.w3.org/2001/XMLSchema"
+	BaseXSINamespace      = "http://www.w3.org/2001/XMLSchema-instance"
+	PartyIDTypeURN        = "urn:x12.org:IO5:01"
+	SabreEBVersion        = "2.0.0"
+	SabreMustUnderstand   = "1"
+	SabreToBase           = "webservices.sabre.com"
+	StandardTimeFormatter = "2006-01-02T15:04:05Z"
 	//StatusErrorRS is the string value error response when SOAP request->response had an error, typically found in the Header.MessageHeader.Action. Usually, any SOAP response with Action="ErrorRS" will also have a SOAPFault body with more informative error codes. This can be used as an easy way to identify and error.
-	StatusErrorRS         = "ErrorRS"
-	standardTimeFormatter = "2006-01-02T15:04:05Z"
+	StatusErrorRS = "ErrorRS"
+
+	baseOTANameSpace   = "http://www.opentravel.org/OTA/2002/11"
+	baseXlinkNameSpace = "http://www.w3.org/2001/xlink"
+	letterBytes        = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	letterIdxBits      = 6                    // 6 bits to represent a letter index
+	letterIdxMask      = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
+	letterIdxMax       = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
+	sabreDefaultDomain = "DEFAULT"
 )
 
 var (
@@ -71,7 +71,7 @@ type Envelope struct {
 	XMLNSxsd   string   `xml:"xmlns:xsd,attr"`
 }
 
-// EnvelopeUnMarsh is wrapper with namespace prefix definitions for payload
+// EnvelopeUnMarsh is wrapper to unmarshal with namespace prefix
 type EnvelopeUnMarsh struct {
 	XMLName    xml.Name `xml:"Envelope"`
 	XMLNSbase  string   `xml:"soap-env,attr,omitempty"`
@@ -86,25 +86,25 @@ type PartyIDElem struct {
 	Type  string `xml:"type,attr"`
 }
 
-// FromElem whom we get message
+// FromElem who is sending message
 type FromElem struct {
 	XMLName xml.Name    `xml:"eb:From"`
 	PartyID PartyIDElem `xml:"eb:PartyId"`
 }
 
-// FromElemUnmarsh whom we get message
+// FromElemUnmarsh is wrapper to unmarshal with namespace prefix
 type FromElemUnmarsh struct {
 	XMLName xml.Name    `xml:"From"`
 	PartyID PartyIDElem `xml:"PartyId"`
 }
 
-// ToElem whom we get message
+// ToElem whom message message is sent
 type ToElem struct {
 	XMLName xml.Name    `xml:"eb:To"`
 	PartyID PartyIDElem `xml:"eb:PartyId"`
 }
 
-// ToElemUnmarsh whom we get message
+// ToElemUnmarsh is wrapper to unmarshal with namespace prefix
 type ToElemUnmarsh struct {
 	XMLName xml.Name    `xml:"To"`
 	PartyID PartyIDElem `xml:"PartyId"`
@@ -114,8 +114,8 @@ type ToElemUnmarsh struct {
 type MessageDataElem struct {
 	XMLName    xml.Name `xml:"eb:MessageData"`
 	MessageID  string   `xml:"eb:MessageId"`
-	Timestamp  string   `xml:"eb:Timestamp"`
-	TimeToLive string   `xml:"eb:TimeToLive"`
+	Timestamp  string   `xml:"eb:Timestamp,omitempty"`
+	TimeToLive string   `xml:"eb:TimeToLive,omitempty"`
 }
 
 //MessageDataElemUnmarsh holds unique identifiers coupled with time
@@ -133,7 +133,7 @@ type ServiceElem struct {
 	Type  string `xml:"eb:type,attr"`
 }
 
-// MessageHeader wrapper with multiple namespace prefixes
+// MessageHeader contains message specific data such as credentials, from, to, conversation id, soap service, soap action, etc...
 type MessageHeader struct {
 	XMLName        xml.Name `xml:"eb:MessageHeader"`
 	MustUnderstand string   `xml:"soap-env:mustUnderstand,attr"`
@@ -147,7 +147,7 @@ type MessageHeader struct {
 	MessageData    MessageDataElem
 }
 
-// MessageHeaderUnmarsh wrapper with multiple namespace prefixes
+// MessageHeaderUnmarsh wrapper to unmarshal with namespace prefix
 type MessageHeaderUnmarsh struct {
 	XMLName        xml.Name `xml:"MessageHeader"`
 	MustUnderstand string   `xml:"mustUnderstand,attr"`
@@ -170,7 +170,7 @@ type UsernameTokenElem struct {
 	Domain       string   `xml:"Domain"`
 }
 
-// UsernameTokenElemUnmarsh contains user security info
+// UsernameTokenElemUnmarsh wrapper to unmarshal with namespace prefix
 type UsernameTokenElemUnmarsh struct {
 	XMLName      xml.Name `xml:"UsernameToken"`
 	Username     string   `xml:"Username"`
@@ -197,7 +197,7 @@ type BinarySecurityTokenUnmarsh struct {
 	EncodingType string `xml:"EncodingType,attr"`
 }
 
-// SecurityUnmarsh is wrapper with namespace prefix definitions for payload
+// SecurityUnmarsh wrapper to unmarshal with namespace prefix
 type SecurityUnmarsh struct {
 	XMLName             xml.Name `xml:"Security"`
 	XMLNSWsseBase       string   `xml:"wsse,attr"`
@@ -213,7 +213,7 @@ type SessionHeader struct {
 	Security      Security
 }
 
-// SessionHeaderUnmarsh header of session
+// SessionHeaderUnmarsh wrapper to unmarshal with namespace prefix
 type SessionHeaderUnmarsh struct {
 	XMLName       xml.Name `xml:"Header"`
 	MessageHeader MessageHeaderUnmarsh
@@ -257,12 +257,12 @@ type SOAPFault struct {
 }
 
 // helper to crete message header
-func createEnvelope() Envelope {
+func CreateEnvelope() Envelope {
 	return Envelope{
-		XMLNSbase:  baseNS,
-		XMLNSeb:    baseEBNameSpace,
+		XMLNSbase:  BaseNS,
+		XMLNSeb:    BaseEBNameSpace,
 		XMLNSxlink: baseXlinkNameSpace,
-		XMLNSxsd:   baseXSDNameSpace,
+		XMLNSxsd:   BaseXSDNameSpace,
 	}
 }
 
@@ -277,8 +277,8 @@ func CreatePartyID(partyValue, partyType string) PartyIDElem {
 // CreateManifest helper
 func CreateManifest() Manifest {
 	return Manifest{
-		MustUnderstand: sabreMustUnderstand,
-		EbVersion:      sabreEBVersion,
+		MustUnderstand: SabreMustUnderstand,
+		EbVersion:      SabreEBVersion,
 		Reference: ReferenceElem{
 			Href: "cid:rootelement",
 			Type: "simple",
@@ -298,11 +298,10 @@ func SabreTokenParse(tok string) string {
 
 // SabreTimeFormat returns '2017-11-27T09:58:31Z'
 func SabreTimeFormat() string {
-	return time.Now().Format(standardTimeFormatter)
+	return time.Now().Format(StandardTimeFormatter)
 }
 
 // randStringBytesMaskImprSrc generate random string of specific length
-// Author: Icza - http://stackoverflow.com/users/1705598/icza
 func randStringBytesMaskImprSrc(n int) string {
 	src := rand.NewSource(time.Now().UnixNano())
 	b := make([]byte, n)
@@ -354,13 +353,13 @@ type SessionCreateRequest struct {
 // CPAID, Organization, and PseudoCityCode all use the PCC/iPCC. ConversationID is typically a contact email address with unique identifier to the request. MessageID is typically a timestamped identifier to locate specific queries: it should contai a company identifier.
 func BuildSessionCreateRequest(from, pcc, convid, mid, time, username, password string) SessionCreateRequest {
 	return SessionCreateRequest{
-		Envelope: createEnvelope(),
+		Envelope: CreateEnvelope(),
 		Header: SessionHeader{
 			MessageHeader: MessageHeader{
-				MustUnderstand: sabreMustUnderstand,
-				EbVersion:      sabreEBVersion,
-				From:           FromElem{PartyID: CreatePartyID(from, partyIDTypeURN)},
-				To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+				MustUnderstand: SabreMustUnderstand,
+				EbVersion:      SabreEBVersion,
+				From:           FromElem{PartyID: CreatePartyID(from, PartyIDTypeURN)},
+				To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 				CPAID:          pcc,
 				ConversationID: convid,
 				Service:        ServiceElem{"SessionCreateRQ", "OTA"},
@@ -371,8 +370,8 @@ func BuildSessionCreateRequest(from, pcc, convid, mid, time, username, password 
 				},
 			},
 			Security: Security{
-				XMLNSWsseBase: baseWsse,
-				XMLNSWsu:      baseWsuNameSpace,
+				XMLNSWsseBase: BaseWsse,
+				XMLNSWsu:      BaseWsuNameSpace,
 				UserNameToken: &UsernameTokenElem{
 					Username:     username,
 					Password:     password,
@@ -460,13 +459,13 @@ type SessionCloseRequest struct {
 // CPAID, Organization, and PseudoCityCode all use the PCC/iPCC. ConversationID, MessageID, BinarySecurityToken must be from the existing session you wish to close.
 func BuildSessionCloseRequest(from, pcc, binsectoken, convid, mid, time string) SessionCloseRequest {
 	return SessionCloseRequest{
-		Envelope: createEnvelope(),
+		Envelope: CreateEnvelope(),
 		Header: SessionHeader{
 			MessageHeader: MessageHeader{
-				MustUnderstand: sabreMustUnderstand,
-				EbVersion:      sabreEBVersion,
-				From:           FromElem{PartyID: CreatePartyID(from, partyIDTypeURN)},
-				To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+				MustUnderstand: SabreMustUnderstand,
+				EbVersion:      SabreEBVersion,
+				From:           FromElem{PartyID: CreatePartyID(from, PartyIDTypeURN)},
+				To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 				CPAID:          pcc,
 				ConversationID: convid,
 				Service:        ServiceElem{"SessionCloseRQ", "OTA"},
@@ -477,8 +476,8 @@ func BuildSessionCloseRequest(from, pcc, binsectoken, convid, mid, time string) 
 				},
 			},
 			Security: Security{
-				XMLNSWsseBase:       baseWsse,
-				XMLNSWsu:            baseWsuNameSpace,
+				XMLNSWsseBase:       BaseWsse,
+				XMLNSWsu:            BaseWsuNameSpace,
 				BinarySecurityToken: binsectoken,
 			},
 		},
@@ -557,13 +556,13 @@ type SessionValidateRequest struct {
 // CPAID, Organization, and PseudoCityCode all use the PCC/iPCC. ConversationID, MessageID, BinarySecurityToken must be from the existing session you wish to validate.
 func BuildSessionValidateRequest(from, pcc, binsectoken, convid, mid, time string) SessionValidateRequest {
 	return SessionValidateRequest{
-		Envelope: createEnvelope(),
+		Envelope: CreateEnvelope(),
 		Header: SessionHeader{
 			MessageHeader: MessageHeader{
-				MustUnderstand: sabreMustUnderstand,
-				EbVersion:      sabreEBVersion,
-				From:           FromElem{PartyID: CreatePartyID(from, partyIDTypeURN)},
-				To:             ToElem{PartyID: CreatePartyID(sabreToBase, partyIDTypeURN)},
+				MustUnderstand: SabreMustUnderstand,
+				EbVersion:      SabreEBVersion,
+				From:           FromElem{PartyID: CreatePartyID(from, PartyIDTypeURN)},
+				To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
 				CPAID:          pcc,
 				ConversationID: convid,
 				Service:        ServiceElem{"SessionValidateRQ", "OTA"},
@@ -574,8 +573,8 @@ func BuildSessionValidateRequest(from, pcc, binsectoken, convid, mid, time strin
 				},
 			},
 			Security: Security{
-				XMLNSWsseBase:       baseWsse,
-				XMLNSWsu:            baseWsuNameSpace,
+				XMLNSWsseBase:       BaseWsse,
+				XMLNSWsu:            BaseWsuNameSpace,
 				BinarySecurityToken: binsectoken,
 			},
 		},
