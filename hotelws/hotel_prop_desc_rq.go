@@ -3,6 +3,7 @@ package hotelws
 import (
 	"bytes"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -52,7 +53,7 @@ func (a *HotelPropDescRQ) addCustomerID(cID string) {
 }
 
 // SetHotelPropDescRqStruct hotel availability request using input parameters
-func SetHotelPropDescRqStruct(guestCount int, query HotelSearchCriteria, arrive, depart string) (HotelPropDescBody, error) {
+func SetHotelPropDescRqStruct(guestCount int, query *HotelSearchCriteria, arrive, depart string) (HotelPropDescBody, error) {
 	err := query.validatePropertyRequest()
 	if err != nil {
 		return HotelPropDescBody{}, err
@@ -66,9 +67,9 @@ func SetHotelPropDescRqStruct(guestCount int, query HotelSearchCriteria, arrive,
 			XMLNSXsi:          srvc.BaseXSINamespace,
 			ReturnHostCommand: true,
 			Avail: AvailRequestSegment{
-				GuestCounts:         GuestCounts{Count: guestCount},
+				GuestCounts:         &GuestCounts{Count: guestCount},
 				HotelSearchCriteria: query,
-				TimeSpan: TimeSpan{
+				TimeSpan: &TimeSpan{
 					Depart: d.Format(timeSpanFormatter),
 					Arrive: a.Format(timeSpanFormatter),
 				},
@@ -138,6 +139,7 @@ type HotelPropDescResponse struct {
 func CallHotelPropDesc(serviceURL string, req HotelPropDescRequest) (HotelPropDescResponse, error) {
 	propResp := HotelPropDescResponse{}
 	byteReq, _ := xml.Marshal(req)
+	fmt.Printf("REQ: \n\n %s \n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))

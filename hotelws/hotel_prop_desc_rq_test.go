@@ -62,7 +62,7 @@ func TestPropDescBuildHotelPropDescMarshal(t *testing.T) {
 }
 
 func TestSetHotelPropDescRqStructCorpID(t *testing.T) {
-	body, _ := SetHotelPropDescRqStruct(sampleGuestCount, HotelSearchCriteria{}, sampleArrive, sampleDepart)
+	body, _ := SetHotelPropDescRqStruct(sampleGuestCount, &HotelSearchCriteria{}, sampleArrive, sampleDepart)
 	prop := body.HotelPropDescRQ
 	prop.addCorporateID(sampleCID)
 
@@ -81,7 +81,7 @@ func TestPropDescUnmarshal(t *testing.T) {
 	prop := HotelPropDescResponse{}
 	err := xml.Unmarshal(sampleHotelPropDescRSgood, &prop)
 	if err != nil {
-		t.Errorf("Error unmarshaling hotel avail %s \nERROR: %v", sampleHotelAvailRSgood, err)
+		t.Fatalf("Error unmarshaling hotel avail %s \nERROR: %v", sampleHotelAvailRSgood, err)
 	}
 	reqError := prop.Body.HotelDesc.Result.Error
 	if reqError.Type != "" {

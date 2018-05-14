@@ -174,7 +174,7 @@ func TestMultipleHotelCriteria(t *testing.T) {
 }
 
 func TestSetHotelAvailRqStructMarshal(t *testing.T) {
-	availBody := SetHotelAvailRqStruct(sampleGuestCount, HotelSearchCriteria{}, sampleArrive, sampleDepart)
+	availBody := SetHotelAvailRqStruct(sampleGuestCount, &HotelSearchCriteria{}, sampleArrive, sampleDepart)
 	avail := availBody.OTAHotelAvailRQ
 	avail.addCorporateID(sampleCID)
 
@@ -198,7 +198,7 @@ func TestSetHotelAvailRqStructMarshal(t *testing.T) {
 }
 
 func TestSetHotelAvailRqStructCorpID(t *testing.T) {
-	availBody := SetHotelAvailRqStruct(sampleGuestCount, HotelSearchCriteria{}, sampleArrive, sampleDepart)
+	availBody := SetHotelAvailRqStruct(sampleGuestCount, &HotelSearchCriteria{}, sampleArrive, sampleDepart)
 	avail := availBody.OTAHotelAvailRQ
 	avail.addCorporateID(sampleCID)
 

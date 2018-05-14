@@ -3,13 +3,14 @@ package hotelws
 import (
 	"bytes"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/ailgroup/sbrweb/srvc"
 )
 
-// HotelRateDescRequest for soap package on HotelRateertyDescriptionRQ service
+// HotelRateDescRequest for soap package on HotelRateDescRequest service
 type HotelRateDescRequest struct {
 	srvc.Envelope
 	Header srvc.SessionHeader
@@ -33,33 +34,8 @@ type HotelRateDescRQ struct {
 	Avail             AvailRequestSegment
 }
 
-/*
-// addCorporateID to the existing avail struct for a corporate customer
-func (a *HotelRateDescRQ) addCorporateID(cID string) {
-	a.Avail.Customer = &Customer{
-		Corporate: &Corporate{
-			ID: cID,
-		},
-	}
-}
-
-// addCustomerID rateID to the existing avail struct for a corporate customer
-func (a *HotelRateDescRQ) addCustomerID(cID string) {
-	a.Avail.Customer = &Customer{
-		CustomerID: &CustomerID{
-			Number: cID,
-		},
-	}
-}
-*/
-
 // SetHotelRateDescRqStruct hotel rate description request using input parameters
-func SetHotelRateDescRqStruct(guestCount int, query HotelSearchCriteria, arrive, depart string) (HotelRateDescBody, error) {
-	err := query.validatePropertyRequest()
-	if err != nil {
-		return HotelRateDescBody{}, err
-	}
-	a, d := arriveDepartParser(arrive, depart)
+func SetHotelRateDescRqStruct(rpc *RatePlanCandidates) (HotelRateDescBody, error) {
 	return HotelRateDescBody{
 		HotelRateDescRQ: HotelRateDescRQ{
 			Version:           hotelRQVersion,
@@ -68,12 +44,7 @@ func SetHotelRateDescRqStruct(guestCount int, query HotelSearchCriteria, arrive,
 			XMLNSXsi:          srvc.BaseXSINamespace,
 			ReturnHostCommand: true,
 			Avail: AvailRequestSegment{
-				GuestCounts:         GuestCounts{Count: guestCount},
-				HotelSearchCriteria: query,
-				TimeSpan: TimeSpan{
-					Depart: d.Format(timeSpanFormatter),
-					Arrive: a.Format(timeSpanFormatter),
-				},
+				RatePlanCandidates: rpc,
 			},
 		},
 	}, nil
@@ -95,8 +66,8 @@ func BuildHotelRateDescRequest(from, pcc, binsectoken, convid, mid, time string,
 				},
 				CPAID:          pcc,
 				ConversationID: convid,
-				Service:        srvc.ServiceElem{Value: "HotelRateertyDescription", Type: "sabreXML"},
-				Action:         "HotelRateertyDescriptionLLSRQ",
+				Service:        srvc.ServiceElem{Value: "HotelRateDescriptionLLSRQ", Type: "sabreXML"},
+				Action:         "HotelRateDescriptionLLSRQ",
 				MessageData: srvc.MessageDataElem{
 					MessageID: mid,
 					Timestamp: time,
@@ -136,10 +107,11 @@ type HotelRateDescResponse struct {
 	ErrorSabreXML     ErrorSabreXML
 }
 
-// CallHotelRateDesc to sabre web services retrieve hotel rates using HotelRateertyDescriptionLLSRQ.
+// CallHotelRateDesc to sabre web services retrieve hotel rates using HotelRateDescriptionLLSRQ.
 func CallHotelRateDesc(serviceURL string, req HotelRateDescRequest) (HotelRateDescResponse, error) {
 	propResp := HotelRateDescResponse{}
 	byteReq, _ := xml.Marshal(req)
+	fmt.Printf("REQ: \n\n %s \n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
@@ -150,9 +122,11 @@ func CallHotelRateDesc(serviceURL string, req HotelRateDescRequest) (HotelRateDe
 	// parse payload body into []byte buffer from net Response.ReadCloser
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
+	//fmt.Printf("8888888888888888\n\n %v \n\n", resp)
 	io.Copy(bodyBuffer, resp.Body)
 	resp.Body.Close()
 
+	fmt.Printf("----------------\n\n %s \n\n", bodyBuffer.Bytes())
 	//marshal bytes sabre response body into availResp response struct
 	err = xml.Unmarshal(bodyBuffer.Bytes(), &propResp)
 	if err != nil {

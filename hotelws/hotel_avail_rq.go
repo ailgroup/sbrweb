@@ -62,7 +62,7 @@ func (a *OTAHotelAvailRQ) addCustomerID(cID string) {
 }
 
 // SetHotelAvailRqStruct hotel availability request using input parameters
-func SetHotelAvailRqStruct(guestCount int, query HotelSearchCriteria, arrive, depart string) HotelAvailBody {
+func SetHotelAvailRqStruct(guestCount int, query *HotelSearchCriteria, arrive, depart string) HotelAvailBody {
 	a, d := arriveDepartParser(arrive, depart)
 	return HotelAvailBody{
 		OTAHotelAvailRQ: OTAHotelAvailRQ{
@@ -72,9 +72,9 @@ func SetHotelAvailRqStruct(guestCount int, query HotelSearchCriteria, arrive, de
 			XMLNSXsi:          srvc.BaseXSINamespace,
 			ReturnHostCommand: returnHostCommand,
 			Avail: AvailRequestSegment{
-				GuestCounts:         GuestCounts{Count: guestCount},
+				GuestCounts:         &GuestCounts{Count: guestCount},
 				HotelSearchCriteria: query,
-				TimeSpan: TimeSpan{
+				TimeSpan: &TimeSpan{
 					Depart: d.Format(timeSpanFormatter),
 					Arrive: a.Format(timeSpanFormatter),
 				},

@@ -39,6 +39,7 @@ const (
 	latlngQueryField      = "latlng_qf"
 	hotelidQueryField     = "hotelID_qf"
 	returnHostCommand     = true
+	StatusComplete        = "Complete"
 	ErrCallHotelAvail     = "Error CallHotelAvail::OTA_HotelAvailLLSRQ"
 	ErrCallHotelPropDesc  = "Error CallHotelPropDesc::HotelPropertyDescriptionLLSRQ"
 	ErrCallHotelRateDesc  = "Error CallHotelRateDesc::HotelRateDescriptionLLSRQ"

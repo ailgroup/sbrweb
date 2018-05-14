@@ -92,14 +92,17 @@ type Corporate struct {
 // Timepsan for arrival and departure params
 type TimeSpan struct {
 	XMLName xml.Name `xml:"TimeSpan"`
-	Depart  string   `xml:"End,attr"`
-	Arrive  string   `xml:"Start,attr"`
+	Depart  string   `xml:"End,attr,omitempty"`
+	Arrive  string   `xml:"Start,attr,omitempty"`
 }
 
 type RatePlan struct {
 	XMLName         xml.Name `xml:"RatePlanCandidate"`
-	CurrencyCode    string   `xml:"CurrencyCode,attr"`
-	DCA_ProductCode string   `xml:"DCA_ProductCode,attr"`
+	CurrencyCode    string   `xml:"CurrencyCode,attr,omitempty"`
+	DCA_ProductCode string   `xml:"DCA_ProductCode,attr,omitempty"`
+	DecodeAll       string   `xml:"DecodeAll,attr,omitempty"`
+	RateCode        string   `xml:"RateCode,attr,omitempty"`
+	RPH             int      `xml:"RPH,attr,omitempty"`
 }
 
 // RatePlanCandidates determines types of rates queried
@@ -112,8 +115,8 @@ type RatePlanCandidates struct {
 type AvailRequestSegment struct {
 	XMLName             xml.Name  `xml:"AvailRequestSegment"`
 	Customer            *Customer //nil pointer ignored if empty
-	GuestCounts         GuestCounts
-	HotelSearchCriteria HotelSearchCriteria
-	TimeSpan            TimeSpan            //`xml:"TimeSpan"`
+	GuestCounts         *GuestCounts
+	HotelSearchCriteria *HotelSearchCriteria
 	RatePlanCandidates  *RatePlanCandidates //nil pointer ignored if empty
+	TimeSpan            *TimeSpan           //`xml:"TimeSpan"`
 }

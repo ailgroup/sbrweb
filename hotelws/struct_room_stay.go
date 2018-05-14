@@ -30,7 +30,7 @@ type RoomStay struct {
 	GuaranteeAccepted GuaranteeAccepted
 	RoomRates         []RoomRate `xml:"RoomRates>RoomRate"`
 	TimeSpan          struct {
-		Duration int    `xml:"Duration,attr"` //string 0001 or int 1?
+		Duration string `xml:"Duration,attr"` //string 0001 or int 1?
 		End      string `xml:"End,attr"`
 		Start    string `xml:"Start,attr"`
 	} `xml:"TimeSpan"`

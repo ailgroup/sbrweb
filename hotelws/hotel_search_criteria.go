@@ -5,31 +5,8 @@ import (
 	"strings"
 )
 
-/*
-// NewHotelSearchCriteria accepts set of QueryParams functions, executes over hotel search criteria and returns modified criteria
-func NewRateParams(rateParams ...QueryRateParams) (RatePlanCandidates, error) {
-	rates := &RatePlanCandidates{}
-	for _, qm := range rateParams {
-		err := qm(rates)
-		if err != nil {
-			return *rates, err
-		}
-	}
-	return *rates, nil
-}
-
-// PackaSetRateParamseSearch ...
-func SetRateParams(ratePlans RateParams) func(q *RatePlanCandidates) error {
-	return func(q *RatePlanCandidates) error {
-		for _, plan := range ratePlans {
-			q.RatePlans = append(q.RatePlans, &plan)
-		}
-		return nil
-	}
-}
-*/
-
-// SetRateParamse ...
+// SetRateParams helper to create a slice of rate plans to append on a an Avail Segement
+// for search or description services
 func SetRateParams(ratePlans []RatePlan) *RatePlanCandidates {
 	rpc := &RatePlanCandidates{}
 	for _, plan := range ratePlans {
@@ -39,15 +16,15 @@ func SetRateParams(ratePlans []RatePlan) *RatePlanCandidates {
 }
 
 // NewHotelSearchCriteria accepts set of QueryParams functions, executes over hotel search criteria and returns modified criteria
-func NewHotelSearchCriteria(queryParams ...QuerySearchParams) (HotelSearchCriteria, error) {
+func NewHotelSearchCriteria(queryParams ...QuerySearchParams) (*HotelSearchCriteria, error) {
 	criteria := &HotelSearchCriteria{}
 	for _, qm := range queryParams {
 		err := qm(criteria)
 		if err != nil {
-			return *criteria, err
+			return criteria, err
 		}
 	}
-	return *criteria, nil
+	return criteria, nil
 }
 
 // validatePropertyRequest ensures property description requests are well-formed

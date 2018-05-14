@@ -96,7 +96,7 @@ type Rate struct {
 type AdditionalInfo struct {
 	XMLName    xml.Name `xml:"AdditionalInfo"`
 	Commission struct {
-		NonCommission int    `xml:"NonCommission,attr"`
+		NonCommission string `xml:"NonCommission,attr"`
 		Val           string `xml:",char"`
 	} `xml:"Commission"`
 	DCACancellation struct {

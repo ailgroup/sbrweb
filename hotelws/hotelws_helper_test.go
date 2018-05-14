@@ -80,7 +80,7 @@ func init() {
 	serverHotelRateDesc = httptest.NewServer(
 		http.HandlerFunc(
 			func(rs http.ResponseWriter, rq *http.Request) {
-				rs.Write(sampleHotelPropDescRSgood)
+				rs.Write(sampleHotelRateDescRSgood)
 			},
 		),
 	)
@@ -184,6 +184,48 @@ var (
 	sampleAvailRQPropPackages = []byte(`<OTA_HotelAvailRQ Version="2.3.0" xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ReturnHostCommand="true"><AvailRequestSegment><GuestCounts Count="2"></GuestCounts><HotelSearchCriteria><Criterion><PropertyTypes>APTS</PropertyTypes><PropertyTypes>LUXRY</PropertyTypes><Packages>GF</Packages><Packages>HM</Packages><Packages>BB</Packages></Criterion></HotelSearchCriteria><TimeSpan End="04-05" Start="04-02"></TimeSpan></AvailRequestSegment></OTA_HotelAvailRQ>`)
 
 	sampleAvailRQHotelIDS = []byte(`<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" xmlns:xlink="http://www.w3.org/2001/xlink" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap-env:Header><eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:From><eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId></eb:From><eb:To><eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="sabreXML">OTA_HotelAvailRQ</eb:Service><eb:Action>OTA_HotelAvailLLSRQ</eb:Action><eb:MessageData><eb:MessageId>mid:20180207-20:19:07.25|QVbg0</eb:MessageId><eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility"><wsse:BinarySecurityToken>Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><OTA_HotelAvailRQ Version="2.3.0" xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ReturnHostCommand="true"><AvailRequestSegment><GuestCounts Count="2"></GuestCounts><HotelSearchCriteria><Criterion><HotelRef HotelCode="0012"></HotelRef><HotelRef HotelCode="19876"></HotelRef><HotelRef HotelCode="1109"></HotelRef><HotelRef HotelCode="445098"></HotelRef><HotelRef HotelCode="000034"></HotelRef></Criterion></HotelSearchCriteria><TimeSpan End="04-05" Start="04-02"></TimeSpan></AvailRequestSegment></OTA_HotelAvailRQ></soap-env:Body></soap-env:Envelope>`)
+
+	sampleHotelRateDescRQRPH = []byte(`<soap-env:Envelope 
+		xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" 
+		xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" 
+		xmlns:xlink="http://www.w3.org/2001/xlink" 
+		xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+		<soap-env:Header>
+			<eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0">
+				<eb:From>
+					<eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId>
+				</eb:From>
+				<eb:To>
+					<eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId>
+				</eb:To>
+				<eb:CPAId>7TZA</eb:CPAId>
+				<eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId>
+				<eb:Service eb:type="sabreXML">HotelRateDescriptionLLSRQ</eb:Service>
+				<eb:Action>HotelRateDescriptionLLSRQ</eb:Action>
+				<eb:MessageData>
+					<eb:MessageId>mid:20180207-20:19:07.25|QVbg0</eb:MessageId>
+					<eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp>
+				</eb:MessageData>
+			</eb:MessageHeader>
+			<wsse:Security 
+				xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" 
+				xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility">
+				<wsse:BinarySecurityToken>Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken>
+			</wsse:Security>
+		</soap-env:Header>
+		<soap-env:Body>
+			<HotelRateDescriptionRQ Version="2.3.0" 
+				xmlns="http://webservices.sabre.com/sabreXML/2011/10" 
+				xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ReturnHostCommand="true">
+				<AvailRequestSegment>
+					<RatePlanCandidates>
+						<RatePlanCandidate RPH="12"></RatePlanCandidate>
+					</RatePlanCandidates>
+				</AvailRequestSegment>
+			</HotelRateDescriptionRQ>
+		</soap-env:Body>
+	</soap-env:Envelope>`)
 
 	sampleHotelAvailRSgood = []byte(`<?xml version="1.0" encoding="UTF-8"?>
 	<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><soap-env:Header><eb:MessageHeader xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" eb:version="1.0" soap-env:mustUnderstand="1"><eb:From><eb:PartyId eb:type="URI">webservices.sabre.com</eb:PartyId></eb:From><eb:To><eb:PartyId eb:type="URI">www.z.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="sabreXML">OTA_HotelAvailRQ</eb:Service><eb:Action>OTA_HotelAvailLLSRS</eb:Action><eb:MessageData><eb:MessageId>1374478129129220211</eb:MessageId><eb:Timestamp>2018-04-03T03:35:13</eb:Timestamp><eb:RefToMessageId>mid:20180216-07:18:42.3|14oUa</eb:RefToMessageId></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext"><wsse:BinarySecurityToken valueType="String" EncodingType="wsse:Base64Binary">Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESF!ICESMSLB\/RES.LB!-3161638152750045809!1191725!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><OTA_HotelAvailRS xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:stl="http://services.sabre.com/STL/v01" Version="2.3.0">
@@ -1170,4 +1212,50 @@ var (
 			  <TimeSpan Duration="0005" End="2018-05-12" Start="2018-05-11"/>
 			 </RoomStay>
 			</HotelPropertyDescriptionRS></soap-env:Body></soap-env:Envelope>`)
+
+	sampleHotelRateDescRSgood = []byte(`<soap-env:Envelope 
+		xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" 
+		xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" 
+		xmlns:xlink="http://www.w3.org/2001/xlink" 
+		xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+		<soap-env:Header>
+			<eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0">
+				<eb:From>
+					<eb:PartyId type="urn:x12.org:IO5:01">www.rentsomewheels.com</eb:PartyId>
+				</eb:From>
+				<eb:To>
+					<eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId>
+				</eb:To>
+				<eb:CPAId>DG7F</eb:CPAId>
+				<eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId>
+				<eb:Service eb:type="sabreXML">HotelRateDescriptionLLSRQ</eb:Service>
+				<eb:Action>HotelRateDescriptionLLSRQ</eb:Action>
+				<eb:MessageData>
+					<eb:MessageId>mid:20180216-07:18:42.3|14oUa</eb:MessageId>
+					<eb:Timestamp>2018-05-14T09:04:05Z</eb:Timestamp>
+				</eb:MessageData>
+			</eb:MessageHeader>
+			<wsse:Security 
+				xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" 
+				xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility">
+				<wsse:BinarySecurityToken>Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESD!ICESMSLB\/RES.LB!-3146959184896320638!702035!0</wsse:BinarySecurityToken>
+			</wsse:Security>
+		</soap-env:Header>
+		<soap-env:Body>
+			<HotelRateDescriptionRQ Version="2.3.0" 
+				xmlns="http://webservices.sabre.com/sabreXML/2011/10" 
+				xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ReturnHostCommand="true">
+				<AvailRequestSegment>
+					<GuestCounts Count="2"></GuestCounts>
+					<HotelSearchCriteria>
+						<Criterion>
+							<HotelRef HotelCode="4"></HotelRef>
+						</Criterion>
+					</HotelSearchCriteria>
+					<TimeSpan End="05-17" Start="05-15"></TimeSpan>
+				</AvailRequestSegment>
+			</HotelRateDescriptionRQ>
+		</soap-env:Body>
+	</soap-env:Envelope>`)
 )

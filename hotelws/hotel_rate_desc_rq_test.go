@@ -1,9 +1,40 @@
 package hotelws
 
 import (
+	"encoding/xml"
+	"fmt"
 	"testing"
 )
 
+func TestRateDescBuildHotelPropDescMarshal(t *testing.T) {
+	rpc := SetRateParams(
+		[]RatePlan{
+			RatePlan{
+				RPH: 12,
+			},
+		},
+	)
+	rate, err := SetHotelRateDescRqStruct(rpc)
+	if err != nil {
+		t.Error("Error SetHotelRateDescRqStruct:", err)
+	}
+	req := BuildHotelRateDescRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, rate)
+
+	b, err := xml.Marshal(req)
+	if err != nil {
+		t.Error("Error marshaling get hotel content", err)
+	}
+
+	/*
+		if string(b) != string(sampleHotelRateDescRQRPH) {
+			t.Errorf("Expected marshal SOAP hotel property description for hotel ids \n sample: %s \n result: %s", string(samplePropRQIDs), string(b))
+		}
+	*/
+	fmt.Printf("content marshal \n%s\n", b)
+
+}
+
+/*
 func TestRateDescCall(t *testing.T) {
 	var hotelid = make(HotelRefCriterion)
 	hotelid[hotelidQueryField] = []string{"10"}
@@ -73,3 +104,4 @@ func TestRateDescCall(t *testing.T) {
 		}
 	}
 }
+*/
