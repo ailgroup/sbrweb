@@ -1,0 +1,564 @@
+<HotelRateDescriptionRS 
+    xmlns="http://webservices.sabre.com/sabreXML/2011/10" 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:stl="http://services.sabre.com/STL/v01" Version="2.3.0">
+    <stl:ApplicationResults status="Complete">
+        <stl:Success timeStamp="2012-04-25T11:49:28-05:00" />
+    </stl:ApplicationResults>
+    <RoomStay>
+        <BasicPropertyInfo ChainCode="HG" GeoConfidenceLevel="1" HotelCityCode="DFW" HotelCode="0024551" HotelName="HOMEWOOD SUITES DALLAS IRVING" Latitude="32.864142" Longitude="-96.938376" NumFloors="3" RPH="001">
+            <Address>
+                <AddressLine>4300 WINGREN BLVD</AddressLine>
+                <AddressLine>IRVING TX 75039</AddressLine>
+                <CountryCode>US</CountryCode>
+            </Address>
+            <Award Provider="NTM3 CROWN" />
+            <ContactNumbers>
+                <ContactNumber Fax="1-972-401-3765" Phone="1-972-556-0665" />
+            </ContactNumbers>
+            <DirectConnect Ind="false">
+                <AdditionalData Ind="false" />
+                <CurrencyConverted Ind="true" />
+                <DC_AvailParticipant Ind="true" />
+                <DC_SellParticipant Ind="true" />
+                <RequestFail Ind="false" />
+                <UnAvail Ind="false" />
+            </DirectConnect>
+            <IndexData>
+                <Index CountryState="TX" DistanceDirection="0N" LocationCode="A" Point="IRVING" TransportationCode="O" />
+                <Index CountryState="TX" DistanceDirection="12W" LocationCode="C" Point="DEEP ELLUM" TransportationCode="O" />
+                <Index CountryState="TX" DistanceDirection="14NE" LocationCode="C" Point="ADDISON" TransportationCode="O" />
+                <Index CountryState="TX" DistanceDirection="11W" LocationCode="C" Point="GRAPEVINE" TransportationCode="O" />
+                <Index DistanceDirection="10SE" LocationCode="A" Point="DFW" TransportationCode="O" />
+                <Index DistanceDirection="29SW" LocationCode="C" Point="FTW" />
+            </IndexData>
+            <PropertyOptionInfo>
+                <ADA_Accessible Ind="false" />
+                <AdultsOnly Ind="false" />
+                <AirportShuttle Ind="false" />
+                <BeachFront Ind="false" />
+                <Breakfast Ind="true" />
+                <BusinessCenter Ind="true" />
+                <BusinessReady Ind="false" />
+                <CarRentalCounter Ind="N" />
+                <Conventions Ind="false" />
+                <Dataport Ind="true" />
+                <Dining Ind="false" />
+                <DryClean Ind="true" />
+                <EcoCertified Ind="false" />
+                <ExecutiveFloors Ind="false" />
+                <FamilyPlan Ind="true" />
+                <FitnessCenter Ind="true" />
+                <FreeLocalCalls Ind="false" />
+                <FreeParking Ind="true" />
+                <FreeShuttle Ind="false" />
+                <FreeWifiInMeetingRooms Ind="false" />
+                <FreeWifiInPublicSpaces Ind="false" />
+                <FreeWifiInRooms Ind="false" />
+                <FullServiceSpa Ind="false" />
+                <GameFacilities Ind="false" />
+                <Golf Ind="true" />
+                <GovtSafetyFire Ind="true" />
+                <HighSpeedInternet Ind="true" />
+                <HypoallergenicRooms Ind="false" />
+                <IndoorPool Ind="false" />
+                <IndPetRestriction Ind="true" />
+                <InRoomCoffeeTea Ind="false" />
+                <InRoomMiniBar Ind="false" />
+                <InRoomRefrigerator Ind="false" />
+                <InRoomSafe Ind="false" />
+                <InteriorDoorways Ind="true" />
+                <Jacuzzi Ind="false" />
+                <KidsFacilities Ind="false" />
+                <KitchenFacilities Ind="true" />
+                <MealService Ind="true" />
+                <MeetingFacilities Ind="true" />
+                <NoAdultTV Ind="false" />
+                <NonSmoking Ind="true" />
+                <OutdoorPool Ind="true" />
+                <Parking>Y-ON SITE</Parking>
+                <Pets Ind="true" />
+                <Pool Ind="true" />
+                <PublicTransportationAdjacent Ind="false" />
+                <Recreation Ind="true" />
+                <RestrictedRoomAccess Ind="false" />
+                <RoomService Ind="true" />
+                <RoomService24Hours Ind="false" />
+                <RoomsWithBalcony Ind="false" />
+                <SkiInOutProperty Ind="false" />
+                <SmokeFree Ind="false" />
+                <SmokingRoomsAvail Ind="false" />
+                <Tennis Ind="false" />
+                <WaterPurificationSystem Ind="false" />
+                <Wheelchair Ind="true" />
+            </PropertyOptionInfo>
+            <PropertyTypeInfo>
+                <AllInclusive Ind="false" />
+                <Apartments Ind="false" />
+                <BedBreakfast Ind="false" />
+                <Castle Ind="false" />
+                <Conventions Ind="false" />
+                <Economy Ind="false" />
+                <ExtendedStay Ind="true" />
+                <Farm Ind="false" />
+                <First Ind="true" />
+                <Luxury Ind="false" />
+                <Moderate Ind="false" />
+                <Motel Ind="false" />
+                <Resort Ind="false" />
+                <Suites Ind="true" />
+            </PropertyTypeInfo>
+            <SpecialOffers Ind="false" />
+            <Taxes>
+                <Text>15PCT TTL</Text>
+            </Taxes>
+            <VendorMessages>
+                <AdditionalAttractions>
+                    <Text>CORPORATE LOCATIONS-</Text>
+                    <Text>                        ABBOTT LABS 1.5 MI/ 2.4 KM                    </Text>
+                    <Text>                        BMC SOFTWARE 0.5 MI/ 0.8 KM                    </Text>
+                    <Text>                        BANK OF AMERICA 0.5 MI/ 0.8 KM                    </Text>
+                    <Text>                        CSC-COMPUTER SCIENCES CORP. 4.0 MI/ 6.4 KM                    </Text>
+                    <Text>                        CITIGROUP 3.0 MI/ 4.8 KM                    </Text>
+                    <Text>                        ERNST - YOUNG 0.5 MI/ 0.8 KM                    </Text>
+                    <Text>                        ESTEE LAUDER 0.5 MI/ 0.8 KM                    </Text>
+                    <Text>                        EXXONMOBILE 3.0 MI/ 4.8 KM                    </Text>
+                    <Text>                        FBI 5.0 MI/ 8.0 KM                    </Text>
+                    <Text>                        FAIRCHILD SEMICONDUCTOR 0.5 MI/ 0.8 KM                    </Text>
+                    <Text>                        FLIGHT SAFETY 6.0 MI/ 9.7 KM                    </Text>
+                    <Text>                        FLUOR CORPORATION 3.0 MI/ 4.8 KM                    </Text>
+                    <Text>                        GENERAL ELECTRIC 0.1 MI/ 0.2 KM                    </Text>
+                    <Text>                        GENERAL MOTORS 0.2 MI/ 0.3 KM                    </Text>
+                    <Text>                        GLOBAL KNOWLEDGE 0.5 MI/ 0.8 KM                    </Text>
+                    <Text>                        HITACHI 5.0 MI/ 8.0 KM                    </Text>
+                    <Text>                        HOMELAND SECURITY 0.5 MI/ 0.8 KM                    </Text>
+                    <Text>                        IBM 5.0 MI/ 8.0 KM                    </Text>
+                    <Text>                        KIMBERLY CLARK 1.0 MI/ 1.6 KM                    </Text>
+                    <Text>                        MICROSOFT 3.5 MI/ 5.6 KM                    </Text>
+                    <Text>                        NEC 3.0 MI/ 4.8 KM                    </Text>
+                    <Text>                        NOKIA 2.5 MI/ 4.0 KM                    </Text>
+                    <Text>                        NORTHROP GRUMMAN 4.0 MI/ 6.4 KM                    </Text>
+                    <Text>                        ORACLE 0.5 MI/ 0.8 KM                    </Text>
+                    <Text>                        PIONEER NATURAL RESOURCES 0.5 MI/ 0.8 KM                    </Text>
+                    <Text>                        SAP AMERICA 0.5 MI/ 0.8 KM                    </Text>
+                    <Text>                        SECRET SERVICE 0.5 MI/ 0.8 KM                    </Text>
+                    <Text>                        SIEMENS 4.0 MI/ 6.4 KM                    </Text>
+                    <Text>                        SPRINT 1.5 MI/ 2.4 KM                    </Text>
+                    <Text>                        US SECRET SERVICE 0.5 MI/ 0.8 KM                    </Text>
+                    <Text>                        VERIZON 0.5 MI/ 0.8 KM                    </Text>
+                    <Text>                        I2 TECHNOLOGIES 2.0 MI/ 3.2 KM                    </Text>
+                </AdditionalAttractions>
+                <Attractions>
+                    <Text>ATTRACTIONS-</Text>
+                    <Text>                        AMERICAN AIRLINES COMPLEX ARENA 9.0 MI /14.5 KM                    </Text>
+                    <Text>                        CITY CENTER 11.0 MI /17.7 KM                    </Text>
+                    <Text>                        DALLAS CONVENTION CENTER 12.0 MI /19.3 KM                    </Text>
+                    <Text>                        DOWNTOWN DALLAS WEST END 11.0 MI /17.7 KM                    </Text>
+                    <Text>                        FORT WORTH STOCKYARDS 30.0 MI /48.3 KM                    </Text>
+                    <Text>                        INTERNATIONAL WILDLIFE PARK 10.0 MI /16.1 KM                    </Text>
+                    <Text>                        L.B. HOUSTON GOLF COURSE 2.0 MI /3.2 KM                    </Text>
+                    <Text>                        MESQUITE RODEO 19.0 MI /30.6 KM                    </Text>
+                    <Text>                        SIX FLAGS OVER TEXAS 20.0 MI /32.2 KM                    </Text>
+                    <Text>                        SMIRNOFF CENTER COTTON BOWL 15.0 MI /24.1 KM                    </Text>
+                    <Text>                        TARRANT CONVENTION CENTER 30.0 MI /48.3 KM                    </Text>
+                    <Text>                        TEXAS MOTOR SPEEDWAY 25.0 MI /40.2 KM                    </Text>
+                    <Text>                        TEXAS STADIUM COWBOYS 3.0 MI /4.8 KM                    </Text>
+                    <Text>                        THE BALLPARK IN ARLINGTON TEXAS RA19.0 MI /30.6 KM                    </Text>
+                    <Text>                        UNIVERSITY OF DALLAS 2.5 MI /4.0 KM                    </Text>
+                    <Text>LOCAL-</Text>
+                    <Text>                        GALLERIA MALL - DALLAS 10.0 MI /16.1 KM                    </Text>
+                    <Text>                        GRAPEVINE MILLS MALL 10.0 MI /16.1 KM                    </Text>
+                    <Text>                        LAS COLINAS EQUESTRIAN CENTER 3.0 MI /4.8 KM                    </Text>
+                    <Text>                        NATIONAL SCOUTING MUSEUM 3.0 MI /4.8 KM                    </Text>
+                    <Text>                        THE MUSTANGS OF LAS COLINAS 0.5 MI /0.8 KM                    </Text>
+                    <Text>                        THE STUDIOS OF LAS COLINAS 3.0 MI /4.8 KM                    </Text>
+                    <Text>                        WILLIAM SQUARE 0.5 MI /0.8 KM                    </Text>
+                </Attractions>
+                <Awards>
+                    <Text>RATINGS-</Text>
+                    <Text>.</Text>
+                    <Text>- AAA DIAMOND</Text>
+                    <Text>3 DIAMONDS</Text>
+                    <Text>.</Text>
+                    <Text>- MOBIL RATING</Text>
+                    <Text>4 STARS</Text>
+                    <Text>.</Text>
+                </Awards>
+                <Cancellation>
+                    <Text>                        ALL RESERVATIONS MUST BE CANCELLED BY 6PM HOST TIME UNLESS                    </Text>
+                    <Text>DEPOSIT REQ. IF THIS RESERVATION HAS BEEN MADE</Text>
+                    <Text>                        ELECTRONICALLY PLEASE CANCEL IT ELECTRONICALLY TO AVOID                    </Text>
+                    <Text>                        CONFUSION AND A NO-SHOW BILL. POLICY SUBJECT TO CHANGE.                    </Text>
+                    <Text>.</Text>
+                </Cancellation>
+                <Deposit>
+                    <Text>                        -1NT DEPOSIT REQUIRED SEASONALLY. CHECK AVAILABILITY. CANCEL                    </Text>
+                    <Text>72 HOURS PRIOR TO ARRIVAL IF DEPOSIT IS REQUIRED.</Text>
+                    <Text>.</Text>
+                </Deposit>
+                <Description>
+                    <Text>                        THE HOMEWOOD SUITES BY HILTON DALLAS-IRVING-LAS COLINAS                    </Text>
+                    <Text>HOTEL IN IRVING TEXAS IS A CHARMING HOTEL SITUATED</Text>
+                    <Text>                        CONVENIENTLY BETWEEN DALLAS AND FT. WORTH IN THE BUSINESS                    </Text>
+                    <Text>                        DISTRICT OF IRVING/LAS COLINAS AND JUST MINUTES AWAY FROM                    </Text>
+                    <Text>DFW INTERNATIONAL AIRPORT AND DALLAS LOVE FIELD.</Text>
+                    <Text>                        THIS IRVING TEXAS ALL-SUITE HOTEL OFFERS SPACIOUS ONE AND                    </Text>
+                    <Text>                        TWO BEDROOM RESIDENTIAL-STYLE SUITES WITH FULL KITCHENS                    </Text>
+                    <Text>                        SEPARATE LIVING AND SLEEPING AREA AND SOFA-SLEEPER.                    </Text>
+                    <Text>                        COMPLIMENTARY HIGH-SPEED INTERNET A FITNESS CENTER AN                    </Text>
+                    <Text>                        EXECUTIVE BUSINESS CENTER THE SUITE SHOP AND OUTDOOR POOL                    </Text>
+                    <Text>                        AND JACUZZI ARE AMONG SOME OF THE AMENITIES GUESTS WILL                    </Text>
+                    <Text>                        ENJOY WITH EVERY STAY AT THE HOMEWOOD SUITES BY HILTON                    </Text>
+                    <Text>HOTEL.</Text>
+                    <Text>                        GUESTS AT THE HOMEWOOD SUITES BY HILTON DALLAS-IRVING-LAS                    </Text>
+                    <Text>                        COLINAS HOTEL CAN ENJOY THE DAILY TEXAS SIZED COMPLIMENTARY                    </Text>
+                    <Text>                        SUITE START HOT BREAKFAST AND THE WELCOME HOME RECEPTION                    </Text>
+                    <Text>                        FEATURING A COMPLIMENTARY LIGHT MEAL AND BEVERAGES MONDAY                    </Text>
+                    <Text>                        THROUGH THURSDAY EVENINGS /SUBJECT TO STATE AND LOCAL LAWS/.                    </Text>
+                    <Text>MAKE YOURSELF AT HOME.</Text>
+                    <Text>.</Text>
+                </Description>
+                <Dining>
+                    <Text>                        CONTINENTAL - COMPLIMENTARY SUITE START HOT BREAKFAST EACH                    </Text>
+                    <Text>DAY OF YOUR STAY.</Text>
+                    <Text>.</Text>
+                    <Text>CAFE CIPRIANI</Text>
+                    <Text>ITALIAN</Text>
+                    <Text>.</Text>
+                    <Text>ITALIAN CAFE</Text>
+                    <Text>ITALIAN FOOD - CASUAL DINING</Text>
+                    <Text>.</Text>
+                    <Text>VIA REAL /MEXICAN/</Text>
+                    <Text>MEXICAN</Text>
+                    <Text>.</Text>
+                    <Text>GRANADA MARKET</Text>
+                    <Text>CASUAL DINING.</Text>
+                    <Text>.</Text>
+                    <Text>DICKEY*S /BARBECUE/</Text>
+                    <Text>CASUAL</Text>
+                    <Text>.</Text>
+                    <Text>THE KEG STEAKHOUSE - BAR</Text>
+                    <Text>CASUAL</Text>
+                    <Text>.</Text>
+                    <Text>CHAMPPS</Text>
+                    <Text>SPORTS BAR AND GRILL</Text>
+                    <Text>.</Text>
+                    <Text>COOL RIVER CAFE</Text>
+                    <Text>UPSCALE DINING</Text>
+                    <Text>.</Text>
+                    <Text>BENIHANA /JAPANESE/</Text>
+                    <Text>CASUAL</Text>
+                    <Text>.</Text>
+                </Dining>
+                <Directions>
+                    <Text>- DALLAS/FORT WORTH.............8.0MI / 12.9KM</Text>
+                    <Text>INTERNATIONAL AIRPORT</Text>
+                    <Text>- DALLAS LOVE FIELD.............11.0MI / 17.7KM</Text>
+                    <Text>- FROM DFW -</Text>
+                    <Text>                        TAKE NORTH AIRPORT EXIT TO HIGHWAY 114 EAST. TAKE THE                    </Text>
+                    <Text>                        O*CONNOR/WINGREN EXIT. GO TO 2ND LIGHT AND TURN LEFT                    </Text>
+                    <Text>/WINGREN/. HOTEL IS LOCATED ON THE RIGHT SIDE.</Text>
+                    <Text>.</Text>
+                    <Text>- FROM DAL -</Text>
+                    <Text>                        EXIT AIRPORT - TURN RIGHT ONTO MOCKINGBIRD LANE. TURN RIGHT                    </Text>
+                    <Text>ONTO HWY 183 WEST. TAKE HWY 114 WEST. EXIT</Text>
+                    <Text>                        RIVERSIDE/ROCHELLE. GO TO 2ND LIGHT /WINGREN/ TURN RIGHT ON                    </Text>
+                    <Text>WINGREN. HOTEL IS ON THE RIGHT SIDE.</Text>
+                    <Text>.</Text>
+                    <Text>- ADDITIONAL DIRECTIONS</Text>
+                    <Text>FROM HIGHWAY 114 EAST EXIT OCONNOR/WINGREN STAY ON</Text>
+                    <Text>THE SERVICE ROAD TO THE NEXT LIGHT THEN TURN LEFT</Text>
+                    <Text>ON WINGREN. HOTEL IS LOCATED ON THE RIGHT SIDE.</Text>
+                    <Text>FROM HIGHWAY 114 WEST EXIT RIVERSIDE/ROCHELLE STAY</Text>
+                    <Text>ON THE SERVICE ROAD THEN TURN RIGHT ON WINGREN.</Text>
+                    <Text>HOTEL IS LOCATED IMMEDIATELY ON THE RIGHT SIDE.</Text>
+                    <Text>FROM 35E NORTH TAKE HIGHWAY 183 WEST TO HIGHWAY</Text>
+                    <Text>114 WEST /IRVING/GRAPEVINE/. EXIT</Text>
+                    <Text>RIVERSIDE/ROCHELLE STAY ON THE SERVICE ROAD THEN</Text>
+                    <Text>TURN RIGHT ON WINGREN. HOTEL IS LOCATED</Text>
+                    <Text>IMMEDIATELY ON THE RIGHT</Text>
+                    <Text>SIDE.</Text>
+                    <Text>FROM HIGHWAY 635 EXIT MACARTHUR. GO SOUTH/LEFT ON</Text>
+                    <Text>MACARTHUR TO HIGHWAY 114 EAST. TAKE HIGHWAY 114</Text>
+                    <Text>EAST TO OCONNOR/WINGREN EXIT. STAY ON SERVICE ROAD</Text>
+                    <Text>TO NEXT LIGHT AND TURN LEFT ON WINGREN. HOTEL IS</Text>
+                    <Text>ON RIGHT HAND SIDE.</Text>
+                    <Text>.</Text>
+                    <Text>-PARKING DETAILS</Text>
+                    <Text>SELF PARKING. IN-OUT ALLOWED.</Text>
+                    <Text>.</Text>
+                    <Text>.</Text>
+                    <Text>.</Text>
+                </Directions>
+                <Facilities>
+                    <Text>AIR CONDITIONING MEETS BUILDING CODES</Text>
+                    <Text>CONVENIENCE STORE GIFT SHOP</Text>
+                    <Text>DISABLED PARKING DISABLED ACCESS</Text>
+                    <Text>MEETS ADA SPECS HOTEL SAFE</Text>
+                    <Text>GUEST LAUNDRY</Text>
+                    <Text>.</Text>
+                    <Text>.</Text>
+                    <Text>MEETING FACILITIES MULTI LINGUAL STAFF</Text>
+                    <Text>RESTAURANT CRIBS</Text>
+                    <Text>HIGH CHAIR BAGGAGE STORAGE</Text>
+                    <Text>ELEVATORS LUGGAGE HOLD</Text>
+                    <Text>ROOM SERVICE</Text>
+                    <Text>.</Text>
+                    <Text>.</Text>
+                </Facilities>
+                <Guarantee>
+                    <Text>-ALL RESERVATIONS MUST BE GUARANTEED WITH A MAJOR</Text>
+                    <Text>CREDIT CARD OR ADV CASH DEPOSIT TO HOTEL</Text>
+                    <Text>REGARDLESS OF TIME OF ARRIVAL. ALL RESERVATIONS</Text>
+                    <Text>MUST BE CANCELLED BY 6PM HOST TIME UNLESS DEPOSIT</Text>
+                    <Text>REQUIRED. POLICY SUBJECT TO CHANGE.</Text>
+                    <Text>.</Text>
+                </Guarantee>
+                <Location>
+                    <Text>-URL WWW.DALLASIRVING.HOMEWOODSUITES.COM</Text>
+                    <Text>.</Text>
+                    <Text>                        - DOWNTOWN ...........................11.0 MI/17.7 KM                    </Text>
+                </Location>
+                <MiscServices>
+                    <Text>- YEAR BUILT</Text>
+                    <Text>1990</Text>
+                    <Text>.</Text>
+                    <Text>- YEAR REMODELED</Text>
+                    <Text>2008</Text>
+                    <Text>.</Text>
+                    <Text>MEETING ROOMS - 1</Text>
+                    <Text>LARGEST MEETING ROOM CAPACITY - 25</Text>
+                </MiscServices>
+                <Policies>
+                    <Text>                        HOMEWOOD SUITES BY HILTON OFFERS SPACIOUS STUDIOS WITH ONE                    </Text>
+                    <Text>                        OR TWO BEDROOMS. SUITES FEATURE SEPARATE LIVING AND SLEEPING                    </Text>
+                    <Text>                        AREAS. EACH HAS A FULLY EQUIPPED KITCHEN WITH A FULL SIZE                    </Text>
+                    <Text>                        REFRIGERATOR, MICROWAVE, TWO-BURNER STOVE AND DISHWASHER.                    </Text>
+                    <Text>                        YOU WILL FIND ENOUGH SPACE FOR WORK, STUDY OR ENTERTAINING                    </Text>
+                    <Text>                        PLUS ALL THE COMFORTS OF HOME INCLUDING TWO REMOTE CONTROL                    </Text>
+                    <Text>                        TVS, COMPLIMENTARY HIGH SPEED INTERNET ACCESS, AND TWO                    </Text>
+                    <Text>                        PHONES WITH VOICE MAIL. ENJOY A COMPLIMENTARY SUITE START                    </Text>
+                    <Text>                        HOT BREAKFAST SEVEN DAYS A WEEK AND A WELCOME HOME RECEPTION                    </Text>
+                    <Text>                        FEATURING A COMPLIMENTARY LIGHT MEAL AND BEVERAGES MONDAY                    </Text>
+                    <Text>THROUGH THURSDAY EVENINGS. LOCAL LAWS MAY APPLY.</Text>
+                    <Text>.</Text>
+                    <Text>-PET POLICY</Text>
+                    <Text>                        PETS ALLOWED - 100.00USD NON REFUNDABLE DEPOSIT UP TO 25 LBS                    </Text>
+                    <Text>.</Text>
+                    <Text>-FAMILY POLICY</Text>
+                    <Text>                        CHILDREN 18 AND UNDER STAY FREE WHEN SHARING A ROOM WITH                    </Text>
+                    <Text>YOU.</Text>
+                    <Text>.</Text>
+                    <Text>.</Text>
+                    <Text>-FREQUENT STAY</Text>
+                    <Text>HILTON HONORS</Text>
+                    <Text>.</Text>
+                    <Text>-MINIMUM LENGTH OF STAY POLICY</Text>
+                    <Text>HILTON WILL PROVIDE CANNED MIN MAX STAY DATA.</Text>
+                    <Text>.</Text>
+                </Policies>
+                <Recreation>
+                    <Text>.</Text>
+                    <Text>RECREATION FACILITIES ONSITE-</Text>
+                    <Text>-CARDIO EQUIPMENT -LIMITED HEALTH CLUB</Text>
+                    <Text>-OUTDOOR POOL -SPORTS COURT</Text>
+                    <Text>-WEIGHT LIFTING</Text>
+                    <Text>.</Text>
+                    <Text>RECREATION FACILITIES OFFSITE-</Text>
+                    <Text>-FISHING -GAME ROOM</Text>
+                    <Text>-GOLF -JET SKIING</Text>
+                    <Text>-PLAY GROUND</Text>
+                    <Text>.</Text>
+                    <Text>RECREATION FACILITIES-</Text>
+                    <Text>DRIVING RANGE NEARBY - 2 MI</Text>
+                    <Text>PUTTING GREEN - 2 MI</Text>
+                    <Text>BOWLING NEARBY - 1.5 MI</Text>
+                    <Text>HORSEBACK RIDING - 1 MI</Text>
+                    <Text>POOL TABLE - 1 MI</Text>
+                    <Text>WALKING TRACK - 1 MI</Text>
+                    <Text>WATER SKIING - 20 MI</Text>
+                    <Text>.</Text>
+                    <Text>.</Text>
+                    <Text>                        CHARGES MAY APPLY FOR SOME RECREATION FACILITIES. CONTACT                    </Text>
+                    <Text>HOTEL FOR INFORMATION</Text>
+                    <Text>.</Text>
+                </Recreation>
+                <Rooms>
+                    <Text>-B1K- DELUXE ROOM</Text>
+                    <Text>-A1K- STANDARD ROOM</Text>
+                    <Text>.</Text>
+                    <Text>- 136 ROOMS</Text>
+                    <Text>- 136 SUITES</Text>
+                    <Text>- 3 FLOORS</Text>
+                    <Text>.</Text>
+                    <Text>AMENITIES IN ALL ROOMS-</Text>
+                    <Text>- ADDITIONAL DESK OUTLET - AIR CONDITIONING</Text>
+                    <Text>- ALARM CLOCK - BATHROOM AMENITIES</Text>
+                    <Text>- CABLE NEWS - CABLE TV</Text>
+                    <Text>- COFFEE/TEA MAKER - DISHWASHER</Text>
+                    <Text>- HAIR DRYER - HIGH SPEED INTERNET</Text>
+                    <Text>- IRONING BOARD - KITCHEN</Text>
+                    <Text>- MICROWAVE - MODEM DATAPORT</Text>
+                    <Text>- MOVIES - NEWSPAPER</Text>
+                    <Text>- POWER OUTLET AT DESK - REFRIGERATOR</Text>
+                    <Text>- REMOTE CONTROL TV - SOFA BED</Text>
+                    <Text>- SPEAKER PHONE - TEMPERATURE CONTROL</Text>
+                    <Text>- VOICE MAIL</Text>
+                    <Text>.</Text>
+                    <Text>AMENITIES IN SELECT ROOMS-</Text>
+                    <Text>- DVD PLAYER - ELECTRICAL PLUG</Text>
+                    <Text>ADAPTERS</Text>
+                    <Text>- FIREPLACE - PANS AND SERVING DISHES</Text>
+                    <Text>- PLATES AND GLASSWARE - STEREO</Text>
+                    <Text>- STOVE - TELEPHONE ADAPTER</Text>
+                    <Text>- TOASTER - WORKDESK LAMP</Text>
+                    <Text>.</Text>
+                    <Text>-FEATURED ROOM AMENITIES</Text>
+                    <Text>.</Text>
+                    <Text>NON-SMOKING ROOM</Text>
+                    <Text>ACCESSIBLE</Text>
+                    <Text>HAND HELD SHOWER</Text>
+                    <Text>CONNECTING ROOMS</Text>
+                    <Text>LEVER DOOR HANDLES</Text>
+                    <Text>WELCOME AMENITY</Text>
+                    <Text>TWO PHONES</Text>
+                    <Text>TELEPHONE - AUTO WAKEUP</Text>
+                    <Text>AUTOMATIC DOOR CLOSER</Text>
+                    <Text>VIDEO GAMES ON TV</Text>
+                    <Text>CURVED SHOWER ROD</Text>
+                    <Text>WATERPIK SHOWERHEAD</Text>
+                    <Text>BLACK-OUT CURTAINS</Text>
+                    <Text>CONTROLLED ACCESS CORRIDORS</Text>
+                    <Text>CONVENIENT ELECTRICAL OUTLETS</Text>
+                    <Text>DESK LEVEL PHONE JACKS</Text>
+                    <Text>DOWN DREAMS PILLOWS</Text>
+                    <Text>DUVET COVERS</Text>
+                    <Text>EMERGENCY CALL BUTTON ON PHONE</Text>
+                    <Text>ERGONOMIC DESK CHAIR</Text>
+                    <Text>FLEXIBLE WORK ENVIRONMENT</Text>
+                    <Text>GRANITE COUNTER TOPS/VANITIES</Text>
+                    <Text>LARGE ARM CHAIR WITH OTTOMAN</Text>
+                    <Text>LCD FLAT PANEL TV</Text>
+                    <Text>SIGNATURE PILLOWS</Text>
+                    <Text>SPACIOUS TWO ROOM SUITE</Text>
+                    <Text>SERTA SUITE DREAMS BEDDING</Text>
+                    <Text>SWEET DREAMS SLEEP EXPERIENCE</Text>
+                    <Text>SEATING AREA WITH SOFA</Text>
+                    <Text>FEATHER PILLOWS NON ALLERGENIC</Text>
+                    <Text>DINING TABLE AND CHAIRS</Text>
+                    <Text>120 AC</Text>
+                    <Text>PAY PER VIEW TV</Text>
+                    <Text>BATHROOM DOORS AT LEAST 32 INCHES WIDE</Text>
+                    <Text>ROOMS ACCESSIBLE FOR WHEELCHAIRS</Text>
+                    <Text>GRAB BARS IN BATHROOM</Text>
+                    <Text>AMPLIFIED TELEPHONES</Text>
+                    <Text>TTD TELEPHONE MACHINE</Text>
+                    <Text>ONE-INCH DEADBOLT ON CONNECTING DOORS</Text>
+                    <Text>EMERGENCY PHONE EXTENSION IN ALL GUEST ROOMS</Text>
+                    <Text>.</Text>
+                    <Text>.</Text>
+                </Rooms>
+                <Safety>
+                    <Text>BRAILLE ELEVATOR</Text>
+                    <Text>RESTRICTED PUBLIC ACCESS TO GUEST ROOM FLOORS</Text>
+                    <Text>HOTEL COMPLIES WITH AAA SECURITY STANDARDS</Text>
+                    <Text>RESTRICTED PHONE ACCESS FROM PUBLIC AREAS</Text>
+                    <Text>.</Text>
+                    <Text>.</Text>
+                    <Text>                        -ALARMS MONITORED -STROBE LIGHTS IN HALLS                    </Text>
+                    <Text>-STROBE ALARMS -AUDIBLE ALARMS</Text>
+                    <Text>                        -SMOKE ALARMS IN HALLS -SMOKE ALARMS IN ROOMS                    </Text>
+                    <Text>                        -SMOKE ALARMS PUBLIC AREAS -SMOKE ALARM HARD WIRED                    </Text>
+                    <Text>-ELEVATOR RECALL -LINKED TO FIRE DEPT</Text>
+                    <Text>-DEAD BOLTS -ELECTRONIC KEYCARDS</Text>
+                    <Text>                        -EMERGENCY EVAC PLAN -EMERGENCY INFO IN ROOMS                    </Text>
+                    <Text>-EMERGENCY LIGHTING -EXIT MAPS IN ROOMS</Text>
+                    <Text>                        -EXIT SIGNS LIT -EXIT DOORS AUTO LOCK                    </Text>
+                    <Text>                        -HALLWAY FIRE DETECTORS -PUBLIC FIRE DETECTORS                    </Text>
+                    <Text>                        -ROOM FIRE DETECTORS -FIRE EXTINGUISHERS IN HALLS                    </Text>
+                    <Text>-FIRST AID AVAILABLE -SECONDARY LOCKS</Text>
+                    <Text>                        -ROOMS HAVE VIEWPORTS -MULTIPLE EXITS PER FLOOR                    </Text>
+                    <Text>                        -PARKING AREAS LIT -PATROLLED PARKING AREAS                    </Text>
+                    <Text>-SAFETY COMPLIANT -ROOM WINDOWS OPEN</Text>
+                    <Text>                        -HALL SPRINKLERS -PUBLIC AREAS SPRINKLERS                    </Text>
+                    <Text>                        -SPRINKLERS ROOMS -STAFF TRAINED IN CPR                    </Text>
+                    <Text>                        -STAFF TRAINED TO DUP KEYS -STAFF FIRST AID TRAINED                    </Text>
+                    <Text>                        -VENTILATED STAIRWELLS -24 HR VIDEO SURVEILLANCE                    </Text>
+                    <Text>-RECORDED VID SURVEILLANCE -WELL LIT WALKWAYS</Text>
+                    <Text>.</Text>
+                    <Text>- INTERIOR CORRIDORS</Text>
+                </Safety>
+                <Services>
+                    <Text>.</Text>
+                    <Text>-SERVICES ON PROPERTY</Text>
+                    <Text>- AUDIO VISUAL EQUIPMENT - BREAKFAST BUFFET</Text>
+                    <Text>                        - BUSINESS CENTER - BUSINESS CENTER SERVICES                    </Text>
+                    <Text>- COCKTAIL - COFFEE</Text>
+                    <Text>                        - COMPUTER - EARLY CHECK OUT PENALTY                    </Text>
+                    <Text>                        - EXPRESS CHECK OUT - EXPRESS CHECK IN FEE                    </Text>
+                    <Text>- FAXING INCOMING - FAXING OUTGOING</Text>
+                    <Text>- GROCERY SHOPPING SERVICE - LATE CHECK OUT</Text>
+                    <Text>- LAUNDRY VALET - LOCAL SHUTTLE</Text>
+                    <Text>- SHUTTLE TO ATTRACTIONS - PARKING</Text>
+                    <Text>- SOCIAL HOUR</Text>
+                    <Text>.</Text>
+                    <Text>.</Text>
+                    <Text>SOME SERVICES MAY INCUR AN ADDITIONAL CHARGE</Text>
+                    <Text>.</Text>
+                </Services>
+                <Transportation>
+                    <Text>- AREA TRANSPORTATION</Text>
+                    <Text>AIRPORT SUPER SHUTTLE CHARGE</Text>
+                    <Text>TAXI CHARGE</Text>
+                </Transportation>
+            </VendorMessages>
+        </BasicPropertyInfo>
+        <Guarantee>
+            <GuaranteesAccepted>
+                <PaymentCard Code="AX" Type="AMERICAN EXPRESS" />
+                <PaymentCard Code="CB" Type="CARTE BLANCHE" />
+                <PaymentCard Code="DC" Type="DINERS CLUB CARD" />
+                <PaymentCard Code="DS" Type="DISCOVER CARD" />
+                <PaymentCard Code="MC" Type="MASTER CARD" />
+                <PaymentCard Code="VI" Type="VISA" />
+                <Text>/GCR CORPORATE ID</Text>
+            </GuaranteesAccepted>
+        </Guarantee>
+        <RoomRates>
+            <RoomRate DirectConnect="false" GuaranteeSurchargeRequired="G" GuaranteedRateProgram="false" HRD_RequiredForSell="false" IATA_CharacteristicIdentification="A03LV2" IATA_ProductIdentification="BEST AVAILABLE RATE" LowInventoryThreshold="false" RateChangeInd="false" RateConversionInd="false" SpecialOffer="false">
+                <AdditionalInfo>
+                    <CancelPolicy Numeric="24" Option="H" />
+                    <Commission NonCommission="false">10 PERCENT</Commission>
+                    <DCA_Cancellation>
+                        <Text>24 HR CANCELLATION REQUIRED</Text>
+                        <Text>OR PARTIAL PAYMENT MAY BE FORFEITED</Text>
+                    </DCA_Cancellation>
+                    <DCA_Guarantee>
+                        <Text>CREDIT CARD</Text>
+                    </DCA_Guarantee>
+                    <DCA_Other>
+                        <Text>MAXIMUM LENGTH OF STAY 99 NIGHTS</Text>
+                    </DCA_Other>
+                    <Taxes>15.00 PCT</Taxes>
+                    <Text>1 KING BED 1 BEDROOM SUITE SMOKING</Text>
+                    <Text>COMP HI SPEED DAILY HOT BRKFST LITE MEAL M-TH</Text>
+                    <Text>SEPARATE BDRM LIVING RM SOFABED FULL KITCHEN</Text>
+                    <Text>149.00 PER NIGHT STARTING 21NOV</Text>
+                    <Text>99.00 PER NIGHT STARTING 23NOV12</Text>
+                    <Text>397.00 TOTAL FOR 21NOV THROUGH 24NOV</Text>
+                </AdditionalInfo>
+                <Rates>
+                    <Rate Amount="149.00" ChangeIndicator="true" CurrencyCode="USD" HRD_RequiredForSell="false" PackageIndicator="false" RateConversionInd="false" ReturnOfRateInd="false" RoomOnRequest="false">
+                        <AdditionalGuestAmounts>
+                            <AdditionalGuestAmount MaxExtraPersonsAllowed="0" NumAdults="0" NumCribs="0">
+                                <Charges AdultRollAway="0" Crib="0" ExtraPerson="0" />
+                            </AdditionalGuestAmount>
+                        </AdditionalGuestAmounts>
+                    </Rate>
+                </Rates>
+            </RoomRate>
+        </RoomRates>
+        <TimeSpan Duration="0005" End="2012-11-24" Start="2012-11-21" />
+    </RoomStay>
+</HotelRateDescriptionRS>

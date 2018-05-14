@@ -33,6 +33,7 @@ type HotelRateDescRQ struct {
 	Avail             AvailRequestSegment
 }
 
+/*
 // addCorporateID to the existing avail struct for a corporate customer
 func (a *HotelRateDescRQ) addCorporateID(cID string) {
 	a.Avail.Customer = &Customer{
@@ -50,8 +51,9 @@ func (a *HotelRateDescRQ) addCustomerID(cID string) {
 		},
 	}
 }
+*/
 
-// SetHotelRateDescRqStruct hotel availability request using input parameters
+// SetHotelRateDescRqStruct hotel rate description request using input parameters
 func SetHotelRateDescRqStruct(guestCount int, query HotelSearchCriteria, arrive, depart string) (HotelRateDescBody, error) {
 	err := query.validatePropertyRequest()
 	if err != nil {
@@ -68,7 +70,7 @@ func SetHotelRateDescRqStruct(guestCount int, query HotelSearchCriteria, arrive,
 			Avail: AvailRequestSegment{
 				GuestCounts:         GuestCounts{Count: guestCount},
 				HotelSearchCriteria: query,
-				ArriveDepart: TimeSpan{
+				TimeSpan: TimeSpan{
 					Depart: d.Format(timeSpanFormatter),
 					Arrive: a.Format(timeSpanFormatter),
 				},
@@ -77,7 +79,7 @@ func SetHotelRateDescRqStruct(guestCount int, query HotelSearchCriteria, arrive,
 	}, nil
 }
 
-// BuildHotelRateDescRequest to make hotel property description request, which will have rate availability information on the response.
+// BuildHotelRateDescRequest to make hotel property description request, done after hotel property description IF hrd required for sell is true.
 func BuildHotelRateDescRequest(from, pcc, binsectoken, convid, mid, time string, propDesc HotelRateDescBody) HotelRateDescRequest {
 	return HotelRateDescRequest{
 		Envelope: srvc.CreateEnvelope(),
@@ -110,7 +112,7 @@ func BuildHotelRateDescRequest(from, pcc, binsectoken, convid, mid, time string,
 	}
 }
 
-// HotelRateDescriptionRS parse sabre hotel availability
+// HotelRateDescriptionRS parse sabre hotel rate description
 type HotelRateDescriptionRS struct {
 	XMLName  xml.Name `xml:"HotelRateDescriptionRS"`
 	XMLNS    string   `xml:"xmlns,attr"`
@@ -122,7 +124,7 @@ type HotelRateDescriptionRS struct {
 	RoomStay RoomStay
 }
 
-// HotelAvailResponse is wrapper with namespace prefix definitions for payload
+// HotelRateDescResponse is wrapper with namespace prefix definitions for payload
 type HotelRateDescResponse struct {
 	Envelope srvc.EnvelopeUnMarsh
 	Header   srvc.SessionHeaderUnmarsh
@@ -134,8 +136,8 @@ type HotelRateDescResponse struct {
 	ErrorSabreXML     ErrorSabreXML
 }
 
-// CallHotelRate to sabre web services retrieve hotel rates using HotelRateertyDescriptionLLSRQ.
-func CallHotelRate(serviceURL string, req HotelRateDescRequest) (HotelRateDescResponse, error) {
+// CallHotelRateDesc to sabre web services retrieve hotel rates using HotelRateertyDescriptionLLSRQ.
+func CallHotelRateDesc(serviceURL string, req HotelRateDescRequest) (HotelRateDescResponse, error) {
 	propResp := HotelRateDescResponse{}
 	byteReq, _ := xml.Marshal(req)
 

@@ -5,8 +5,41 @@ import (
 	"strings"
 )
 
+/*
 // NewHotelSearchCriteria accepts set of QueryParams functions, executes over hotel search criteria and returns modified criteria
-func NewHotelSearchCriteria(queryParams ...QueryParams) (HotelSearchCriteria, error) {
+func NewRateParams(rateParams ...QueryRateParams) (RatePlanCandidates, error) {
+	rates := &RatePlanCandidates{}
+	for _, qm := range rateParams {
+		err := qm(rates)
+		if err != nil {
+			return *rates, err
+		}
+	}
+	return *rates, nil
+}
+
+// PackaSetRateParamseSearch ...
+func SetRateParams(ratePlans RateParams) func(q *RatePlanCandidates) error {
+	return func(q *RatePlanCandidates) error {
+		for _, plan := range ratePlans {
+			q.RatePlans = append(q.RatePlans, &plan)
+		}
+		return nil
+	}
+}
+*/
+
+// SetRateParamse ...
+func SetRateParams(ratePlans []RatePlan) *RatePlanCandidates {
+	rpc := &RatePlanCandidates{}
+	for _, plan := range ratePlans {
+		rpc.RatePlans = append(rpc.RatePlans, &plan)
+	}
+	return rpc
+}
+
+// NewHotelSearchCriteria accepts set of QueryParams functions, executes over hotel search criteria and returns modified criteria
+func NewHotelSearchCriteria(queryParams ...QuerySearchParams) (HotelSearchCriteria, error) {
 	criteria := &HotelSearchCriteria{}
 	for _, qm := range queryParams {
 		err := qm(criteria)

@@ -93,6 +93,29 @@ type Rate struct {
 	HotelPricing           HotelPricing
 }
 
+type AdditionalInfo struct {
+	XMLName    xml.Name `xml:"AdditionalInfo"`
+	Commission struct {
+		NonCommission int    `xml:"NonCommission,attr"`
+		Val           string `xml:",char"`
+	} `xml:"Commission"`
+	DCACancellation struct {
+		Text []string `xml:"Text"`
+	} `xml:"DCA_Cancellation"`
+	DCAGuarantee struct {
+		Text []string `xml:"Text"`
+	} `xml:"DCA_Guarantee"`
+	DCAOther struct {
+		Text []string `xml:"Text"`
+	} `xml:"DCA_Other"`
+	Taxes        string `xml:"Taxes"`
+	CancelPolicy struct {
+		Numeric int    `xml:"Numeric,attr"` //string? 001 versus 1
+		Option  string `xml:"Option,attr"`
+	} `xml:"CancelPolicy"`
+	Text []string `xml:"Text"`
+}
+
 type RoomRate struct {
 	XMLName            xml.Name `xml:"RoomRate"`
 	DirectConnect      string   `xml:"RDirectConnect,attr"`
@@ -107,14 +130,8 @@ type RoomRate struct {
 	RateConversionInd  string   `xml:"RateConversionInd,attr"`
 	SpecialOffer       string   `xml:"SpecialOffer,attr"`
 	Rates              []Rate   `xml:"Rates>Rate"`
-	AdditionalInfo     struct {
-		CancelPolicy struct {
-			Numeric int    `xml:"Numeric,attr"` //string? 001 versus 1
-			Option  string `xml:"Option,attr"`
-		} `xml:"CancelPolicy"`
-		Text []string `xml:"Text"`
-	} `xml:"AdditionalInfo"`
-	HotelRateCode string `xml:"HotelRateCode"`
+	AdditionalInfo     AdditionalInfo
+	HotelRateCode      string `xml:"HotelRateCode"`
 }
 
 type VendorMessages struct {
