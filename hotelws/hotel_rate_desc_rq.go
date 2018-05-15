@@ -3,7 +3,6 @@ package hotelws
 import (
 	"bytes"
 	"encoding/xml"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -111,7 +110,7 @@ type HotelRateDescResponse struct {
 func CallHotelRateDesc(serviceURL string, req HotelRateDescRequest) (HotelRateDescResponse, error) {
 	propResp := HotelRateDescResponse{}
 	byteReq, _ := xml.Marshal(req)
-	fmt.Printf("REQ: \n\n %s \n\n", byteReq)
+	//fmt.Printf("REQ: \n\n %s \n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
@@ -126,7 +125,7 @@ func CallHotelRateDesc(serviceURL string, req HotelRateDescRequest) (HotelRateDe
 	io.Copy(bodyBuffer, resp.Body)
 	resp.Body.Close()
 
-	fmt.Printf("----------------\n\n %s \n\n", bodyBuffer.Bytes())
+	//fmt.Printf("----------------\n\n %s \n\n", bodyBuffer.Bytes())
 	//marshal bytes sabre response body into availResp response struct
 	err = xml.Unmarshal(bodyBuffer.Bytes(), &propResp)
 	if err != nil {

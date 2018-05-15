@@ -23,8 +23,10 @@ import (
 	"time"
 )
 
+type AppStatus int
+
 const (
-	Unknown uint8 = 1 << (2 * iota)
+	Unknown AppStatus = 1 << (2 * iota)
 	BadService
 	BadParse
 )
@@ -53,13 +55,25 @@ var (
 	ErrPropDescHotelRefs = errors.New("Criterion.HotelRef cannot be greater than 1, can only search using one criterion")
 )
 
-type ErrorSabreService struct {
-	AppMessage string `json:"app_message_sabre_service,omitempty"`
-	ErrMessage string `json:"err_message_sabre_service,omitempty"`
-	Code       uint8  `json:"code"`
+func (code AppStatus) String() string {
+	statuses := [...]string{
+		"Unknown",
+		"BadService",
+		"BadParse",
+	}
+	if code < BadParse || code < Unknown {
+		return "Unknown"
+	}
+	return statuses[code]
 }
 
-func NewErrorSabreService(errIn, appIn string, code uint8) ErrorSabreService {
+type ErrorSabreService struct {
+	AppMessage string    `json:"app_message_sabre_service,omitempty"`
+	ErrMessage string    `json:"err_message_sabre_service,omitempty"`
+	Code       AppStatus `json:"app_status"`
+}
+
+func NewErrorSabreService(errIn, appIn string, code AppStatus) ErrorSabreService {
 	//err = strings.Replace(err, "\n", "", -1)
 	return ErrorSabreService{ErrMessage: errIn, AppMessage: appIn, Code: code}
 }
@@ -70,12 +84,12 @@ func (e ErrorSabreService) Error() string {
 }
 
 type ErrorSabreXML struct {
-	AppMessage string `json:"app_message_sabre_xml,omitempty"`
-	ErrMessage string `json:"err_message_sabre_xml,omitempty"`
-	Code       uint8  `json:"code"`
+	AppMessage string    `json:"app_message_sabre_xml,omitempty"`
+	ErrMessage string    `json:"err_message_sabre_xml,omitempty"`
+	Code       AppStatus `json:"app_status"`
 }
 
-func NewErrorErrorSabreXML(errIn, appIn string, code uint8) ErrorSabreXML {
+func NewErrorErrorSabreXML(errIn, appIn string, code AppStatus) ErrorSabreXML {
 	//err = strings.Replace(err, "\n", "", -1)
 	return ErrorSabreXML{ErrMessage: errIn, AppMessage: appIn, Code: code}
 }
