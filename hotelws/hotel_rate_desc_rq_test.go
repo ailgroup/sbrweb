@@ -2,11 +2,10 @@ package hotelws
 
 import (
 	"encoding/xml"
-	"fmt"
 	"testing"
 )
 
-func TestRateDescBuildHotelPropDescMarshal(t *testing.T) {
+func TestHotelRateDescMarshal(t *testing.T) {
 	rpc := SetRateParams(
 		[]RatePlan{
 			RatePlan{
@@ -25,13 +24,10 @@ func TestRateDescBuildHotelPropDescMarshal(t *testing.T) {
 		t.Error("Error marshaling get hotel content", err)
 	}
 
-	/*
-		if string(b) != string(sampleHotelRateDescRQRPH) {
-			t.Errorf("Expected marshal SOAP hotel property description for hotel ids \n sample: %s \n result: %s", string(samplePropRQIDs), string(b))
-		}
-	*/
-	fmt.Printf("content marshal \n%s\n", b)
-
+	if string(b) != string(sampleHotelRateDescRQRPH) {
+		t.Errorf("Expected marshal SOAP hotel rate description for rph \n sample: %s \n result: %s", string(sampleHotelRateDescRQRPH), string(b))
+	}
+	//fmt.Printf("content marshal \n%s\n", b)
 }
 
 /*
