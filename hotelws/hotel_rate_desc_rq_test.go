@@ -30,6 +30,8 @@ func TestHotelRateDescMarshal(t *testing.T) {
 	//fmt.Printf("content marshal \n%s\n", b)
 }
 
+var ccards = []string{"DS", "CA", "MC", "CB", "VI", "VS", "AX", "JC", "DC"}
+
 func TestRateDescCall(t *testing.T) {
 	// assume RPH is from previous hotel property description call
 	rpc := SetRateParams(
@@ -39,9 +41,9 @@ func TestRateDescCall(t *testing.T) {
 			},
 		},
 	)
-	rate, _ := SetHotelRateDescRqStruct(rpc)
+	raterq, _ := SetHotelRateDescRqStruct(rpc)
 
-	req := BuildHotelRateDescRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, rate)
+	req := BuildHotelRateDescRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, raterq)
 
 	resp, err := CallHotelRateDesc(serverHotelRateDesc.URL, req)
 	if err != nil {
@@ -53,7 +55,7 @@ func TestRateDescCall(t *testing.T) {
 	roomStayRates := resp.Body.HotelDesc.RoomStay.RoomRates
 	numRoomRates := len(roomStayRates)
 	if numRoomRates != 1 {
-		t.Errorf("Number of room rates is wrong, expect %d got %d", 1, numRoomRates)
+		t.Error("Number of room rates is wrong")
 	}
 
 	rr := roomStayRates[0]
@@ -63,6 +65,15 @@ func TestRateDescCall(t *testing.T) {
 	if rr.GuaranteeSurcharge != "G" {
 		t.Errorf("GuaranteeSurcharge expected %s, got %s", "G", rr.GuaranteeSurcharge)
 	}
+	if len(rr.AdditionalInfo.PaymentCard) != 9 {
+		t.Errorf("AdditionalInfo.PaymentCard count is wrong: %v", rr.AdditionalInfo.PaymentCard)
+	}
+	for idx, card := range rr.AdditionalInfo.PaymentCard {
+		if card.Code != ccards[idx] {
+			t.Errorf("AdditionalInfo.PaymentCard expect: %s, got: %s", ccards[idx], card.Code)
+		}
+	}
+
 	cnum := rr.AdditionalInfo.CancelPolicy.Numeric
 	copt := rr.AdditionalInfo.CancelPolicy.Option
 	if cnum != 2 {
@@ -72,34 +83,37 @@ func TestRateDescCall(t *testing.T) {
 		t.Errorf("RoomRate expected cancel policy option %s, got %s", "D", copt)
 	}
 
-	/*
-		indexRoomRate := numRoomRates - 1
-		numRates := len(roomStayRates[indexRoomRate].Rates)
-		if numRates != 1 {
-			t.Error("Number of rates is wrong")
-		}
-		for _, rate := range roomStayRates[indexRoomRate].Rates {
-			if rate.Amount != "400.00" {
-				t.Errorf("Rate expected %s, got %s", "400.00", rate.Amount)
-			}
-			if rate.CurrencyCode != "SGD" {
-				t.Errorf("CurrencyCode expected %s, got %s", "SGD", rate.CurrencyCode)
-			}
-			if rate.HRD_RequiredForSell != "false" {
-				t.Errorf("CurrencyCode expected %s, got %s", "false", rate.HRD_RequiredForSell)
-			}
+	numRates := len(roomStayRates[0].Rates)
+	if numRates != 1 {
+		t.Error("Number of rates is wrong")
+	}
+	rate := rr.Rates[0]
+	if rate.Amount != "274.55" {
+		t.Errorf("Rate expected %s, got %s", "274.55", rate.Amount)
+	}
+	if rate.CurrencyCode != "USD" {
+		t.Errorf("CurrencyCode expected %s, got %s", "USD", rate.CurrencyCode)
+	}
+	if rate.HRD_RequiredForSell != "false" {
+		t.Errorf("CurrencyCode expected %s, got %s", "false", rate.HRD_RequiredForSell)
+	}
 
-			hprice := rate.HotelPricing
-			if hprice.Amount != "470.80" {
-				t.Errorf("HotelPricing expected %s, got %s", "470.80", hprice.Amount)
-			}
-			if hprice.TotalSurcharges.Amount != "40.00" {
-				t.Errorf("TotalSurcharges expected %s, got %s", "40.00", hprice.TotalSurcharges.Amount)
-			}
-			if hprice.TotalTaxes.Amount != "30.80" {
-				t.Errorf("TotalTaxes expected %s, got %s", "30.80", hprice.TotalTaxes.Amount)
-			}
-		}
+	hprice := rate.HotelPricing
+	if hprice.Amount != "307.50" {
+		t.Errorf("HotelPricing expected empty %s, got %s", "307.50", hprice.Amount)
+	}
+	if hprice.TotalSurcharges.Amount != "" {
+		t.Errorf("TotalSurcharges expected %s, got %s", "", hprice.TotalSurcharges.Amount)
+	}
+	if hprice.TotalTaxes.Amount != "32.95" {
+		t.Errorf("TotalTaxes expected %s, got %s", "32.95", hprice.TotalTaxes.Amount)
+	}
 
-	*/
+	if hprice.TotalTaxes.TaxFieldOne != "19.22" {
+		t.Errorf("TaxeFieldOnw expected %s, got %s", "19.22", hprice.TotalTaxes.TaxFieldOne)
+	}
+	if hprice.TotalTaxes.TaxFieldTwo != "13.73" {
+		t.Errorf("TaxFieldTwo expected %s, got %s", "13.73", hprice.TotalTaxes.TaxFieldTwo)
+	}
+
 }

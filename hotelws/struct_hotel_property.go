@@ -67,8 +67,11 @@ type TotalSurcharges struct {
 	Amount  string   `xml:"Amount,attr"`
 }
 type TotalTaxes struct {
-	XMLName xml.Name `xml:"TotalTaxes"`
-	Amount  string   `xml:"Amount,attr"`
+	XMLName     xml.Name `xml:"TotalTaxes"`
+	Amount      string   `xml:"Amount,attr"`
+	TaxFieldOne string   `xml:"TaxFieldOne"`
+	TaxFieldTwo string   `xml:"TaxFieldTwo"`
+	Text        []string `xml:"Text"`
 }
 
 type HotelPricing struct {
@@ -108,6 +111,9 @@ type AdditionalInfo struct {
 	DCAOther struct {
 		Text []string `xml:"Text"`
 	} `xml:"DCA_Other"`
+	PaymentCard []struct {
+		Code string `xml:"Code,attr"`
+	} `xml:"PaymentCard"`
 	Taxes        string `xml:"Taxes"`
 	CancelPolicy struct {
 		Numeric int    `xml:"Numeric,attr"` //string? 001 versus 1
