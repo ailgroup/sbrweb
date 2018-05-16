@@ -49,7 +49,7 @@ func SetHotelRateDescRqStruct(rpc *RatePlanCandidates) (HotelRateDescBody, error
 	}, nil
 }
 
-// BuildHotelRateDescRequest to make hotel property description request, done after hotel property description IF hrd required for sell is true.
+// BuildHotelRateDescRequest to make hotel property description request, done after hotel property description iff HRD_RequiredForSell=true.
 func BuildHotelRateDescRequest(from, pcc, binsectoken, convid, mid, time string, propDesc HotelRateDescBody) HotelRateDescRequest {
 	return HotelRateDescRequest{
 		Envelope: srvc.CreateEnvelope(),
@@ -106,7 +106,7 @@ type HotelRateDescResponse struct {
 	ErrorSabreXML     ErrorSabreXML
 }
 
-// CallHotelRateDesc to sabre web services retrieve hotel rates using HotelRateDescriptionLLSRQ.
+// CallHotelRateDesc to sabre web services retrieve hotel rates using HotelRateDescriptionLLSRQ. This call only supports requests that contain an RPH from a previous hotel_property_desc call, see BuildHotelRateDescRequest.
 func CallHotelRateDesc(serviceURL string, req HotelRateDescRequest) (HotelRateDescResponse, error) {
 	propResp := HotelRateDescResponse{}
 	byteReq, _ := xml.Marshal(req)

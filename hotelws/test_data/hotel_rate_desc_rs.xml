@@ -1,469 +1,503 @@
- <?xml version="1.0" encoding="UTF-8"?>
-<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><soap-env:Header><eb:MessageHeader xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" eb:version="1.0" soap-env:mustUnderstand="1"><eb:From><eb:PartyId eb:type="URI">webservices.sabre.com</eb:PartyId></eb:From><eb:To><eb:PartyId eb:type="URI">www.z.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="sabreXML">HotelRateDescriptionLLSRQ</eb:Service><eb:Action>HotelRateDescriptionLLSRS</eb:Action><eb:MessageData><eb:MessageId>3319224857945470281</eb:MessageId><eb:Timestamp>2018-05-14T23:49:54</eb:Timestamp><eb:RefToMessageId>mid:20180207-20:19:07.25|QVbg0</eb:RefToMessageId></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext"><wsse:BinarySecurityToken valueType="String" EncodingType="wsse:Base64Binary">Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><HotelRateDescriptionRS xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:stl="http://services.sabre.com/STL/v01" Version="2.3.0">
- <stl:ApplicationResults status="Complete">
-  <stl:Success timeStamp="2018-05-14T18:49:54-05:00">
-   <stl:SystemSpecificResults>
-    <stl:HostCommand LNIATA="222222">HRD*12</stl:HostCommand>
-   </stl:SystemSpecificResults>
-  </stl:Success>
- </stl:ApplicationResults>
- <RoomStay>
-  <BasicPropertyInfo ChainCode="WI" GeoConfidenceLevel="0" HotelCityCode="TPA" HotelCode="0000232" HotelName="WESTIN TAMPA WATERSIDE" Latitude="27.937466" Longitude="-82.453541" NumFloors="12" RPH="001">
-   <Address>
-    <AddressLine>725 SOUTH HARBOR ISLAND BLVD</AddressLine>
-    <AddressLine>TAMPA FL 33602</AddressLine>
-    <CountryCode>US</CountryCode>
-   </Address>
-   <Awards>
-    <AwardProvider>NTM4  CROWN</AwardProvider>
-   </Awards>
-   <CheckInTime>15:00</CheckInTime>
-   <CheckOutTime>12:00</CheckOutTime>
-   <ContactNumbers>
-    <ContactNumber Fax="1-813-229-5322" Phone="1-813-229-5000"/>
-   </ContactNumbers>
-   <DirectConnect Ind="true">
-    <AdditionalData Ind="false"/>
-    <CurrencyConverted Ind="false"/>
-    <DC_AvailParticipant Ind="true"/>
-    <DC_SellParticipant Ind="true"/>
-    <RequestFail Ind="false"/>
-    <UnAvail Ind="false"/>
-   </DirectConnect>
-   <IndexData>
-    <Index CountryState="FL" DistanceDirection="1SE" LocationCode="A" Point="UNIVERSITY OF TAMPA" TransportationCode="O"/>
-    <Index CountryState="FL" DistanceDirection="35SE" LocationCode="C" Point="CLEARWATER BEACH" TransportationCode="O"/>
-    <Index CountryState="FL" DistanceDirection="9SW" LocationCode="A" Point="BUSCH GARDENS" TransportationCode="O"/>
-    <Index CountryState="FL" DistanceDirection="2S" LocationCode="A" Point="PORT TAMPA" TransportationCode="O"/>
-    <Index CountryState="FL" DistanceDirection="5SE" LocationCode="A" Point="RAYMOND JAMES STADIUM" TransportationCode="O"/>
-    <Index CountryState="FL" DistanceDirection="21SW" LocationCode="C" Point="TROPICANA FIELD" TransportationCode="O"/>
-    <Index CountryState="FL" DistanceDirection="1S" LocationCode="A" Point="TAMPA CONV CTR" TransportationCode="O"/>
-    <Index DistanceDirection="7SE" LocationCode="A" Point="TPA" TransportationCode="O"/>
-   </IndexData>
-   <PropertyOptionInfo>
-    <ADA_Accessible Ind="true"/>
-    <AdultsOnly Ind="false"/>
-    <AirportShuttle Ind="false"/>
-    <BeachFront Ind="false"/>
-    <Breakfast Ind="false"/>
-    <BusinessCenter Ind="true"/>
-    <BusinessReady Ind="false"/>
-    <CarRentalCounter>N</CarRentalCounter>
-    <Conventions Ind="true"/>
-    <Dataport Ind="false"/>
-    <Dining Ind="true"/>
-    <DryClean Ind="false"/>
-    <EcoCertified Ind="false"/>
-    <ExecutiveFloors Ind="false"/>
-    <FamilyPlan Ind="false"/>
-    <FitnessCenter Ind="true"/>
-    <FreeLocalCalls Ind="false"/>
-    <FreeParking Ind="false"/>
-    <FreeShuttle Ind="false"/>
-    <FreeWifiInMeetingRooms Ind="false"/>
-    <FreeWifiInPublicSpaces Ind="true"/>
-    <FreeWifiInRooms Ind="false"/>
-    <FullServiceSpa Ind="false"/>
-    <GameFacilities Ind="false"/>
-    <Golf Ind="false"/>
-    <GovtSafetyFire Ind="true"/>
-    <HighSpeedInternet Ind="false"/>
-    <HypoallergenicRooms Ind="false"/>
-    <IndoorPool Ind="false"/>
-    <IndPetRestriction Ind="true"/>
-    <InRoomCoffeeTea Ind="true"/>
-    <InRoomMiniBar Ind="true"/>
-    <InRoomRefrigerator Ind="false"/>
-    <InRoomSafe Ind="true"/>
-    <InteriorDoorways Ind="true"/>
-    <Jacuzzi Ind="false"/>
-    <KidsFacilities Ind="false"/>
-    <KitchenFacilities Ind="false"/>
-    <MealService Ind="false"/>
-    <MeetingFacilities Ind="true"/>
-    <NoAdultTV Ind="false"/>
-    <NonSmoking Ind="true"/>
-    <OutdoorPool Ind="true"/>
-    <Parking>Y</Parking>
-    <Pets Ind="true"/>
-    <Pool Ind="true"/>
-    <PublicTransportationAdjacent Ind="false"/>
-    <Recreation Ind="true"/>
-    <RestrictedRoomAccess Ind="false"/>
-    <RoomService Ind="false"/>
-    <RoomService24Hours Ind="false"/>
-    <RoomsWithBalcony Ind="false"/>
-    <SkiInOutProperty Ind="false"/>
-    <SmokeFree Ind="true"/>
-    <SmokingRoomsAvail Ind="false"/>
-    <Tennis Ind="false"/>
-    <WaterPurificationSystem Ind="false"/>
-    <Wheelchair Ind="true"/>
-   </PropertyOptionInfo>
-   <PropertyTypeInfo>
-    <AllInclusive Ind="false"/>
-    <Apartments Ind="false"/>
-    <BedBreakfast Ind="false"/>
-    <Castle Ind="false"/>
-    <Conventions Ind="true"/>
-    <Economy Ind="false"/>
-    <ExtendedStay Ind="false"/>
-    <Farm Ind="false"/>
-    <First Ind="true"/>
-    <Luxury Ind="false"/>
-    <Moderate Ind="false"/>
-    <Motel Ind="false"/>
-    <Resort Ind="false"/>
-    <Suites Ind="false"/>
-   </PropertyTypeInfo>
-   <SpecialOffers Ind="false"/>
-   <Taxes>
-    <Text>5.00 PCT</Text>
-    <Text>7.00 PCT</Text>
-   </Taxes>
-   <VendorMessages>
-    <AdditionalAttractions>
-     <Text>CORPORATE LOCATIONS -</Text>
-     <Text>WELLS FARGO BANK               1.00 MI</Text>
-     <Text>FEDEX OFFICE                   1.00 MI</Text>
-     <Text>SYKES ENTERPRISES              1.00 MI</Text>
-     <Text>ERNST   YOUNG                  1.00 MI</Text>
-     <Text>BANK OF AMERICA                1.00 MI</Text>
-     <Text>TECO ENERGY, INC.              1.00 MI</Text>
-     <Text>AACSB                          0.06 MI</Text>
-     <Text>VERIZON                        1.00 MI</Text>
-     <Text>CITIGROUP                      10.99 MI</Text>
-     <Text>MEDIA GENERAL BROADCASTING GRO 1.00 MI</Text>
-     <Text>TAMPA PORT AUTHORITY           2.00 MI</Text>
-     <Text>KPMG                           1.00 MI</Text>
-     <Text>CP SHIPS                       1.00 MI</Text>
-     <Text>PRICEWATERHOUSECOOPERS         1.00 MI</Text>
-    </AdditionalAttractions>
-    <Attractions>
-     <Text>ATTRACTIONS -</Text>
-     <Text>AMTRAK                       1.00 MI</Text>
-     <Text>SALVIDOR DALI MUSEUM         24.98 MI</Text>
-     <Text>FORT DE SOTO PARK            33.98 MI</Text>
-     <Text>UNIVERSITY OF TAMPA          1.00 MI</Text>
-     <Text>BAYSHORE BOULEVARD LINEAR PA 1.00 MI</Text>
-     <Text>UNIVERSITY OF SOUTH FLORIDA  8.00 MI</Text>
-     <Text>LEGEND S FIELD               5.00 MI</Text>
-     <Text>TAMPA BAY PERFORMING ARTS CE 1.00 MI</Text>
-     <Text>LOWRY PARK ZOO               8.00 MI</Text>
-     <Text>WESTSHORE PLAZA              6.00 MI</Text>
-     <Text>TAMPA CONVENTION CENTER      0.12 MI</Text>
-     <Text>OLD HYDE PARK VILLAGE        2.00 MI</Text>
-     <Text>AMALIE ARENA  FORMERLY ST. P 0.19 MI</Text>
-     <Text>TAMPA MUSEUM OF ART          1.00 MI</Text>
-     <Text>BUSCH GARDENS                8.99 MI</Text>
-     <Text>HB PLANT MUSEUM              1.00 MI</Text>
-     <Text>YACHT STARSHIP               1.00 MI</Text>
-     <Text>TAMPA THEATRE                1.00 MI</Text>
-     <Text>CHANNELSIDE                  1.00 MI</Text>
-     <Text>TAMPA GENERAL HOSPITAL       2.00 MI</Text>
-     <Text>INTERNATIONAL PLAZA   BAY ST 6.00 MI</Text>
-     <Text>PRICEWATERHOUSECOOPERS       1.00 MI</Text>
-     <Text>GERALD R. FORD AMPHITHEATRE  8.99 MI</Text>
-     <Text>RAYMOND JAMES STADIUM  HOME  5.00 MI</Text>
-     <Text>FLORIDA AQUARIUM             1.00 MI</Text>
-     <Text>PORT AUTHORITY               2.00 MI</Text>
-    </Attractions>
-    <Awards>
-     <Text>AWARDS -</Text>
-     <Text>GLOBAL BUSINESS TRAVEL ASSOCIATION  GBTA  - PROJECT ICARUS</Text>
-     <Text>SUPPLIER GOLD MEDAL  2016</Text>
-    </Awards>
-    <Cancellation>
-     <Text>01JAN14 - 31DEC99-</Text>
-     <Text>CANCEL BY 2 DAYS PRIOR TO ARRIVAL</Text>
-     <Text>TO AVOID A 100.00PCT CANCELLATION PENALTY</Text>
-     <Text>CANCELLATION POLICY TEXT -</Text>
-     <Text>THE CANCELLATION POLICY WILL VARY BASED ON THE RATE PLAN</Text>
-     <Text>AND/OR BOOKING DATE S . PLEASE SEE  RATE AND POLICY</Text>
-     <Text>INFORMATION  WHEN CHECKING AVAILABILITY.</Text>
-    </Cancellation>
-    <Deposit>
-     <Text>ACCEPTED FORMS OF DEPOSIT- 01JAN14 - 31DEC99</Text>
-     <Text>CREDIT CARD</Text>
-    </Deposit>
-    <Description>
-     <Text>YEAR BUILT - 1985           YEAR REMODELED - 2017</Text>
-     <Text>ADDITIONAL PROPERTY DESCRIPTION -</Text>
-     <Text>ESCAPE TO THE WESTIN TAMPA WATERSIDE, SITUATED ON A UNIQUE</Text>
-     <Text>LANDSCAPED ISLAND IN DOWNTOWN TAMPA. ADJACENT TO THE TAMPA</Text>
-     <Text>CONVENTION CENTER, OUR LOCATION IS CONVENIENT FOR BUSINESS</Text>
-     <Text>AND LEISURE TRAVELERS ALIKE. JUST TWO BLOCKS FROM AMALIE</Text>
-     <Text>ARENA  FORMERLY ST. PETE TIMES FORUM , WE HAVE ACCESS TO ALL</Text>
-     <Text>THAT TAMPA HAS TO OFFER.OUR WATERFRONT ATMOSPHERE LEAVES</Text>
-     <Text>NOTHING TO BE DESIRED, WITH AN OUTDOOR POOL AND A</Text>
-     <Text>FULL-SERVICE BUSINESS CENTER. HOST AN EVENT IN ONE OF OUR 13</Text>
-     <Text>FLEXIBLE MEETING ROOMS, SOME OFFERING STUNNING HARBOR VIEWS.</Text>
-     <Text>ENJOY DELICIOUS CONTINENTAL FARE AT OUR ELEGANT RESTAURANT,</Text>
-     <Text>BLUE HARBOUR EATERY  AMP  BAR. OUR OVERSIZED GUEST ROOMS AND</Text>
-     <Text>SUITES AT THE WESTIN TAMPA WATERSIDE ARE DESIGNED TO ENHANCE</Text>
-     <Text>YOUR RELAXATION. RELAX IN OUR SIGNATURE HEAVENLY  BED FOR A</Text>
-     <Text>PEACEFUL NIGHTS SLEEP. REFRESH THE NEXT MORNING IN ONE OF OUR</Text>
-     <Text>SPACIOUS BATHROOMS, EQUIPPED WITH THE HEAVENLY  SHOWER</Text>
-     <Text>FEATURING DUAL SHOWERHEADS.</Text>
-    </Description>
-    <Dining>
-     <Text>RESTAURANTS -</Text>
-     <Text>MARKET PLACE</Text>
-     <Text>RESTAURANT DESCRIPTION</Text>
-     <Text>STOP BY THE MARKET PLACE FOR GRAB-AND-GO OPTIONS LIKE</Text>
-     <Text>SNACKS, SODAS, AND COLD-BREW COFFEE.</Text>
-     <Text>BLUE HARBOUR EATERY   BAR</Text>
-     <Text>CUISINE - AMERICAN</Text>
-     <Text>MEALS SERVED - BREAKFAST - LUNCH - DINNER</Text>
-     <Text>RESTAURANT DESCRIPTION</Text>
-     <Text>THE RELAXED YET REFINED BLUE HARBOUR EATERY   BAR HAS BEEN</Text>
-     <Text>INSPIRED BY THE SEA. MADE FRESH FROM THE DAY S CATCH,</Text>
-     <Text>SIMPLE DISHES ARE FLAWLESSLY EXECUTED, AND A TOP-NOTCH</Text>
-     <Text>DRINK LIST INCLUDES PREMIUM COCKTAILS.</Text>
-    </Dining>
-    <Directions>
-     <Text>PRIMARY AIRPORT -</Text>
-     <Text>TPA - TAMPA INTERNATIONAL AIRPORT - 9.00 MI</Text>
-     <Text>OTHER AIRPORTS -</Text>
-     <Text>PIE - ST. PETERSBURG INTERNATIONAL AIRPORT - 25.00 MI</Text>
-     <Text>MCO - ORLANDO INTERNATIONAL AIRPORT - 86.00 MI</Text>
-     <Text>DIRECTIONS TO THE PROPERTY FROM THE NORTH -</Text>
-     <Text>TAKE INTERSTATE 75 TAMPA CROSSTOWN EXPRESSWAY, WESTBOUND.</Text>
-     <Text>TAKE THE CROSSTOWN EXPRESSWAY TO THE MORGAN STREET EXIT. AT</Text>
-     <Text>THE BASE OF THE RAMP, MERGE TO THE LEFT LANE. TURN LEFT ON</Text>
-     <Text>FRANKLIN STREET.</Text>
-     <Text>DIRECTIONS TO THE PROPERTY FROM THE SOUTH -</Text>
-     <Text>TAKE INTERSTATE 275 NORTH TO EXIT 44  ASHLEY STREET -</Text>
-     <Text>DOWNTOWN EAST/WEST . TAKE THE DOWNTOWN WEST EXIT. TAKE THE</Text>
-     <Text>TAMPA STREET SOUTH EXIT. TURN RIGHT ONTO FRANKLIN STREET</Text>
-     <Text>WHICH BECOMES HARBOUR ISLAND BOULEVARD. CONTINUE TO THE</Text>
-     <Text>HOTEL.</Text>
-     <Text>DIRECTIONS TO THE PROPERTY FROM THE WEST -</Text>
-     <Text>TAKE INTERSTATE 4 TO INTERSTATE 275 SOUTH. PROCEED TO EXIT 44</Text>
-     <Text>ASHLEY STREET - DOWNTOWN EAST/WEST . TAKE TAMPA STREET</Text>
-     <Text>SOUTH. TURN RIGHT ONTO FRANKLIN STREET WHICH BECOMES HARBOUR</Text>
-     <Text>ISLAND BOULEVARD. CONTINUE TO THE HOTEL.</Text>
-    </Directions>
-    <Facilities>
-     <Text>ON-SITE FACILITIES DESCRIPTION -</Text>
-     <Text>PARKING</Text>
-     <Text>ON-SITE FACILITIES -</Text>
-     <Text>ACCESSIBLE FACILITIES         BUSINESS CENTER</Text>
-     <Text>CONCIERGE LOUNGE              CONNECTING ROOMS</Text>
-     <Text>EXERCISE GYM                  HEALTH CLUB</Text>
-     <Text>MEETING ROOMS                 NON-SMOKING ROOMS  GENERIC</Text>
-     <Text>ONSITE LAUNDRY                OUTDOOR POOL</Text>
-     <Text>PARKING                       PARKING LOT</Text>
-     <Text>POOL                          RESTAURANT</Text>
-     <Text>WIRELESS INTERNET CONNECTION</Text>
-     <Text>MEETING AND CONVENTION FACILITIES -</Text>
-     <Text>TOTAL NBR OF MEETING ROOMS - 13</Text>
-     <Text>MAXIMUM SEATING CAPACITY OF LARGEST ROOM  - 700</Text>
-     <Text>MAXIMUM SEATING CAPACITY OF SMALLEST ROOM - 10</Text>
-     <Text>AREA OF LARGEST ROOM  - 442</Text>
-     <Text>AREA OF SMALLEST ROOM - 29</Text>
-     <Text>TOTAL MEASUREMENT, ALL ROOMS - 1672</Text>
-     <Text>MEETING ROOM SIZE AND SEATING FORMAT OPTIONS -</Text>
-     <Text>MEETING ROOM NAME - CORAL REEF</Text>
-     <Text>LENGTH: 76.00  WIDTH: 20.00  AREA: 1509.00 SQ FT</Text>
-     <Text>BANQUET - 100                THEATRE - 100</Text>
-     <Text>RECEPTION - 150</Text>
-     <Text>MEETING ROOM NAME - CHANNELSIDE</Text>
-     <Text>LENGTH: 144.00  WIDTH: 26.00  AREA: 3744.00 SQ FT</Text>
-     <Text>BANQUET - 200                THEATRE - 180</Text>
-     <Text>RECEPTION - 400</Text>
-     <Text>MEETING ROOM NAME - PALM</Text>
-     <Text>LENGTH: 18.00  WIDTH: 22.00  AREA: 396.00 SQ FT</Text>
-     <Text>CONFERENCE  - 14</Text>
-     <Text>MEETING ROOM NAME - REEF</Text>
-     <Text>LENGTH: 27.00  WIDTH: 20.00  AREA: 540.00 SQ FT</Text>
-     <Text>BANQUET - 40                 THEATRE - 50</Text>
-     <Text>RECEPTION - 60</Text>
-     <Text>MEETING ROOM NAME - CORAL</Text>
-     <Text>LENGTH: 27.00  WIDTH: 20.00  AREA: 540.00 SQ FT</Text>
-     <Text>BANQUET - 40                 THEATRE - 50</Text>
-     <Text>RECEPTION - 60</Text>
-     <Text>MEETING ROOM NAME - HIBISCUS</Text>
-     <Text>LENGTH: 25.00  WIDTH: 17.00  AREA: 425.00 SQ FT</Text>
-     <Text>BANQUET - 24                 THEATRE - 50</Text>
-     <Text>RECEPTION - 50</Text>
-     <Text>MEETING ROOM NAME - LAGOON</Text>
-     <Text>LENGTH: 20.00  WIDTH: 16.00  AREA: 320.00 SQ FT</Text>
-     <Text>BANQUET - 12                 THEATRE - 40</Text>
-     <Text>RECEPTION - 30</Text>
-     <Text>MEETING ROOM NAME - SUNSET</Text>
-     <Text>LENGTH: 35.00  WIDTH: 25.00  AREA: 875.00 SQ FT</Text>
-     <Text>BANQUET - 70                 THEATRE - 80</Text>
-     <Text>RECEPTION</Text>
-    </Facilities>
-    <Guarantee>
-     <Text>-01JAN14 - 31DEC99 MON-SUN</Text>
-     <Text>CREDIT CARD GUARANTEE MAY BE REQUIRED ON RESERVATIONS.</Text>
-     <Text>ACCEPTED FORMS OF GUARANTEE- 01JAN14 - 31DEC99</Text>
-     <Text>AGENCY IATA/ARC               CREDIT CARD</Text>
-     <Text>DEPOSIT</Text>
-    </Guarantee>
-    <Location>
-     <Text>PRIMARY PROPERTY LOCATION - CITY</Text>
-     <Text>DISTRICT -</Text>
-     <Text>AREA     -</Text>
-     <Text>PRIMARY AIRPORT -</Text>
-     <Text>TPA          9.00 MILE</Text>
-     <Text>ADDITIONAL AIRPORTS -</Text>
-     <Text>PIE          25.00 MILE</Text>
-     <Text>MCO          86.00 MILE</Text>
-     <Text>PRIMARY CITY -</Text>
-     <Text>TPA - CITY CENTER 0.72 MILE</Text>
-     <Text>EXPLORE AND DISCOVER OUR SURROUNDINGS.</Text>
-    </Location>
-    <MarketingInformation>
-     <Text>WESTIN HOTELS FOR A BETTER YOU</Text>
-     <Text>MEMBER OF STARWOOD HOTELS</Text>
-    </MarketingInformation>
-    <MiscServices>
-     <Text>EMAIL - RESERVATIONS WESTINTAMPAWATERSIDE.COM</Text>
-     <Text>TIME ZONE - EDT</Text>
-     <Text>TAXES AND SURCHARGES -</Text>
-     <Text>5.00 PCT OCCUPANCY TAX 11MAY18 - 31DEC99</Text>
-     <Text>7.00 PCT CITY TAX 11MAY18 - 31DEC99</Text>
-    </MiscServices>
-    <Policies>
-     <Text>EXTRA CHILD - 0 USD</Text>
-     <Text>CHILDREN STAY FREE</Text>
-     <Text>ROOM RATES INCLUDE THE ACCOMMODATION OF CHILDREN  17 YEARS</Text>
-     <Text>OLD OR YOUNGER  WHO SLEEP IN THE EXISTING BEDDING OF A GUEST</Text>
-     <Text>ROOM. ROLLAWAY BEDS AND CRIBS MAY INCUR EXTRA CHARGES.</Text>
-     <Text>FAMILY PLAN</Text>
-     <Text>ROOM RATES INCLUDE THE ACCOMMODATION OF CHILDREN  17 YEARS</Text>
-     <Text>OLD OR YOUNGER  WHO SLEEP IN THE EXISTING BEDDING OF A GUEST</Text>
-     <Text>ROOM. ROLLAWAY BEDS AND CRIBS MAY INCUR EXTRA CHARGES.</Text>
-     <Text>PETS ALLOWED</Text>
-     <Text>DOGS UP TO 40 POUNDS ARE ALLOWED. NO OTHER PETS ARE</Text>
-     <Text>PERMITTED. A 50 USD NON-REFUNDABLE CLEANING FEE WILL BE</Text>
-     <Text>CHARGED. PETS ARE NOT ALLOWED IN SUITES AND ARE ONLY</Text>
-     <Text>PERMITTED IN TRADITIONAL KING AND DOUBLE ROOM TYPES.  OWNERS</Text>
-     <Text>MUST SIGN A WAIVER AT CHECK-IN AND ARE RESPONSIBLE FOR ANY</Text>
-     <Text>DAMAGE OR ADDITIONAL CLEANING REQUIRED.  DOGS MUST BE</Text>
-     <Text>LEASHED AT ALL TIMES AND ARE NOT PERMITTED IN DINING AND</Text>
-     <Text>RECREATION AREAS.  DOGS MAY NOT BE LEFT UNATTENDED IN THE</Text>
-     <Text>GUESTROOM.  GUESTS MUST BE IN THEIR GUESTROOM IN ORDER TO</Text>
-     <Text>RECEIVE HOUSEKEEPING SERVICES.</Text>
-     <Text>PROPERTY OFFERS COMMISSION FOR SOME RATES</Text>
-     <Text>PROPERTY PARTICIPATES IN CENTRALIZED COMMISSION PROCESSING</Text>
-     <Text>WPS</Text>
-     <Text>ADDITIONAL COMMISSION INFORMATION</Text>
-     <Text>NOT ALL RATES COMMISSIONABLE. CHECK RATE PLAN DETAILS FOR</Text>
-     <Text>RATE COMMISSION INFORMATION.</Text>
-    </Policies>
-    <Recreation>
-     <Text>ON-SITE RECREATION -</Text>
-     <Text>FITNESS CENTER ON-SITE        POOL</Text>
-    </Recreation>
-    <Rooms>
-     <Text>GENERAL ROOM DESCRIPTION</Text>
-     <Text>ESCAPE TO A SUPERBLY COMFORTABLE SPACE. REFRESHING TOUCHES</Text>
-     <Text>WILL AWAKEN YOUR SENSES.</Text>
-     <Text>ROOM AMENITIES FOR ALL ROOMS</Text>
-     <Text>ADJOINING ROOMS                CABLE TELEVISION</Text>
-     <Text>COFFEE/TEA MAKER               CONNECTING ROOMS</Text>
-     <Text>CRIBS                          DESK</Text>
-     <Text>ERGONOMIC CHAIR                HAIRDRYER</Text>
-     <Text>IRON                           NON-SMOKING</Text>
-     <Text>SAFE                           SMOKE DETECTORS</Text>
-    </Rooms>
-    <Safety>
-     <Text>PROPERTY IS FIRE SAFETY COMPLIANT</Text>
-    </Safety>
-    <Services>
-     <Text>ON-SITE SERVICES -</Text>
-     <Text>BAGGAGE HOLD                  PETS ALLOWED</Text>
-     <Text>SAFE DEPOSIT BOX</Text>
-    </Services>
-    <Transportation>
-     <Text>TRANSPORTATION FROM PRIMARY AIRPORT TPA -</Text>
-     <Text>SHUTTLE - USD 13.0</Text>
-     <Text>FEE IS PER WAY, PER PERSON. THE HOTEL DOES NOT OFFER</Text>
-     <Text>COMPLIMENTARY TRANSPORTATION SERVICES.</Text>
-     <Text>TAXI - USD 25.0</Text>
-     <Text>TRANSPORTATION FROM AIRPORTS PIE -</Text>
-     <Text>TAXI - USD 40.0</Text>
-     <Text>LIMOUSINE - USD 75.0</Text>
-     <Text>TRANSPORTATION FROM AIRPORTS MCO -</Text>
-     <Text>TAXI - USD 200.0</Text>
-    </Transportation>
-   </VendorMessages>
-  </BasicPropertyInfo>
-  <Guarantee>
-   <DepositsAccepted>
-    <PaymentCard Code="AX" Type="AMERICAN EXPRESS"/>
-    <PaymentCard Code="CA" Type="MASTERCARD"/>
-    <PaymentCard Code="CB" Type="CARTE BLANCHE"/>
-    <PaymentCard Code="DC" Type="DINERS CLUB CARD"/>
-    <PaymentCard Code="DS" Type="DISCOVER CARD"/>
-    <PaymentCard Code="JC" Type="JCB CREDIT CARD"/>
-    <PaymentCard Code="VI" Type="VISA"/>
-   </DepositsAccepted>
-   <GuaranteesAccepted>
-    <PaymentCard Code="AX" Type="AMERICAN EXPRESS"/>
-    <PaymentCard Code="CA" Type="MASTERCARD"/>
-    <PaymentCard Code="CB" Type="CARTE BLANCHE"/>
-    <PaymentCard Code="DC" Type="DINERS CLUB CARD"/>
-    <PaymentCard Code="DS" Type="DISCOVER CARD"/>
-    <PaymentCard Code="JC" Type="JCB CREDIT CARD"/>
-    <PaymentCard Code="VI" Type="VISA"/>
-    <Text>/GAGT             GUARANTEE TO AGENCY TIDS/IATA NUMBER</Text>
-    <Text>/GDPST            DEPOSIT WILL BE SENT</Text>
-    <Text>/GDPST...         IMMEDIATE DEPOSIT TYPE OR FORM</Text>
-   </GuaranteesAccepted>
-  </Guarantee>
-  <RoomRates>
-   <RoomRate ClientID="¤¤¤" DirectConnect="false" GuaranteeSurchargeRequired="G" GuaranteedRateProgram="false" HRD_RequiredForSell="false" IATA_CharacteristicIdentification="J1KA16" IATA_ProductIdentification="1KING:AAA/CAA RATE" LowInventoryThreshold="false" RateAccessCode="¤¤¤" RateCategory="¤" RateChangeInd="false" RateConversionInd="false" RoomLocationCode="J1" SpecialOffer="false">
-    <AdditionalInfo>
-     <CancelPolicy Numeric="02" Option="D"/>
-     <Commission NonCommission="false">10.00 PERCENT COMMISSION</Commission>
-     <DCA_Cancellation>
-      <Text>2 DAYS-PRIOR 1 NTS PENALTY</Text>
-     </DCA_Cancellation>
-     <DCA_Guarantee>
-      <Text>GUARANTEE REQRD- MAJOR CREDIT CARDS.</Text>
-     </DCA_Guarantee>
-     <PaymentCard Code="DS"/>
-     <PaymentCard Code="CA"/>
-     <PaymentCard Code="MC"/>
-     <PaymentCard Code="CB"/>
-     <PaymentCard Code="VI"/>
-     <PaymentCard Code="VS"/>
-     <PaymentCard Code="AX"/>
-     <PaymentCard Code="JC"/>
-     <PaymentCard Code="DC"/>
-     <Taxes>TAXES NOT INCLUDED IN ROOM RAT</Taxes>
-     <Text>AAA OR CAA MEMBERSHIP ID REQUIRED AT CHECK-IN.</Text>
-     <Text>NON SMOKING WATERVIEW: HIGH FLOOR ROOM: LED</Text>
-     <Text>SMART TV: FRIDGE / COMP BOTTLED WATER:</Text>
-     <Text>HEAVENLY</Text>
-     <Text>AAA OR CAA MEMBERSHIP REQUIRED AT BE SHOWN AT</Text>
-     <Text>CHECK-IN.</Text>
-    </AdditionalInfo>
-    <Rates>
-     <Rate Amount="274.55" ChangeIndicator="false" CurrencyCode="USD" HRD_RequiredForSell="false" PackageIndicator="false" RateConversionInd="false" ReturnOfRateInd="false" RoomOnRequest="false">
-      <AdditionalGuestAmounts>
-       <AdditionalGuestAmount MaxExtraPersonsAllowed="1" NumAdults="1" NumCribs="1">
-        <Charges AdultRollAway="0.00" Crib="0.00" ExtraPerson="20.00"/>
-       </AdditionalGuestAmount>
-      </AdditionalGuestAmounts>
-      <HotelTotalPricing Amount="307.50">
-       <Disclaimer>INCLUDES TAXES AND SURCHARGES</Disclaimer>
-       <TotalTaxes Amount="32.95">
-        <TaxFieldOne>19.22</TaxFieldOne>
-        <TaxFieldTwo>13.73</TaxFieldTwo>
-        <Text>CITY TAX</Text>
-        <Text>OCCUPANCY TAX</Text>
-       </TotalTaxes>
-      </HotelTotalPricing>
-     </Rate>
-    </Rates>
-   </RoomRate>
-  </RoomRates>
-  <TimeSpan Duration="0005" End="2018-05-16" Start="2018-05-15"/>
- </RoomStay>
-</HotelRateDescriptionRS></soap-env:Body></soap-env:Envelope>
+ 
+<?xml version="1.0" encoding="UTF-8"?>
+<soap-env:Envelope 
+    xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap-env:Header>
+        <eb:MessageHeader 
+            xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" eb:version="1.0" soap-env:mustUnderstand="1">
+            <eb:From>
+                <eb:PartyId eb:type="URI">webservices.sabre.com</eb:PartyId>
+            </eb:From>
+            <eb:To>
+                <eb:PartyId eb:type="URI">www.z.com</eb:PartyId>
+            </eb:To>
+            <eb:CPAId>7TZA</eb:CPAId>
+            <eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId>
+            <eb:Service eb:type="sabreXML">HotelRateDescriptionLLSRQ</eb:Service>
+            <eb:Action>HotelRateDescriptionLLSRS</eb:Action>
+            <eb:MessageData>
+                <eb:MessageId>3319224857945470281</eb:MessageId>
+                <eb:Timestamp>2018-05-14T23:49:54</eb:Timestamp>
+                <eb:RefToMessageId>mid:20180207-20:19:07.25|QVbg0</eb:RefToMessageId>
+            </eb:MessageData>
+        </eb:MessageHeader>
+        <wsse:Security 
+            xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext">
+            <wsse:BinarySecurityToken valueType="String" EncodingType="wsse:Base64Binary">Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken>
+        </wsse:Security>
+    </soap-env:Header>
+    <soap-env:Body>
+        <HotelRateDescriptionRS 
+            xmlns="http://webservices.sabre.com/sabreXML/2011/10" 
+            xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+            xmlns:stl="http://services.sabre.com/STL/v01" Version="2.3.0">
+            <stl:ApplicationResults status="Complete">
+                <stl:Success timeStamp="2018-05-14T18:49:54-05:00">
+                    <stl:SystemSpecificResults>
+                        <stl:HostCommand LNIATA="222222">HRD*12</stl:HostCommand>
+                    </stl:SystemSpecificResults>
+                </stl:Success>
+            </stl:ApplicationResults>
+            <RoomStay>
+                <BasicPropertyInfo ChainCode="WI" GeoConfidenceLevel="0" HotelCityCode="TPA" HotelCode="0000232" HotelName="WESTIN TAMPA WATERSIDE" Latitude="27.937466" Longitude="-82.453541" NumFloors="12" RPH="001">
+                    <Address>
+                        <AddressLine>725 SOUTH HARBOR ISLAND BLVD</AddressLine>
+                        <AddressLine>TAMPA FL 33602</AddressLine>
+                        <CountryCode>US</CountryCode>
+                    </Address>
+                    <Awards>
+                        <AwardProvider>NTM4  CROWN</AwardProvider>
+                    </Awards>
+                    <CheckInTime>15:00</CheckInTime>
+                    <CheckOutTime>12:00</CheckOutTime>
+                    <ContactNumbers>
+                        <ContactNumber Fax="1-813-229-5322" Phone="1-813-229-5000"/>
+                    </ContactNumbers>
+                    <DirectConnect Ind="true">
+                        <AdditionalData Ind="false"/>
+                        <CurrencyConverted Ind="false"/>
+                        <DC_AvailParticipant Ind="true"/>
+                        <DC_SellParticipant Ind="true"/>
+                        <RequestFail Ind="false"/>
+                        <UnAvail Ind="false"/>
+                    </DirectConnect>
+                    <IndexData>
+                        <Index CountryState="FL" DistanceDirection="1SE" LocationCode="A" Point="UNIVERSITY OF TAMPA" TransportationCode="O"/>
+                        <Index CountryState="FL" DistanceDirection="35SE" LocationCode="C" Point="CLEARWATER BEACH" TransportationCode="O"/>
+                        <Index CountryState="FL" DistanceDirection="9SW" LocationCode="A" Point="BUSCH GARDENS" TransportationCode="O"/>
+                        <Index CountryState="FL" DistanceDirection="2S" LocationCode="A" Point="PORT TAMPA" TransportationCode="O"/>
+                        <Index CountryState="FL" DistanceDirection="5SE" LocationCode="A" Point="RAYMOND JAMES STADIUM" TransportationCode="O"/>
+                        <Index CountryState="FL" DistanceDirection="21SW" LocationCode="C" Point="TROPICANA FIELD" TransportationCode="O"/>
+                        <Index CountryState="FL" DistanceDirection="1S" LocationCode="A" Point="TAMPA CONV CTR" TransportationCode="O"/>
+                        <Index DistanceDirection="7SE" LocationCode="A" Point="TPA" TransportationCode="O"/>
+                    </IndexData>
+                    <PropertyOptionInfo>
+                        <ADA_Accessible Ind="true"/>
+                        <AdultsOnly Ind="false"/>
+                        <AirportShuttle Ind="false"/>
+                        <BeachFront Ind="false"/>
+                        <Breakfast Ind="false"/>
+                        <BusinessCenter Ind="true"/>
+                        <BusinessReady Ind="false"/>
+                        <CarRentalCounter>N</CarRentalCounter>
+                        <Conventions Ind="true"/>
+                        <Dataport Ind="false"/>
+                        <Dining Ind="true"/>
+                        <DryClean Ind="false"/>
+                        <EcoCertified Ind="false"/>
+                        <ExecutiveFloors Ind="false"/>
+                        <FamilyPlan Ind="false"/>
+                        <FitnessCenter Ind="true"/>
+                        <FreeLocalCalls Ind="false"/>
+                        <FreeParking Ind="false"/>
+                        <FreeShuttle Ind="false"/>
+                        <FreeWifiInMeetingRooms Ind="false"/>
+                        <FreeWifiInPublicSpaces Ind="true"/>
+                        <FreeWifiInRooms Ind="false"/>
+                        <FullServiceSpa Ind="false"/>
+                        <GameFacilities Ind="false"/>
+                        <Golf Ind="false"/>
+                        <GovtSafetyFire Ind="true"/>
+                        <HighSpeedInternet Ind="false"/>
+                        <HypoallergenicRooms Ind="false"/>
+                        <IndoorPool Ind="false"/>
+                        <IndPetRestriction Ind="true"/>
+                        <InRoomCoffeeTea Ind="true"/>
+                        <InRoomMiniBar Ind="true"/>
+                        <InRoomRefrigerator Ind="false"/>
+                        <InRoomSafe Ind="true"/>
+                        <InteriorDoorways Ind="true"/>
+                        <Jacuzzi Ind="false"/>
+                        <KidsFacilities Ind="false"/>
+                        <KitchenFacilities Ind="false"/>
+                        <MealService Ind="false"/>
+                        <MeetingFacilities Ind="true"/>
+                        <NoAdultTV Ind="false"/>
+                        <NonSmoking Ind="true"/>
+                        <OutdoorPool Ind="true"/>
+                        <Parking>Y</Parking>
+                        <Pets Ind="true"/>
+                        <Pool Ind="true"/>
+                        <PublicTransportationAdjacent Ind="false"/>
+                        <Recreation Ind="true"/>
+                        <RestrictedRoomAccess Ind="false"/>
+                        <RoomService Ind="false"/>
+                        <RoomService24Hours Ind="false"/>
+                        <RoomsWithBalcony Ind="false"/>
+                        <SkiInOutProperty Ind="false"/>
+                        <SmokeFree Ind="true"/>
+                        <SmokingRoomsAvail Ind="false"/>
+                        <Tennis Ind="false"/>
+                        <WaterPurificationSystem Ind="false"/>
+                        <Wheelchair Ind="true"/>
+                    </PropertyOptionInfo>
+                    <PropertyTypeInfo>
+                        <AllInclusive Ind="false"/>
+                        <Apartments Ind="false"/>
+                        <BedBreakfast Ind="false"/>
+                        <Castle Ind="false"/>
+                        <Conventions Ind="true"/>
+                        <Economy Ind="false"/>
+                        <ExtendedStay Ind="false"/>
+                        <Farm Ind="false"/>
+                        <First Ind="true"/>
+                        <Luxury Ind="false"/>
+                        <Moderate Ind="false"/>
+                        <Motel Ind="false"/>
+                        <Resort Ind="false"/>
+                        <Suites Ind="false"/>
+                    </PropertyTypeInfo>
+                    <SpecialOffers Ind="false"/>
+                    <Taxes>
+                        <Text>5.00 PCT</Text>
+                        <Text>7.00 PCT</Text>
+                    </Taxes>
+                    <VendorMessages>
+                        <AdditionalAttractions>
+                            <Text>CORPORATE LOCATIONS -</Text>
+                            <Text>WELLS FARGO BANK               1.00 MI</Text>
+                            <Text>FEDEX OFFICE                   1.00 MI</Text>
+                            <Text>SYKES ENTERPRISES              1.00 MI</Text>
+                            <Text>ERNST   YOUNG                  1.00 MI</Text>
+                            <Text>BANK OF AMERICA                1.00 MI</Text>
+                            <Text>TECO ENERGY, INC.              1.00 MI</Text>
+                            <Text>AACSB                          0.06 MI</Text>
+                            <Text>VERIZON                        1.00 MI</Text>
+                            <Text>CITIGROUP                      10.99 MI</Text>
+                            <Text>MEDIA GENERAL BROADCASTING GRO 1.00 MI</Text>
+                            <Text>TAMPA PORT AUTHORITY           2.00 MI</Text>
+                            <Text>KPMG                           1.00 MI</Text>
+                            <Text>CP SHIPS                       1.00 MI</Text>
+                            <Text>PRICEWATERHOUSECOOPERS         1.00 MI</Text>
+                        </AdditionalAttractions>
+                        <Attractions>
+                            <Text>ATTRACTIONS -</Text>
+                            <Text>AMTRAK                       1.00 MI</Text>
+                            <Text>SALVIDOR DALI MUSEUM         24.98 MI</Text>
+                            <Text>FORT DE SOTO PARK            33.98 MI</Text>
+                            <Text>UNIVERSITY OF TAMPA          1.00 MI</Text>
+                            <Text>BAYSHORE BOULEVARD LINEAR PA 1.00 MI</Text>
+                            <Text>UNIVERSITY OF SOUTH FLORIDA  8.00 MI</Text>
+                            <Text>LEGEND S FIELD               5.00 MI</Text>
+                            <Text>TAMPA BAY PERFORMING ARTS CE 1.00 MI</Text>
+                            <Text>LOWRY PARK ZOO               8.00 MI</Text>
+                            <Text>WESTSHORE PLAZA              6.00 MI</Text>
+                            <Text>TAMPA CONVENTION CENTER      0.12 MI</Text>
+                            <Text>OLD HYDE PARK VILLAGE        2.00 MI</Text>
+                            <Text>AMALIE ARENA  FORMERLY ST. P 0.19 MI</Text>
+                            <Text>TAMPA MUSEUM OF ART          1.00 MI</Text>
+                            <Text>BUSCH GARDENS                8.99 MI</Text>
+                            <Text>HB PLANT MUSEUM              1.00 MI</Text>
+                            <Text>YACHT STARSHIP               1.00 MI</Text>
+                            <Text>TAMPA THEATRE                1.00 MI</Text>
+                            <Text>CHANNELSIDE                  1.00 MI</Text>
+                            <Text>TAMPA GENERAL HOSPITAL       2.00 MI</Text>
+                            <Text>INTERNATIONAL PLAZA   BAY ST 6.00 MI</Text>
+                            <Text>PRICEWATERHOUSECOOPERS       1.00 MI</Text>
+                            <Text>GERALD R. FORD AMPHITHEATRE  8.99 MI</Text>
+                            <Text>RAYMOND JAMES STADIUM  HOME  5.00 MI</Text>
+                            <Text>FLORIDA AQUARIUM             1.00 MI</Text>
+                            <Text>PORT AUTHORITY               2.00 MI</Text>
+                        </Attractions>
+                        <Awards>
+                            <Text>AWARDS -</Text>
+                            <Text>GLOBAL BUSINESS TRAVEL ASSOCIATION  GBTA  - PROJECT ICARUS</Text>
+                            <Text>SUPPLIER GOLD MEDAL  2016</Text>
+                        </Awards>
+                        <Cancellation>
+                            <Text>01JAN14 - 31DEC99-</Text>
+                            <Text>CANCEL BY 2 DAYS PRIOR TO ARRIVAL</Text>
+                            <Text>TO AVOID A 100.00PCT CANCELLATION PENALTY</Text>
+                            <Text>CANCELLATION POLICY TEXT -</Text>
+                            <Text>THE CANCELLATION POLICY WILL VARY BASED ON THE RATE PLAN</Text>
+                            <Text>AND/OR BOOKING DATE S . PLEASE SEE  RATE AND POLICY</Text>
+                            <Text>INFORMATION  WHEN CHECKING AVAILABILITY.</Text>
+                        </Cancellation>
+                        <Deposit>
+                            <Text>ACCEPTED FORMS OF DEPOSIT- 01JAN14 - 31DEC99</Text>
+                            <Text>CREDIT CARD</Text>
+                        </Deposit>
+                        <Description>
+                            <Text>YEAR BUILT - 1985           YEAR REMODELED - 2017</Text>
+                            <Text>ADDITIONAL PROPERTY DESCRIPTION -</Text>
+                            <Text>ESCAPE TO THE WESTIN TAMPA WATERSIDE, SITUATED ON A UNIQUE</Text>
+                            <Text>LANDSCAPED ISLAND IN DOWNTOWN TAMPA. ADJACENT TO THE TAMPA</Text>
+                            <Text>CONVENTION CENTER, OUR LOCATION IS CONVENIENT FOR BUSINESS</Text>
+                            <Text>AND LEISURE TRAVELERS ALIKE. JUST TWO BLOCKS FROM AMALIE</Text>
+                            <Text>ARENA  FORMERLY ST. PETE TIMES FORUM , WE HAVE ACCESS TO ALL</Text>
+                            <Text>THAT TAMPA HAS TO OFFER.OUR WATERFRONT ATMOSPHERE LEAVES</Text>
+                            <Text>NOTHING TO BE DESIRED, WITH AN OUTDOOR POOL AND A</Text>
+                            <Text>FULL-SERVICE BUSINESS CENTER. HOST AN EVENT IN ONE OF OUR 13</Text>
+                            <Text>FLEXIBLE MEETING ROOMS, SOME OFFERING STUNNING HARBOR VIEWS.</Text>
+                            <Text>ENJOY DELICIOUS CONTINENTAL FARE AT OUR ELEGANT RESTAURANT,</Text>
+                            <Text>BLUE HARBOUR EATERY  AMP  BAR. OUR OVERSIZED GUEST ROOMS AND</Text>
+                            <Text>SUITES AT THE WESTIN TAMPA WATERSIDE ARE DESIGNED TO ENHANCE</Text>
+                            <Text>YOUR RELAXATION. RELAX IN OUR SIGNATURE HEAVENLY  BED FOR A</Text>
+                            <Text>PEACEFUL NIGHTS SLEEP. REFRESH THE NEXT MORNING IN ONE OF OUR</Text>
+                            <Text>SPACIOUS BATHROOMS, EQUIPPED WITH THE HEAVENLY  SHOWER</Text>
+                            <Text>FEATURING DUAL SHOWERHEADS.</Text>
+                        </Description>
+                        <Dining>
+                            <Text>RESTAURANTS -</Text>
+                            <Text>MARKET PLACE</Text>
+                            <Text>RESTAURANT DESCRIPTION</Text>
+                            <Text>STOP BY THE MARKET PLACE FOR GRAB-AND-GO OPTIONS LIKE</Text>
+                            <Text>SNACKS, SODAS, AND COLD-BREW COFFEE.</Text>
+                            <Text>BLUE HARBOUR EATERY   BAR</Text>
+                            <Text>CUISINE - AMERICAN</Text>
+                            <Text>MEALS SERVED - BREAKFAST - LUNCH - DINNER</Text>
+                            <Text>RESTAURANT DESCRIPTION</Text>
+                            <Text>THE RELAXED YET REFINED BLUE HARBOUR EATERY   BAR HAS BEEN</Text>
+                            <Text>INSPIRED BY THE SEA. MADE FRESH FROM THE DAY S CATCH,</Text>
+                            <Text>SIMPLE DISHES ARE FLAWLESSLY EXECUTED, AND A TOP-NOTCH</Text>
+                            <Text>DRINK LIST INCLUDES PREMIUM COCKTAILS.</Text>
+                        </Dining>
+                        <Directions>
+                            <Text>PRIMARY AIRPORT -</Text>
+                            <Text>TPA - TAMPA INTERNATIONAL AIRPORT - 9.00 MI</Text>
+                            <Text>OTHER AIRPORTS -</Text>
+                            <Text>PIE - ST. PETERSBURG INTERNATIONAL AIRPORT - 25.00 MI</Text>
+                            <Text>MCO - ORLANDO INTERNATIONAL AIRPORT - 86.00 MI</Text>
+                            <Text>DIRECTIONS TO THE PROPERTY FROM THE NORTH -</Text>
+                            <Text>TAKE INTERSTATE 75 TAMPA CROSSTOWN EXPRESSWAY, WESTBOUND.</Text>
+                            <Text>TAKE THE CROSSTOWN EXPRESSWAY TO THE MORGAN STREET EXIT. AT</Text>
+                            <Text>THE BASE OF THE RAMP, MERGE TO THE LEFT LANE. TURN LEFT ON</Text>
+                            <Text>FRANKLIN STREET.</Text>
+                            <Text>DIRECTIONS TO THE PROPERTY FROM THE SOUTH -</Text>
+                            <Text>TAKE INTERSTATE 275 NORTH TO EXIT 44  ASHLEY STREET -</Text>
+                            <Text>DOWNTOWN EAST/WEST . TAKE THE DOWNTOWN WEST EXIT. TAKE THE</Text>
+                            <Text>TAMPA STREET SOUTH EXIT. TURN RIGHT ONTO FRANKLIN STREET</Text>
+                            <Text>WHICH BECOMES HARBOUR ISLAND BOULEVARD. CONTINUE TO THE</Text>
+                            <Text>HOTEL.</Text>
+                            <Text>DIRECTIONS TO THE PROPERTY FROM THE WEST -</Text>
+                            <Text>TAKE INTERSTATE 4 TO INTERSTATE 275 SOUTH. PROCEED TO EXIT 44</Text>
+                            <Text>ASHLEY STREET - DOWNTOWN EAST/WEST . TAKE TAMPA STREET</Text>
+                            <Text>SOUTH. TURN RIGHT ONTO FRANKLIN STREET WHICH BECOMES HARBOUR</Text>
+                            <Text>ISLAND BOULEVARD. CONTINUE TO THE HOTEL.</Text>
+                        </Directions>
+                        <Facilities>
+                            <Text>ON-SITE FACILITIES DESCRIPTION -</Text>
+                            <Text>PARKING</Text>
+                            <Text>ON-SITE FACILITIES -</Text>
+                            <Text>ACCESSIBLE FACILITIES         BUSINESS CENTER</Text>
+                            <Text>CONCIERGE LOUNGE              CONNECTING ROOMS</Text>
+                            <Text>EXERCISE GYM                  HEALTH CLUB</Text>
+                            <Text>MEETING ROOMS                 NON-SMOKING ROOMS  GENERIC</Text>
+                            <Text>ONSITE LAUNDRY                OUTDOOR POOL</Text>
+                            <Text>PARKING                       PARKING LOT</Text>
+                            <Text>POOL                          RESTAURANT</Text>
+                            <Text>WIRELESS INTERNET CONNECTION</Text>
+                            <Text>MEETING AND CONVENTION FACILITIES -</Text>
+                            <Text>TOTAL NBR OF MEETING ROOMS - 13</Text>
+                            <Text>MAXIMUM SEATING CAPACITY OF LARGEST ROOM  - 700</Text>
+                            <Text>MAXIMUM SEATING CAPACITY OF SMALLEST ROOM - 10</Text>
+                            <Text>AREA OF LARGEST ROOM  - 442</Text>
+                            <Text>AREA OF SMALLEST ROOM - 29</Text>
+                            <Text>TOTAL MEASUREMENT, ALL ROOMS - 1672</Text>
+                            <Text>MEETING ROOM SIZE AND SEATING FORMAT OPTIONS -</Text>
+                            <Text>MEETING ROOM NAME - CORAL REEF</Text>
+                            <Text>LENGTH: 76.00  WIDTH: 20.00  AREA: 1509.00 SQ FT</Text>
+                            <Text>BANQUET - 100                THEATRE - 100</Text>
+                            <Text>RECEPTION - 150</Text>
+                            <Text>MEETING ROOM NAME - CHANNELSIDE</Text>
+                            <Text>LENGTH: 144.00  WIDTH: 26.00  AREA: 3744.00 SQ FT</Text>
+                            <Text>BANQUET - 200                THEATRE - 180</Text>
+                            <Text>RECEPTION - 400</Text>
+                            <Text>MEETING ROOM NAME - PALM</Text>
+                            <Text>LENGTH: 18.00  WIDTH: 22.00  AREA: 396.00 SQ FT</Text>
+                            <Text>CONFERENCE  - 14</Text>
+                            <Text>MEETING ROOM NAME - REEF</Text>
+                            <Text>LENGTH: 27.00  WIDTH: 20.00  AREA: 540.00 SQ FT</Text>
+                            <Text>BANQUET - 40                 THEATRE - 50</Text>
+                            <Text>RECEPTION - 60</Text>
+                            <Text>MEETING ROOM NAME - CORAL</Text>
+                            <Text>LENGTH: 27.00  WIDTH: 20.00  AREA: 540.00 SQ FT</Text>
+                            <Text>BANQUET - 40                 THEATRE - 50</Text>
+                            <Text>RECEPTION - 60</Text>
+                            <Text>MEETING ROOM NAME - HIBISCUS</Text>
+                            <Text>LENGTH: 25.00  WIDTH: 17.00  AREA: 425.00 SQ FT</Text>
+                            <Text>BANQUET - 24                 THEATRE - 50</Text>
+                            <Text>RECEPTION - 50</Text>
+                            <Text>MEETING ROOM NAME - LAGOON</Text>
+                            <Text>LENGTH: 20.00  WIDTH: 16.00  AREA: 320.00 SQ FT</Text>
+                            <Text>BANQUET - 12                 THEATRE - 40</Text>
+                            <Text>RECEPTION - 30</Text>
+                            <Text>MEETING ROOM NAME - SUNSET</Text>
+                            <Text>LENGTH: 35.00  WIDTH: 25.00  AREA: 875.00 SQ FT</Text>
+                            <Text>BANQUET - 70                 THEATRE - 80</Text>
+                            <Text>RECEPTION</Text>
+                        </Facilities>
+                        <Guarantee>
+                            <Text>-01JAN14 - 31DEC99 MON-SUN</Text>
+                            <Text>CREDIT CARD GUARANTEE MAY BE REQUIRED ON RESERVATIONS.</Text>
+                            <Text>ACCEPTED FORMS OF GUARANTEE- 01JAN14 - 31DEC99</Text>
+                            <Text>AGENCY IATA/ARC               CREDIT CARD</Text>
+                            <Text>DEPOSIT</Text>
+                        </Guarantee>
+                        <Location>
+                            <Text>PRIMARY PROPERTY LOCATION - CITY</Text>
+                            <Text>DISTRICT -</Text>
+                            <Text>AREA     -</Text>
+                            <Text>PRIMARY AIRPORT -</Text>
+                            <Text>TPA          9.00 MILE</Text>
+                            <Text>ADDITIONAL AIRPORTS -</Text>
+                            <Text>PIE          25.00 MILE</Text>
+                            <Text>MCO          86.00 MILE</Text>
+                            <Text>PRIMARY CITY -</Text>
+                            <Text>TPA - CITY CENTER 0.72 MILE</Text>
+                            <Text>EXPLORE AND DISCOVER OUR SURROUNDINGS.</Text>
+                        </Location>
+                        <MarketingInformation>
+                            <Text>WESTIN HOTELS FOR A BETTER YOU</Text>
+                            <Text>MEMBER OF STARWOOD HOTELS</Text>
+                        </MarketingInformation>
+                        <MiscServices>
+                            <Text>EMAIL - RESERVATIONS WESTINTAMPAWATERSIDE.COM</Text>
+                            <Text>TIME ZONE - EDT</Text>
+                            <Text>TAXES AND SURCHARGES -</Text>
+                            <Text>5.00 PCT OCCUPANCY TAX 11MAY18 - 31DEC99</Text>
+                            <Text>7.00 PCT CITY TAX 11MAY18 - 31DEC99</Text>
+                        </MiscServices>
+                        <Policies>
+                            <Text>EXTRA CHILD - 0 USD</Text>
+                            <Text>CHILDREN STAY FREE</Text>
+                            <Text>ROOM RATES INCLUDE THE ACCOMMODATION OF CHILDREN  17 YEARS</Text>
+                            <Text>OLD OR YOUNGER  WHO SLEEP IN THE EXISTING BEDDING OF A GUEST</Text>
+                            <Text>ROOM. ROLLAWAY BEDS AND CRIBS MAY INCUR EXTRA CHARGES.</Text>
+                            <Text>FAMILY PLAN</Text>
+                            <Text>ROOM RATES INCLUDE THE ACCOMMODATION OF CHILDREN  17 YEARS</Text>
+                            <Text>OLD OR YOUNGER  WHO SLEEP IN THE EXISTING BEDDING OF A GUEST</Text>
+                            <Text>ROOM. ROLLAWAY BEDS AND CRIBS MAY INCUR EXTRA CHARGES.</Text>
+                            <Text>PETS ALLOWED</Text>
+                            <Text>DOGS UP TO 40 POUNDS ARE ALLOWED. NO OTHER PETS ARE</Text>
+                            <Text>PERMITTED. A 50 USD NON-REFUNDABLE CLEANING FEE WILL BE</Text>
+                            <Text>CHARGED. PETS ARE NOT ALLOWED IN SUITES AND ARE ONLY</Text>
+                            <Text>PERMITTED IN TRADITIONAL KING AND DOUBLE ROOM TYPES.  OWNERS</Text>
+                            <Text>MUST SIGN A WAIVER AT CHECK-IN AND ARE RESPONSIBLE FOR ANY</Text>
+                            <Text>DAMAGE OR ADDITIONAL CLEANING REQUIRED.  DOGS MUST BE</Text>
+                            <Text>LEASHED AT ALL TIMES AND ARE NOT PERMITTED IN DINING AND</Text>
+                            <Text>RECREATION AREAS.  DOGS MAY NOT BE LEFT UNATTENDED IN THE</Text>
+                            <Text>GUESTROOM.  GUESTS MUST BE IN THEIR GUESTROOM IN ORDER TO</Text>
+                            <Text>RECEIVE HOUSEKEEPING SERVICES.</Text>
+                            <Text>PROPERTY OFFERS COMMISSION FOR SOME RATES</Text>
+                            <Text>PROPERTY PARTICIPATES IN CENTRALIZED COMMISSION PROCESSING</Text>
+                            <Text>WPS</Text>
+                            <Text>ADDITIONAL COMMISSION INFORMATION</Text>
+                            <Text>NOT ALL RATES COMMISSIONABLE. CHECK RATE PLAN DETAILS FOR</Text>
+                            <Text>RATE COMMISSION INFORMATION.</Text>
+                        </Policies>
+                        <Recreation>
+                            <Text>ON-SITE RECREATION -</Text>
+                            <Text>FITNESS CENTER ON-SITE        POOL</Text>
+                        </Recreation>
+                        <Rooms>
+                            <Text>GENERAL ROOM DESCRIPTION</Text>
+                            <Text>ESCAPE TO A SUPERBLY COMFORTABLE SPACE. REFRESHING TOUCHES</Text>
+                            <Text>WILL AWAKEN YOUR SENSES.</Text>
+                            <Text>ROOM AMENITIES FOR ALL ROOMS</Text>
+                            <Text>ADJOINING ROOMS                CABLE TELEVISION</Text>
+                            <Text>COFFEE/TEA MAKER               CONNECTING ROOMS</Text>
+                            <Text>CRIBS                          DESK</Text>
+                            <Text>ERGONOMIC CHAIR                HAIRDRYER</Text>
+                            <Text>IRON                           NON-SMOKING</Text>
+                            <Text>SAFE                           SMOKE DETECTORS</Text>
+                        </Rooms>
+                        <Safety>
+                            <Text>PROPERTY IS FIRE SAFETY COMPLIANT</Text>
+                        </Safety>
+                        <Services>
+                            <Text>ON-SITE SERVICES -</Text>
+                            <Text>BAGGAGE HOLD                  PETS ALLOWED</Text>
+                            <Text>SAFE DEPOSIT BOX</Text>
+                        </Services>
+                        <Transportation>
+                            <Text>TRANSPORTATION FROM PRIMARY AIRPORT TPA -</Text>
+                            <Text>SHUTTLE - USD 13.0</Text>
+                            <Text>FEE IS PER WAY, PER PERSON. THE HOTEL DOES NOT OFFER</Text>
+                            <Text>COMPLIMENTARY TRANSPORTATION SERVICES.</Text>
+                            <Text>TAXI - USD 25.0</Text>
+                            <Text>TRANSPORTATION FROM AIRPORTS PIE -</Text>
+                            <Text>TAXI - USD 40.0</Text>
+                            <Text>LIMOUSINE - USD 75.0</Text>
+                            <Text>TRANSPORTATION FROM AIRPORTS MCO -</Text>
+                            <Text>TAXI - USD 200.0</Text>
+                        </Transportation>
+                    </VendorMessages>
+                </BasicPropertyInfo>
+                <Guarantee>
+                    <DepositsAccepted>
+                        <PaymentCard Code="AX" Type="AMERICAN EXPRESS"/>
+                        <PaymentCard Code="CA" Type="MASTERCARD"/>
+                        <PaymentCard Code="CB" Type="CARTE BLANCHE"/>
+                        <PaymentCard Code="DC" Type="DINERS CLUB CARD"/>
+                        <PaymentCard Code="DS" Type="DISCOVER CARD"/>
+                        <PaymentCard Code="JC" Type="JCB CREDIT CARD"/>
+                        <PaymentCard Code="VI" Type="VISA"/>
+                    </DepositsAccepted>
+                    <GuaranteesAccepted>
+                        <PaymentCard Code="AX" Type="AMERICAN EXPRESS"/>
+                        <PaymentCard Code="CA" Type="MASTERCARD"/>
+                        <PaymentCard Code="CB" Type="CARTE BLANCHE"/>
+                        <PaymentCard Code="DC" Type="DINERS CLUB CARD"/>
+                        <PaymentCard Code="DS" Type="DISCOVER CARD"/>
+                        <PaymentCard Code="JC" Type="JCB CREDIT CARD"/>
+                        <PaymentCard Code="VI" Type="VISA"/>
+                        <Text>/GAGT             GUARANTEE TO AGENCY TIDS/IATA NUMBER</Text>
+                        <Text>/GDPST            DEPOSIT WILL BE SENT</Text>
+                        <Text>/GDPST...         IMMEDIATE DEPOSIT TYPE OR FORM</Text>
+                    </GuaranteesAccepted>
+                </Guarantee>
+                <RoomRates>
+                    <RoomRate ClientID="¤¤¤" DirectConnect="false" GuaranteeSurchargeRequired="G" GuaranteedRateProgram="false" HRD_RequiredForSell="false" IATA_CharacteristicIdentification="J1KA16" IATA_ProductIdentification="1KING:AAA/CAA RATE" LowInventoryThreshold="false" RateAccessCode="¤¤¤" RateCategory="¤" RateChangeInd="false" RateConversionInd="false" RoomLocationCode="J1" SpecialOffer="false">
+                        <AdditionalInfo>
+                            <CancelPolicy Numeric="02" Option="D"/>
+                            <Commission NonCommission="false">10.00 PERCENT COMMISSION</Commission>
+                            <DCA_Cancellation>
+                                <Text>2 DAYS-PRIOR 1 NTS PENALTY</Text>
+                            </DCA_Cancellation>
+                            <DCA_Guarantee>
+                                <Text>GUARANTEE REQRD- MAJOR CREDIT CARDS.</Text>
+                            </DCA_Guarantee>
+                            <PaymentCard Code="DS"/>
+                            <PaymentCard Code="CA"/>
+                            <PaymentCard Code="MC"/>
+                            <PaymentCard Code="CB"/>
+                            <PaymentCard Code="VI"/>
+                            <PaymentCard Code="VS"/>
+                            <PaymentCard Code="AX"/>
+                            <PaymentCard Code="JC"/>
+                            <PaymentCard Code="DC"/>
+                            <Taxes>TAXES NOT INCLUDED IN ROOM RAT</Taxes>
+                            <Text>AAA OR CAA MEMBERSHIP ID REQUIRED AT CHECK-IN.</Text>
+                            <Text>NON SMOKING WATERVIEW: HIGH FLOOR ROOM: LED</Text>
+                            <Text>SMART TV: FRIDGE / COMP BOTTLED WATER:</Text>
+                            <Text>HEAVENLY</Text>
+                            <Text>AAA OR CAA MEMBERSHIP REQUIRED AT BE SHOWN AT</Text>
+                            <Text>CHECK-IN.</Text>
+                        </AdditionalInfo>
+                        <Rates>
+                            <Rate Amount="274.55" ChangeIndicator="false" CurrencyCode="USD" HRD_RequiredForSell="false" PackageIndicator="false" RateConversionInd="false" ReturnOfRateInd="false" RoomOnRequest="false">
+                                <AdditionalGuestAmounts>
+                                    <AdditionalGuestAmount MaxExtraPersonsAllowed="1" NumAdults="1" NumCribs="1">
+                                        <Charges AdultRollAway="0.00" Crib="0.00" ExtraPerson="20.00"/>
+                                    </AdditionalGuestAmount>
+                                </AdditionalGuestAmounts>
+                                <HotelTotalPricing Amount="307.50">
+                                    <Disclaimer>INCLUDES TAXES AND SURCHARGES</Disclaimer>
+                                    <TotalTaxes Amount="32.95">
+                                        <TaxFieldOne>19.22</TaxFieldOne>
+                                        <TaxFieldTwo>13.73</TaxFieldTwo>
+                                        <Text>CITY TAX</Text>
+                                        <Text>OCCUPANCY TAX</Text>
+                                    </TotalTaxes>
+                                </HotelTotalPricing>
+                            </Rate>
+                        </Rates>
+                    </RoomRate>
+                </RoomRates>
+                <TimeSpan Duration="0005" End="2018-05-16" Start="2018-05-15"/>
+            </RoomStay>
+        </HotelRateDescriptionRS>
+    </soap-env:Body>
+</soap-env:Envelope>

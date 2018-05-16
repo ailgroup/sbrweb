@@ -3,8 +3,14 @@ package hotelws
 import "encoding/xml"
 
 /*
-Implement Sabre hotel searching through various criteria. Many criterion exist that are not yet implemented: (Award, ContactNumbers, CommissionProgram, HotelAmenity, PointOfInterest, RefPoint, RoomAmenity, HotelFeaturesCriterion). To add more criterion create a criterion type (e.g, XCriterion) as well as its accompanying function to handle the data params (e.g., XSearch); see examples in hotel_search_criteria.go.
+	Implement Sabre hotel searching through various criteria. Many criterion exist that are not yet implemented: (Award, ContactNumbers, CommissionProgram, HotelAmenity, PointOfInterest, RefPoint, RoomAmenity, HotelFeaturesCriterion). To add more criterion create a criterion type (e.g, XCriterion) as well as its accompanying function to handle the data params (e.g., XSearch); see examples in hotel_search_criteria.go.
 */
+
+// HotelSearchCriteria top level element for criterion
+type HotelSearchCriteria struct {
+	XMLName   xml.Name `xml:"HotelSearchCriteria"`
+	Criterion Criterion
+}
 
 // QuerySearchParams is a typed function to support optional query params on creation of new search criterion
 type QuerySearchParams func(*HotelSearchCriteria) error
@@ -20,12 +26,6 @@ type PropertyTypeCriterion []string
 
 // PackageCriterion slice of property type strings (GF, HM, BB)
 type PackageCriterion []string
-
-// HotelSearchCriteria top level element for criterion
-type HotelSearchCriteria struct {
-	XMLName   xml.Name `xml:"HotelSearchCriteria"`
-	Criterion Criterion
-}
 
 // HotelRef contains any number of search criteria under the HotelRef element.
 type HotelRef struct {

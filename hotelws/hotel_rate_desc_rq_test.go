@@ -30,7 +30,19 @@ func TestHotelRateDescMarshal(t *testing.T) {
 	//fmt.Printf("content marshal \n%s\n", b)
 }
 
-var ccards = []string{"DS", "CA", "MC", "CB", "VI", "VS", "AX", "JC", "DC"}
+var additionalCards = []string{"DS", "CA", "MC", "CB", "VI", "VS", "AX", "JC", "DC"}
+var guaranteeCards = []struct {
+	code string
+	name string
+}{
+	{"AX", "AMERICAN EXPRESS"},
+	{"CA", "MASTERCARD"},
+	{"CB", "CARTE BLANCHE"},
+	{"DC", "DINERS CLUB CARD"},
+	{"DS", "DISCOVER CARD"},
+	{"JC", "JCB CREDIT CARD"},
+	{"VI", "VISA"},
+}
 
 func TestRateDescCall(t *testing.T) {
 	// assume RPH is from previous hotel property description call
@@ -52,6 +64,16 @@ func TestRateDescCall(t *testing.T) {
 	if resp.Body.Fault.String != "" {
 		t.Errorf("Body.Fault.String expect empty: '%s', got: %s", "", resp.Body.Fault.String)
 	}
+
+	for i, cg := range resp.Body.HotelDesc.RoomStay.Guarantee.DepositsAccepted.PaymentCards {
+		if cg.Code != guaranteeCards[i].code {
+			t.Errorf("Guarantee.DepositsAccepted.PaymentCards[%d].Code expect: %s, got: %s", i, guaranteeCards[i].code, cg.Code)
+		}
+		if cg.Type != guaranteeCards[i].name {
+			t.Errorf("Guarantee.DepositsAccepted.PaymentCards[%d].Type expect: %s, got: %s", i, guaranteeCards[i].name, cg.Type)
+		}
+	}
+
 	roomStayRates := resp.Body.HotelDesc.RoomStay.RoomRates
 	numRoomRates := len(roomStayRates)
 	if numRoomRates != 1 {
@@ -65,12 +87,12 @@ func TestRateDescCall(t *testing.T) {
 	if rr.GuaranteeSurcharge != "G" {
 		t.Errorf("GuaranteeSurcharge expected %s, got %s", "G", rr.GuaranteeSurcharge)
 	}
-	if len(rr.AdditionalInfo.PaymentCard) != 9 {
-		t.Errorf("AdditionalInfo.PaymentCard count is wrong: %v", rr.AdditionalInfo.PaymentCard)
+	if len(rr.AdditionalInfo.PaymentCards) != 9 {
+		t.Errorf("AdditionalInfo.PaymentCards count is wrong: %v", rr.AdditionalInfo)
 	}
-	for idx, card := range rr.AdditionalInfo.PaymentCard {
-		if card.Code != ccards[idx] {
-			t.Errorf("AdditionalInfo.PaymentCard expect: %s, got: %s", ccards[idx], card.Code)
+	for idx, card := range rr.AdditionalInfo.PaymentCards {
+		if card.Code != additionalCards[idx] {
+			t.Errorf("AdditionalInfo.PaymentCards expect: %s, got: %s", additionalCards[idx], card.Code)
 		}
 	}
 

@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 )
 
+// BasicPropertyInfo contains all info relevant to property. It is the root-level element after service element for hotel_avail; and is embedded in the RoomStay element.
 type BasicPropertyInfo struct {
 	XMLName         xml.Name `xml:"BasicPropertyInfo"`
 	AreadID         string   `xml:"AreadID,attr"`
@@ -41,6 +42,9 @@ type BasicPropertyInfo struct {
 	SpecialOffers      struct {
 		Ind bool `xml:"Ind,attr"`
 	} `xml:"SpecialOffers"`
+	Taxes struct {
+		Text []string `xml:"Text"`
+	} `xml:"Taxes"`
 	VendorMessages VendorMessages
 	RateRange      struct {
 		CurrencyCode string `xml:"CurrencyCode,attr"`
@@ -96,70 +100,27 @@ type Rate struct {
 	HotelPricing           HotelPricing
 }
 
-type AdditionalInfo struct {
-	XMLName    xml.Name `xml:"AdditionalInfo"`
-	Commission struct {
-		NonCommission string `xml:"NonCommission,attr"`
-		Val           string `xml:",char"`
-	} `xml:"Commission"`
-	DCACancellation struct {
-		Text []string `xml:"Text"`
-	} `xml:"DCA_Cancellation"`
-	DCAGuarantee struct {
-		Text []string `xml:"Text"`
-	} `xml:"DCA_Guarantee"`
-	DCAOther struct {
-		Text []string `xml:"Text"`
-	} `xml:"DCA_Other"`
-	PaymentCard []struct {
-		Code string `xml:"Code,attr"`
-	} `xml:"PaymentCard"`
-	Taxes        string `xml:"Taxes"`
-	CancelPolicy struct {
-		Numeric int    `xml:"Numeric,attr"` //string? 001 versus 1
-		Option  string `xml:"Option,attr"`
-	} `xml:"CancelPolicy"`
-	Text []string `xml:"Text"`
-}
-
-type RoomRate struct {
-	XMLName            xml.Name `xml:"RoomRate"`
-	DirectConnect      string   `xml:"RDirectConnect,attr"`
-	GuaranteeSurcharge string   `xml:"GuaranteeSurchargeRequired,attr"`
-	GuaranteedRate     string   `xml:"GuaranteedRateProgram,attr"`
-	IATA_Character     string   `xml:"IATA_CharacteristicIdentification,attr"`
-	IATA_Product       string   `xml:"IATA_ProductIdentification,attr"`
-	LowInventory       string   `xml:"LowInventoryThreshold,attr"`
-	RateLevelCode      string   `xml:"RateLevelCode,attr"`
-	RPH                int      `xml:"RPH,attr"`
-	RateChangeInd      string   `xml:"RateChangeInd,attr"`
-	RateConversionInd  string   `xml:"RateConversionInd,attr"`
-	SpecialOffer       string   `xml:"SpecialOffer,attr"`
-	Rates              []Rate   `xml:"Rates>Rate"`
-	AdditionalInfo     AdditionalInfo
-	HotelRateCode      string `xml:"HotelRateCode"`
-}
-
 type VendorMessages struct {
-	XMLName              xml.Name             `xml:"VendorMessages"`
-	Attractions          Attractions          `xml:"Attractions"`
-	Awards               Awards               `xml:"Awards"`
-	Cancellation         Cancellation         `xml:"Cancellation"`
-	Deposit              Deposit              `xml:"Deposit"`
-	Description          Description          `xnl:"Description"`
-	Dining               Dining               `xml:"Dining"`
-	Directions           Directions           `xml:"Directions"`
-	Facilities           Facilities           `xml:"Facilities"`
-	Guarantee            Guarantee            `xml:"Guarantee"`
-	Location             Location             `xml:"Location"`
-	MarketingInformation MarketingInformation `xml:"MarketingInformation"`
-	MiscServices         MiscServices         `xml:"MiscServices"`
-	Policies             Policies             `xml:"Policies"`
-	Recreation           Recreation           `xml:"Recreation"`
-	Rooms                Rooms                `xml:"Rooms"`
-	Safety               Safety               `xml:"Safety"`
-	Services             Services             `xml:"Services"`
-	Transportation       Transportation       `xml:"Transportation"`
+	XMLName               xml.Name              `xml:"VendorMessages"`
+	Attractions           Attractions           `xml:"Attractions"`
+	AdditionalAttractions AdditionalAttractions `xml:"AdditionalAttractions"`
+	Awards                Awards                `xml:"Awards"`
+	Cancellation          Cancellation          `xml:"Cancellation"`
+	Deposit               Deposit               `xml:"Deposit"`
+	Description           Description           `xnl:"Description"`
+	Dining                Dining                `xml:"Dining"`
+	Directions            Directions            `xml:"Directions"`
+	Facilities            Facilities            `xml:"Facilities"`
+	Guarantee             VendorGuarantee       `xml:"Guarantee"`
+	Location              Location              `xml:"Location"`
+	MarketingInformation  MarketingInformation  `xml:"MarketingInformation"`
+	MiscServices          MiscServices          `xml:"MiscServices"`
+	Policies              Policies              `xml:"Policies"`
+	Recreation            Recreation            `xml:"Recreation"`
+	Rooms                 Rooms                 `xml:"Rooms"`
+	Safety                Safety                `xml:"Safety"`
+	Services              Services              `xml:"Services"`
+	Transportation        Transportation        `xml:"Transportation"`
 }
 
 type Transportation struct {
@@ -189,7 +150,9 @@ type MarketingInformation struct {
 type Location struct {
 	Text []string `xml:"Text"`
 }
-type Guarantee struct {
+type VendorGuarantee struct {
+	//this is Guarantee under BasciPropertyInfo.VendorMessages
+	//not Guarantee element in RoomStay
 	Text []string `xml:"Text"`
 }
 type Facilities struct {
@@ -214,6 +177,9 @@ type Awards struct {
 	Text []string `xml:"Text"`
 }
 type Attractions struct {
+	Text []string `xml:"Text"`
+}
+type AdditionalAttractions struct {
 	Text []string `xml:"Text"`
 }
 
