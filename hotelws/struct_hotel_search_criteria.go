@@ -1,6 +1,8 @@
 package hotelws
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+)
 
 /*
 	Implement Sabre hotel searching through various criteria. Many criterion exist that are not yet implemented: (Award, ContactNumbers, CommissionProgram, HotelAmenity, PointOfInterest, RefPoint, RoomAmenity, HotelFeaturesCriterion). To add more criterion create a criterion type (e.g, XCriterion) as well as its accompanying function to handle the data params (e.g., XSearch); see examples in hotel_search_criteria.go.
@@ -37,14 +39,6 @@ type HotelRef struct {
 	Longitude     string   `xml:"Longitude,attr,omitempty"`
 }
 
-// Address represents typical building addresses
-type Address struct {
-	City        string `xml:"CityName,omitempty"`
-	CountryCode string `xml:"CountryCode,omitempty"`
-	Postal      string `xml:"PostalCode,omitempty"`
-	Street      string `xml:"StreetNumber,omitempty"`
-}
-
 // PropertyType container for searhing types of properties (APTS, LUXRY...)
 type PropertyType struct {
 	Val string `xml:",chardata"`
@@ -59,7 +53,7 @@ type Package struct {
 type Criterion struct {
 	XMLName       xml.Name `xml:"Criterion"`
 	HotelRefs     []*HotelRef
-	Address       *Address
+	Address       *addr.Address
 	PropertyTypes []*PropertyType
 	Packages      []*Package
 }

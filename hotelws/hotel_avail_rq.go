@@ -9,16 +9,6 @@ import (
 	"github.com/ailgroup/sbrweb/srvc"
 )
 
-type AvailabilityOptions struct {
-	XMLName          xml.Name             `xml:"AvailabilityOptions"`
-	AvailableOptions []AvailabilityOption `xml:"AvailabilityOption"`
-}
-
-type AvailabilityOption struct {
-	RPH          int `xml:"RPH,attr"` //string? 001 versus 1
-	PropertyInfo BasicPropertyInfo
-}
-
 // HotelAvailRequest for soap package on OTA_HotelAvailRQ service
 type HotelAvailRequest struct {
 	srvc.Envelope
@@ -114,6 +104,16 @@ func BuildHotelAvailRequest(from, pcc, binsectoken, convid, mid, time string, ot
 		},
 		Body: otaHotelAvail,
 	}
+}
+
+type AvailabilityOptions struct {
+	XMLName          xml.Name             `xml:"AvailabilityOptions"`
+	AvailableOptions []AvailabilityOption `xml:"AvailabilityOption"`
+}
+
+type AvailabilityOption struct {
+	RPH          int `xml:"RPH,attr"` //string? 001 versus 1
+	PropertyInfo BasicPropertyInfo
 }
 
 // OTAHotelAvailRS parse sabre hotel availability

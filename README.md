@@ -17,7 +17,9 @@ This is a large project with organized subprojects. To get a sense of the number
   * Availability, Property and Rate descriptions, Reservation services.
   * common struct/xml building and parsing
   * common logic for dealing with data formats like timestamps and cancellation policies
-1. `pnr` (passenger name record)
+1. `itin` (itinerary)
+  * passenger details
+  * cancel
 1. `hotelrest` (hotel rest)
 
 
