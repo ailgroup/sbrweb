@@ -3,11 +3,17 @@ package hotelws
 import "encoding/xml"
 
 /*
-Implement Sabre hotel searching through various criteria. Many criterion exist that are not yet implemented: (Award, ContactNumbers, CommissionProgram, HotelAmenity, PointOfInterest, RefPoint, RoomAmenity, HotelFeaturesCriterion). To add more criterion create a criterion type (e.g, XCriterion) as well as its accompanying function to handle the data params (e.g., XSearch); see examples in hotel_search_criteria.go.
+	Implement Sabre hotel searching through various criteria. Many criterion exist that are not yet implemented: (Award, ContactNumbers, CommissionProgram, HotelAmenity, PointOfInterest, RefPoint, RoomAmenity, HotelFeaturesCriterion). To add more criterion create a criterion type (e.g, XCriterion) as well as its accompanying function to handle the data params (e.g., XSearch); see examples in hotel_search_criteria.go.
 */
 
-// QueryParams is a typed function to support optional query params on creation of new search criterion
-type QueryParams func(*HotelSearchCriteria) error
+// HotelSearchCriteria top level element for criterion
+type HotelSearchCriteria struct {
+	XMLName   xml.Name `xml:"HotelSearchCriteria"`
+	Criterion Criterion
+}
+
+// QuerySearchParams is a typed function to support optional query params on creation of new search criterion
+type QuerySearchParams func(*HotelSearchCriteria) error
 
 // HotelRefCriterion map of hotel ref criteria
 type HotelRefCriterion map[string][]string
@@ -20,19 +26,6 @@ type PropertyTypeCriterion []string
 
 // PackageCriterion slice of property type strings (GF, HM, BB)
 type PackageCriterion []string
-
-// Timepsan for arrival and departure params
-type TimeSpan struct {
-	XMLName xml.Name `xml:"TimeSpan"`
-	Depart  string   `xml:"End,attr"`
-	Arrive  string   `xml:"Start,attr"`
-}
-
-// HotelSearchCriteria top level element for criterion
-type HotelSearchCriteria struct {
-	XMLName   xml.Name `xml:"HotelSearchCriteria"`
-	Criterion Criterion
-}
 
 // HotelRef contains any number of search criteria under the HotelRef element.
 type HotelRef struct {
@@ -86,21 +79,44 @@ type Customer struct {
 
 // CustomerID number
 type CustomerID struct {
-	XMLName xml.Name `xml:"ID,omitempty"`
+	XMLName xml.Name `xml:"ID"`
 	Number  string   `xml:"Number,omitempty"`
 }
 
 // Corporate customer id
 type Corporate struct {
-	XMLName xml.Name `xml:"Corporate,omitempty"`
+	XMLName xml.Name `xml:"Corporate"`
 	ID      string   `xml:"ID,omitempty"`
+}
+
+// Timepsan for arrival and departure params
+type TimeSpan struct {
+	XMLName xml.Name `xml:"TimeSpan"`
+	Depart  string   `xml:"End,attr,omitempty"`
+	Arrive  string   `xml:"Start,attr,omitempty"`
+}
+
+type RatePlan struct {
+	XMLName         xml.Name `xml:"RatePlanCandidate"`
+	CurrencyCode    string   `xml:"CurrencyCode,attr,omitempty"`
+	DCA_ProductCode string   `xml:"DCA_ProductCode,attr,omitempty"`
+	DecodeAll       string   `xml:"DecodeAll,attr,omitempty"`
+	RateCode        string   `xml:"RateCode,attr,omitempty"`
+	RPH             int      `xml:"RPH,attr,omitempty"`
+}
+
+// RatePlanCandidates determines types of rates queried
+type RatePlanCandidates struct {
+	XMLName   xml.Name `xml:"RatePlanCandidates"`
+	RatePlans []*RatePlan
 }
 
 // AvailAvailRequestSegment holds basic hotel availability params: customer ids, guest count, hotel search criteria and arrival departure
 type AvailRequestSegment struct {
 	XMLName             xml.Name  `xml:"AvailRequestSegment"`
 	Customer            *Customer //nil pointer ignored if empty
-	GuestCounts         GuestCounts
-	HotelSearchCriteria HotelSearchCriteria
-	ArriveDepart        TimeSpan `xml:"TimeSpan"`
+	GuestCounts         *GuestCounts
+	HotelSearchCriteria *HotelSearchCriteria
+	RatePlanCandidates  *RatePlanCandidates //nil pointer ignored if empty
+	TimeSpan            *TimeSpan           //`xml:"TimeSpan"`
 }

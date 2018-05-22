@@ -5,16 +5,26 @@ import (
 	"strings"
 )
 
+// SetRateParams helper to create a slice of rate plans to append on a an Avail Segement
+// for search or description services
+func SetRateParams(ratePlans []RatePlan) *RatePlanCandidates {
+	rpc := &RatePlanCandidates{}
+	for _, plan := range ratePlans {
+		rpc.RatePlans = append(rpc.RatePlans, &plan)
+	}
+	return rpc
+}
+
 // NewHotelSearchCriteria accepts set of QueryParams functions, executes over hotel search criteria and returns modified criteria
-func NewHotelSearchCriteria(queryParams ...QueryParams) (HotelSearchCriteria, error) {
+func NewHotelSearchCriteria(queryParams ...QuerySearchParams) (*HotelSearchCriteria, error) {
 	criteria := &HotelSearchCriteria{}
 	for _, qm := range queryParams {
 		err := qm(criteria)
 		if err != nil {
-			return *criteria, err
+			return criteria, err
 		}
 	}
-	return *criteria, nil
+	return criteria, nil
 }
 
 // validatePropertyRequest ensures property description requests are well-formed

@@ -174,7 +174,7 @@ func TestMultipleHotelCriteria(t *testing.T) {
 }
 
 func TestSetHotelAvailRqStructMarshal(t *testing.T) {
-	availBody := SetHotelAvailRqStruct(sampleGuestCount, HotelSearchCriteria{}, sampleArrive, sampleDepart)
+	availBody := SetHotelAvailRqStruct(sampleGuestCount, &HotelSearchCriteria{}, sampleArrive, sampleDepart)
 	avail := availBody.OTAHotelAvailRQ
 	avail.addCorporateID(sampleCID)
 
@@ -198,7 +198,7 @@ func TestSetHotelAvailRqStructMarshal(t *testing.T) {
 }
 
 func TestSetHotelAvailRqStructCorpID(t *testing.T) {
-	availBody := SetHotelAvailRqStruct(sampleGuestCount, HotelSearchCriteria{}, sampleArrive, sampleDepart)
+	availBody := SetHotelAvailRqStruct(sampleGuestCount, &HotelSearchCriteria{}, sampleArrive, sampleDepart)
 	avail := availBody.OTAHotelAvailRQ
 	avail.addCorporateID(sampleCID)
 
@@ -222,6 +222,7 @@ func TestAvailIdsMarshal(t *testing.T) {
 
 	avail := availBody.OTAHotelAvailRQ
 	avail.addCorporateID(sampleCID)
+	avail.Avail.RatePlanCandidates = SetRateParams([]RatePlan{RatePlan{CurrencyCode: "USD", DCA_ProductCode: "I7A"}})
 
 	if avail.Avail.GuestCounts.Count != gcount {
 		t.Errorf("SetHotelAvailRqStruct GuestCounts.Count expect: %d, got %d", gcount, avail.Avail.GuestCounts.Count)
@@ -235,8 +236,8 @@ func TestAvailIdsMarshal(t *testing.T) {
 	if err != nil {
 		t.Error("Error marshaling get hotel content", err)
 	}
-	if string(b) != string(sampleAvailRQHotelIDSCoprID) {
-		t.Errorf("Expected marshal hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQHotelIDSCoprID), string(b))
+	if string(b) != string(sampleAvailRQHotelIDSCoprIDRatePlans) {
+		t.Errorf("Expected marshal hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQHotelIDSCoprIDRatePlans), string(b))
 	}
 	//fmt.Printf("content marshal \n%s\n", b)
 }
