@@ -110,7 +110,6 @@ type HotelRateDescResponse struct {
 func CallHotelRateDesc(serviceURL string, req HotelRateDescRequest) (HotelRateDescResponse, error) {
 	propResp := HotelRateDescResponse{}
 	byteReq, _ := xml.Marshal(req)
-	//fmt.Printf("REQ: \n\n %s \n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
@@ -121,11 +120,9 @@ func CallHotelRateDesc(serviceURL string, req HotelRateDescRequest) (HotelRateDe
 	// parse payload body into []byte buffer from net Response.ReadCloser
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
-	//fmt.Printf("8888888888888888\n\n %v \n\n", resp)
 	io.Copy(bodyBuffer, resp.Body)
 	resp.Body.Close()
 
-	//fmt.Printf("----------------\n\n %s \n\n", bodyBuffer.Bytes())
 	//marshal bytes sabre response body into availResp response struct
 	err = xml.Unmarshal(bodyBuffer.Bytes(), &propResp)
 	if err != nil {
