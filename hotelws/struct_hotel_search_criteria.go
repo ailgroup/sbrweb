@@ -49,11 +49,23 @@ type Package struct {
 	Val string `xml:",chardata"`
 }
 
+// Address represents typical building addresses
+type Address struct {
+	AddressLine   string `xml:"AddressLine,omitempty"`
+	Street        string `xml:"StreetNumber,omitempty"`
+	City          string `xml:"CityName,omitempty"`
+	StateProvince struct {
+		StateCode string `xml:"StateCode,attr"`
+	} `xml:"StateCountyProv,omitempty"`
+	CountryCode string `xml:"CountryCode,omitempty"`
+	Postal      string `xml:"PostalCode,omitempty"`
+}
+
 // Criterion holds various serach criteria
 type Criterion struct {
 	XMLName       xml.Name `xml:"Criterion"`
 	HotelRefs     []*HotelRef
-	Address       *addr.Address
+	Address       *Address
 	PropertyTypes []*PropertyType
 	Packages      []*Package
 }
