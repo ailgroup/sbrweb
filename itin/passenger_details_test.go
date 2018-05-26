@@ -2,24 +2,12 @@ package itin
 
 import (
 	"encoding/xml"
+	"strings"
 	"testing"
 )
 
-var (
-	samplefrom        = "z.com"
-	samplepcc         = "ABCD1"
-	samplebinsectoken = string([]byte(`Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESD!ICESMSLB\/RES.LB!-3142912682934961782!1421699!`))
-	sampleconvid      = "fds8789h|dev@z.com"
-	samplemid         = "mid:20180216-07:18:42.3|14oUa"
-	sampletime        = "2018-05-25T19:29:20Z"
-	sampleFirstName   = "Charles"
-	sampleLastName    = "Babbage"
-	samplePhone       = "123-456-7890"
-	samplePsngrReq    = []byte(`<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" xmlns:xlink="http://www.w3.org/2001/xlink" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap-env:Header><eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:From><eb:PartyId type="urn:x12.org:IO5:01">z.com</eb:PartyId></eb:From><eb:To><eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId></eb:To><eb:CPAId>ABCD1</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="sabreXML">PassengerDetailsRQ</eb:Service><eb:Action>PassengerDetailsRQ</eb:Action><eb:MessageData><eb:MessageId>mid:20180216-07:18:42.3|14oUa</eb:MessageId><eb:Timestamp>2018-05-25T19:29:20Z</eb:Timestamp></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility"><wsse:BinarySecurityToken>Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESD!ICESMSLB\/RES.LB!-3142912682934961782!1421699!</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><PassengerDetailsRQ xmlns="http://services.sabre.com/sp/pd/v3_3" version="3.3.0" IgnoreOnError="false" HaltOnError="false"><PostProcessing IgnoreAfter="false" RedisplayReservation="true" UnmaskCreditCard="false"></PostProcessing><PreProcessing IgnoreBefore="true"></PreProcessing><TravelItineraryAddInfoRQ><CustomerInfo><ContactNumbers><ContactNumber NameNumber="1.1" Phone="123-456-7890" PhoneUseType="H"></ContactNumber></ContactNumbers><PersonName NameNumber="1.1" NameReference="ABC123" PassengerType="ADT"><GivenName>Charles</GivenName><Surname>Babbage</Surname></PersonName></CustomerInfo></TravelItineraryAddInfoRQ></PassengerDetailsRQ></soap-env:Body></soap-env:Envelope>`)
-)
-
-func TestSetPsngr(t *testing.T) {
-	s := SetPsngrDetailsRequestStruct(samplePhone, sampleFirstName, sampleLastName)
+func TestPsngrSet(t *testing.T) {
+	s := SetPsngrDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
 	s.AddSpecialDetails()
 	s.AddUniqueID("1234ABCD")
 
@@ -41,8 +29,8 @@ func TestSetPsngr(t *testing.T) {
 	}
 }
 
-func TestBuildPsngr(t *testing.T) {
-	body := SetPsngrDetailsRequestStruct(samplePhone, sampleFirstName, sampleLastName)
+func TestPsngrBuild(t *testing.T) {
+	body := SetPsngrDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
 	req := BuildPsngrDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
 
 	b, err := xml.Marshal(req)
@@ -51,5 +39,82 @@ func TestBuildPsngr(t *testing.T) {
 	}
 	if string(b) != string(samplePsngrReq) {
 		t.Errorf("Expected marshal passenger details request \n given: %s \n built: %s", string(samplePsngrReq), string(b))
+	}
+}
+
+func TestPsngrDetailCall(t *testing.T) {
+	body := SetPsngrDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
+	req := BuildPsngrDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
+
+	resp, err := CallPsngrDetail(serverPsngrDetails.URL, req)
+	if err != nil {
+		t.Error("Error making request CallPsngrDetailsRequest", err)
+	}
+
+	appres := resp.Body.PassengerDetailsRS.AppResults
+	if appres.Status != "Complete" {
+		t.Errorf("AppResults.Status expect: %s, got %s", "Complete", appres.Status)
+	}
+	if appres.Success.Timestamp != sampletimeOffset {
+		t.Errorf("AppResults.Success.Timestamp expect: %s, got %s", sampletimeOffset, appres.Success.Timestamp)
+	}
+	if len(appres.Warnings) != 0 {
+		t.Errorf("AppResults.Warnings expect: %d, got %d", 0, len(appres.Warnings))
+	}
+
+	travelItin := resp.Body.PassengerDetailsRS.TravelItineraryReadRS.TravelItinerary
+	customer := travelItin.Customer
+
+	if len(customer.ContactNumbers) != 1 {
+		t.Error("wrong number of contact numbers")
+	}
+	numbersOne := customer.ContactNumbers[0]
+	if numbersOne.Phone != samplePhoneRes {
+		t.Errorf("customer.ContactNumbers[0].Phone expect: %s, got %s", samplePhoneRes, numbersOne.Phone)
+	}
+	if numbersOne.LocationCode != "SLC" {
+		t.Errorf("customer.ContactNumbers[0].LocationCode expect: %s, got %s", "SLC", numbersOne.LocationCode)
+	}
+	if numbersOne.RPH != 1 {
+		t.Errorf("customer.ContactNumbers[0].RPH expect: %d, got %d", 1, numbersOne.RPH)
+	}
+
+	person := customer.PersonName
+	if person.WithInfant {
+		t.Error("PersonName.WithInfant should be false")
+	}
+	if person.RPH != 1 {
+		t.Errorf("PersonName.RPH expect: %d, got %d", 1, person.RPH)
+	}
+	if person.NameNumber != "01.01" {
+		t.Errorf("PersonName.NameNumber expect: %s, got %s", "01.01", person.NameNumber)
+	}
+	if person.First.Val != strings.ToUpper(sampleFirstName) {
+		t.Errorf("person.First expect: %s, got %s", sampleFirstName, person.First.Val)
+	}
+	if person.Last.Val != strings.ToUpper(sampleLastName) {
+		t.Errorf("person.First expect: %s, got %s", sampleLastName, person.Last.Val)
+	}
+
+	if len(resp.Body.PassengerDetailsRS.TravelItineraryReadRS.TravelItinerary.ItineraryInfo.ReservationItems) > 1 {
+		t.Error("ReservationItems wrong number")
+	}
+
+	itinRef := resp.Body.PassengerDetailsRS.TravelItineraryReadRS.TravelItinerary.ItineraryRef
+	if itinRef.AirExtras {
+		t.Error("ItineraryRef.AirExtras should be false")
+	}
+
+	if itinRef.InhibitCode != "U" {
+		t.Errorf("ItineraryRef.InhibitCode expect: %s, got %s", "U", itinRef.InhibitCode)
+	}
+	if itinRef.PartitionID != "AA" {
+		t.Errorf("ItineraryRef.PartitionID expect: %s, got %s", "AA", itinRef.PartitionID)
+	}
+	if itinRef.PrimeHostID != "1S" {
+		t.Errorf("ItineraryRef.PrimeHostID expect: %s, got %s", "1S", itinRef.PrimeHostID)
+	}
+	if itinRef.Source.PseudoCityCode != samplepcc {
+		t.Errorf("ItineraryRef.Source.PseudoCityCode expect: %s, got %s", samplepcc, itinRef.Source.PseudoCityCode)
 	}
 }

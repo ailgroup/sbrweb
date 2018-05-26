@@ -36,7 +36,7 @@
                 <TravelItinerary>
                     <CustomerInfo>
                         <ContactNumbers>
-                            <ContactNumber LocationCode="SLC" Phone="835-734-6758-H-1.1" RPH="001"/>
+                            <ContactNumber LocationCode="SLC" Phone="123-456-7890-H.1.1" RPH="001"/>
                         </ContactNumbers>
                         <PersonName WithInfant="false" NameNumber="01.01" NameReference="ABC123" PassengerType="ADT" RPH="1">
                             <GivenName>CHARLES</GivenName>
