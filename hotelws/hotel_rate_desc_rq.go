@@ -50,7 +50,7 @@ func SetHotelRateDescRqStruct(rpc *RatePlanCandidates) (HotelRateDescBody, error
 }
 
 // BuildHotelRateDescRequest to make hotel property description request, done after hotel property description iff HRD_RequiredForSell=true.
-func BuildHotelRateDescRequest(from, pcc, binsectoken, convid, mid, time string, propDesc HotelRateDescBody) HotelRateDescRequest {
+func BuildHotelRateDescRequest(from, pcc, binsectoken, convid, mid, time string, body HotelRateDescBody) HotelRateDescRequest {
 	return HotelRateDescRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -78,7 +78,7 @@ func BuildHotelRateDescRequest(from, pcc, binsectoken, convid, mid, time string,
 				BinarySecurityToken: binsectoken,
 			},
 		},
-		Body: propDesc,
+		Body: body,
 	}
 }
 
@@ -108,14 +108,14 @@ type HotelRateDescResponse struct {
 
 // CallHotelRateDesc to sabre web services retrieve hotel rates using HotelRateDescriptionLLSRQ. This call only supports requests that contain an RPH from a previous hotel_property_desc call, see BuildHotelRateDescRequest.
 func CallHotelRateDesc(serviceURL string, req HotelRateDescRequest) (HotelRateDescResponse, error) {
-	propResp := HotelRateDescResponse{}
+	rateResp := HotelRateDescResponse{}
 	byteReq, _ := xml.Marshal(req)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
 	if err != nil {
-		propResp.ErrorSabreService = NewErrorSabreService(err.Error(), ErrCallHotelRateDesc, BadService)
-		return propResp, propResp.ErrorSabreService
+		rateResp.ErrorSabreService = NewErrorSabreService(err.Error(), ErrCallHotelRateDesc, BadService)
+		return rateResp, rateResp.ErrorSabreService
 	}
 	// parse payload body into []byte buffer from net Response.ReadCloser
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
@@ -124,10 +124,10 @@ func CallHotelRateDesc(serviceURL string, req HotelRateDescRequest) (HotelRateDe
 	resp.Body.Close()
 
 	//marshal bytes sabre response body into availResp response struct
-	err = xml.Unmarshal(bodyBuffer.Bytes(), &propResp)
+	err = xml.Unmarshal(bodyBuffer.Bytes(), &rateResp)
 	if err != nil {
-		propResp.ErrorSabreXML = NewErrorErrorSabreXML(err.Error(), ErrCallHotelRateDesc, BadParse)
-		return propResp, propResp.ErrorSabreXML
+		rateResp.ErrorSabreXML = NewErrorErrorSabreXML(err.Error(), ErrCallHotelRateDesc, BadParse)
+		return rateResp, rateResp.ErrorSabreXML
 	}
-	return propResp, nil
+	return rateResp, nil
 }
