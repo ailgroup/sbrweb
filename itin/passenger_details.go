@@ -90,7 +90,7 @@ type PersonName struct {
 	NameNumber    string   `xml:"NameNumber,attr"`    //1.1
 	NameReference string   `xml:"NameReference,attr"` //ABC123
 	PassengerType string   `xml:"PassengerType,attr"` //ADT
-	Given         GivenName
+	First         GivenName
 	Middle        *MiddleName
 	Last          Surname
 }
@@ -151,6 +151,10 @@ func (p *PassengerDetailBody) AddSpecialDetails() {
 	p.PassengerDetailsRQ.SpecialReq = &SpecialReqDetails{}
 }
 
+func (p *PassengerDetailBody) AddUniqueID(id string) {
+	p.PassengerDetailsRQ.PreProcess.UniqueID = &UniqueID{ID: id}
+}
+
 // SetHotelRateDescRqStruct hotel rate description request using input parameters
 func SetPsngrDetailsRequestStruct(phone, firstName, lastName string) PassengerDetailBody {
 	return PassengerDetailBody{
@@ -181,7 +185,7 @@ func SetPsngrDetailsRequestStruct(phone, firstName, lastName string) PassengerDe
 						NameNumber:    "1.1",
 						NameReference: "ABC123",
 						PassengerType: "ADT",
-						Given:         GivenName{Val: firstName},
+						First:         GivenName{Val: firstName},
 						Last:          Surname{Val: lastName},
 					},
 				},
