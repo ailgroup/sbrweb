@@ -7,9 +7,9 @@ import (
 type AppStatus int
 
 const (
-	Unknown AppStatus = 1 << (2 * iota)
-	BadService
-	BadParse
+	Unknown    AppStatus = iota + 1 //1
+	BadService                      //2
+	BadParse                        //3
 )
 
 const (
@@ -18,25 +18,26 @@ const (
 	ErrCallHotelPropDesc = "Error CallHotelPropDesc::HotelPropertyDescriptionLLSRQ"
 	ErrCallHotelRateDesc = "Error CallHotelRateDesc::HotelRateDescriptionLLSRQ"
 	ErrCallHotelRes      = "Error CallHotelRes::OTA_HotelResLLSRQ"
-	ErrCallPNRDetails    = "Error CallPNRDetails::PassengerDetailsRQ" //TODO in its own package
+	ErrCallPNRDetails    = "Error CallPNRDetails::PassengerDetailsRQ"
 )
 
 var (
 	ErrPropDescCityCode  = errors.New("HotelCityCode not allowed in HotelPropDesc")
 	ErrPropDescLatLng    = errors.New("Latitude or Longitude not allowed in HotelPropDesc")
 	ErrPropDescHotelRefs = errors.New("Criterion.HotelRef cannot be greater than 1, can only search using one criterion")
-)
 
-func (code AppStatus) String() string {
-	statuses := [...]string{
+	appStatuses = [...]string{
 		"Unknown",
 		"BadService",
 		"BadParse",
 	}
-	if code < BadParse || code < Unknown {
+)
+
+func (code AppStatus) String() string {
+	if code < Unknown || code > BadParse {
 		return "Unknown"
 	}
-	return statuses[code]
+	return appStatuses[code-1]
 }
 
 type ErrorSabreService struct {

@@ -108,11 +108,19 @@ type Surname struct {
 	XMLName xml.Name `xml:"Surname"`
 	Val     string   `xml:",chardata"`
 }
+
+type Airline struct {
+	XMLName xml.Name `xml:"Airline"`
+	Hosted  bool     `xml:"Hosted,attr"`
+}
 type VendorPrefs struct {
 	XMLName xml.Name `xml:"VendorPrefs"`
-	Airline struct {
-		Hosted bool `xml:"Hosted,attr"`
-	} `xml:"Airline"`
+	Airline Airline
+}
+
+type StateProvince struct {
+	XMLName   xml.Name `xml:"StateCountyProv,omitempty"`
+	StateCode string   `xml:"StateCode,attr,omitempty"`
 }
 
 // Address PNR specific struct for addresses
@@ -120,11 +128,9 @@ type Address struct {
 	AddressLine   string `xml:"AddressLine,omitempty"`
 	Street        string `xml:"StreetNumber,omitempty"`
 	City          string `xml:"CityName,omitempty"`
-	StateProvince struct {
-		StateCode string `xml:"StateCode,attr,omitempty"`
-	} `xml:"StateCountyProv,omitempty"`
-	CountryCode string `xml:"CountryCode,omitempty"`
-	Postal      string `xml:"PostalCode,omitempty"`
+	StateProvince StateProvince
+	CountryCode   string `xml:"CountryCode,omitempty"`
+	Postal        string `xml:"PostalCode,omitempty"`
 }
 type AgencyInfo struct {
 	Address     Address
@@ -151,10 +157,20 @@ type TravelItineraryAddInfoRQ struct {
 	Customer CustomerInfo
 }
 
+// AddAgencyInfo required to complete booking. Helper function allows it to be more fleixible to build up travel itinerary PNR.
+func (p *PassengerDetailBody) AddAgencyInfo(addr Address, vendp VendorPrefs) {
+	p.PassengerDetailsRQ.TravelItinInfo.Agency = &AgencyInfo{
+		Address:     addr,
+		VendorPrefs: vendp,
+	}
+}
+
+// AddSpecialDetails optionally include special details in special requests
 func (p *PassengerDetailBody) AddSpecialDetails() {
 	p.PassengerDetailsRQ.SpecialReq = &SpecialReqDetails{}
 }
 
+// AddUniqueID optionally include a pre processing unique ID
 func (p *PassengerDetailBody) AddUniqueID(id string) {
 	p.PassengerDetailsRQ.PreProcess.UniqueID = &UniqueID{ID: id}
 }

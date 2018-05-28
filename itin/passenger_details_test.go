@@ -12,6 +12,32 @@ func TestPNRSet(t *testing.T) {
 	s := SetPNRDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
 	s.AddSpecialDetails()
 	s.AddUniqueID("1234ABCD")
+	addr := Address{
+		AddressLine:   "123 Agora",
+		Street:        "Sesame Street",
+		City:          "Coalsville",
+		StateProvince: StateProvince{StateCode: "XT"},
+		CountryCode:   "LI",
+		Postal:        "pae098",
+	}
+	vp := VendorPrefs{
+		Airline: Airline{
+			Hosted: false,
+		},
+	}
+	s.AddAgencyInfo(addr, vp)
+
+	agencyAddr := s.PassengerDetailsRQ.TravelItinInfo.Agency.Address
+	if agencyAddr.Street != "Sesame Street" {
+		t.Error("Agency Info street address is wrong")
+	}
+	if agencyAddr.StateProvince.StateCode != "XT" {
+		t.Error("Agency Info StateProvince.StateCode address is wrong")
+	}
+	venPrefs := s.PassengerDetailsRQ.TravelItinInfo.Agency.VendorPrefs
+	if venPrefs.Airline.Hosted {
+		t.Error("Agency Info VendorPrefs Airline.Hosted is wrong")
+	}
 
 	if s.PassengerDetailsRQ.PreProcess.UniqueID.ID != "1234ABCD" {
 		t.Errorf("s.PassengerDetailsRQ.PreProcess.UniqueID.ID given %v, built %v", "1234ABCD", s.PassengerDetailsRQ.PreProcess.UniqueID.ID)
@@ -31,7 +57,7 @@ func TestPNRSet(t *testing.T) {
 	}
 }
 
-func TestPNRBuild(t *testing.T) {
+func TestPNRBuildMarshal(t *testing.T) {
 	body := SetPNRDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
 	req := BuildPNRDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
 
