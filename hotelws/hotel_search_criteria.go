@@ -3,6 +3,8 @@ package hotelws
 import (
 	"fmt"
 	"strings"
+
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
 // SetRateParams helper to create a slice of rate plans to append on a an Avail Segement
@@ -31,14 +33,14 @@ func NewHotelSearchCriteria(queryParams ...QuerySearchParams) (*HotelSearchCrite
 func (c *HotelSearchCriteria) validatePropertyRequest() error {
 	for _, criterion := range c.Criterion.HotelRefs {
 		if len(criterion.HotelCityCode) > 0 {
-			return ErrPropDescCityCode
+			return sbrerr.ErrPropDescCityCode
 		}
 		if (len(criterion.Latitude) > 0) || (len(criterion.Longitude) > 0) {
-			return ErrPropDescLatLng
+			return sbrerr.ErrPropDescLatLng
 		}
 
 		if len(c.Criterion.HotelRefs) > 1 {
-			return ErrPropDescHotelRefs
+			return sbrerr.ErrPropDescHotelRefs
 		}
 	}
 	return nil

@@ -6,11 +6,11 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/ailgroup/sbrweb/sbrerr"
 	"github.com/ailgroup/sbrweb/srvc"
-	//"github.com/ailgroup/sbrweb/hotelws"
 )
 
-/* PsngrDetailsRequest root level struct for dealing with an PNR. Taken from Sabre docs:
+/* PNRDetailsRequest root level struct for dealing with an PNR. Taken from Sabre docs:
 
 According to your specification in the request, does one of the following:
     * Displays the entire PNR. Returns the record locator when all processing of the service is completed.
@@ -21,7 +21,7 @@ In either case, at least one segment must be sold with content present in the Sa
 
 A successful transaction creates a new PNR or updates an existing PNR, saving the content you pass in the Sabre system. The system assigns a record locator for a new PNR, and returns the record locator of an existing PNR. When the processing of the service is complete, the content remains in the Sabre work area.
 */
-type PsngrDetailsRequest struct {
+type PNRDetailsRequest struct {
 	srvc.Envelope
 	Header srvc.SessionHeader
 	Body   PassengerDetailBody
@@ -160,7 +160,7 @@ func (p *PassengerDetailBody) AddUniqueID(id string) {
 }
 
 // SetHotelRateDescRqStruct hotel rate description request using input parameters
-func SetPsngrDetailsRequestStruct(phone, firstName, lastName string) PassengerDetailBody {
+func SetPNRDetailsRequestStruct(phone, firstName, lastName string) PassengerDetailBody {
 	return PassengerDetailBody{
 		PassengerDetailsRQ: PassengerDetailsRQ{
 			XMLNS:         "http://services.sabre.com/sp/pd/v3_3",
@@ -198,9 +198,9 @@ func SetPsngrDetailsRequestStruct(phone, firstName, lastName string) PassengerDe
 	}
 }
 
-// BuildPsngrDetailsRequest passenger details for booking
-func BuildPsngrDetailsRequest(from, pcc, binsectoken, convid, mid, time string, body PassengerDetailBody) PsngrDetailsRequest {
-	return PsngrDetailsRequest{
+// BuildPNRDetailsRequest passenger details for booking
+func BuildPNRDetailsRequest(from, pcc, binsectoken, convid, mid, time string, body PassengerDetailBody) PNRDetailsRequest {
+	return PNRDetailsRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
 			MessageHeader: srvc.MessageHeader{
@@ -232,19 +232,16 @@ func BuildPsngrDetailsRequest(from, pcc, binsectoken, convid, mid, time string, 
 }
 
 type Message struct {
-	XMLName xml.Name `xml:"Message"`
-	Code    string   `xml:"code"`
-	Val     string   `xml:",chardata"`
+	Code string `xml:"code"`
+	Val  string `xml:",chardata"`
 }
 type SystemResult struct {
-	XMLName  xml.Name `xml:"SystemSpecificResults"`
-	Messages []Message
+	Messages []Message `xml:"Message"`
 }
 type Warning struct {
-	XMLName       xml.Name `xml:"Warning"`
-	Type          string   `xml:"type,attr"`
-	Timestamp     string   `xml:"timeStamp,attr"`
-	SystemResults []SystemResult
+	Type          string         `xml:"type,attr"`
+	Timestamp     string         `xml:"timeStamp,attr"`
+	SystemResults []SystemResult `xml:"SystemSpecificResults"`
 }
 type ApplicationResults struct {
 	XMLName xml.Name `xml:"ApplicationResults"`
@@ -252,15 +249,14 @@ type ApplicationResults struct {
 	Success struct {
 		Timestamp string `xml:"timeStamp,attr"`
 	} `xml:"Success"`
-	Warnings []Warning
+	Warnings []Warning `xml:"Warning"`
 }
 
 type ReservationItem struct {
-	XMLName xml.Name `xml:"ReservationItems"`
 }
 type ItineraryInfo struct {
-	XMLName          xml.Name `xml:"ItineraryInfo"`
-	ReservationItems []ReservationItem
+	XMLName          xml.Name          `xml:"ItineraryInfo"`
+	ReservationItems []ReservationItem `xml:"ReservationItems"`
 }
 type ItineraryRef struct {
 	XMLName     xml.Name `xml:"ItineraryRef"`
@@ -287,31 +283,31 @@ type PassengerDetailsRS struct {
 	AppResults            ApplicationResults
 	TravelItineraryReadRS TravelItineraryReadRS
 }
-type PnsgrDetailsResponse struct {
+type PNRDetailsResponse struct {
 	Envelope srvc.EnvelopeUnMarsh
 	Header   srvc.SessionHeaderUnmarsh
 	Body     struct {
 		PassengerDetailsRS PassengerDetailsRS
-		//Fault              srvc.SOAPFault
+		Fault              srvc.SOAPFault
 	}
-	//ErrorSabreService ErrorSabreService
-	//ErrorSabreXML     ErrorSabreXML
+	ErrorSabreService sbrerr.ErrorSabreService
+	ErrorSabreXML     sbrerr.ErrorSabreXML
 }
 
-// CallPsngrDetailsRequest creates a new PNR or updates an existing PNR, saving the content you pass in the Sabre system. The system assigns a record locator for a new PNR, and returns the record locator of an existing PNR. When the processing of the service is complete, the content remains in the Sabre work area. Previous calls required are hotel_property_desc OR hotel_rate_desc call, see BuildPsngrDetailsRequest.
-func CallPsngrDetail(serviceURL string, req PsngrDetailsRequest) (PnsgrDetailsResponse, error) {
-	psngrResp := PnsgrDetailsResponse{}
+// CallPNRDetailsRequest creates a new PNR or updates an existing PNR, saving the content you pass in the Sabre system. The system assigns a record locator for a new PNR, and returns the record locator of an existing PNR. When the processing of the service is complete, the content remains in the Sabre work area. Previous calls required are hotel_property_desc OR hotel_rate_desc call, see BuildPNRDetailsRequest.
+func CallPNRDetail(serviceURL string, req PNRDetailsRequest) (PNRDetailsResponse, error) {
+	PNRResp := PNRDetailsResponse{}
 	byteReq, _ := xml.Marshal(req)
-	//fmt.Printf("REQ: %s\n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
-	//fmt.Printf("RESP: %s\n\n", resp.Status)
 	if err != nil {
-		return psngrResp, err
-		//fmt.Printf("ERROR: %v\n", err)
-		//psngrResp.ErrorSabreService = NewErrorSabreService(err.Error(), ErrCallHotelRateDesc, BadService)
-		//return psngrResp, psngrResp.ErrorSabreService
+		PNRResp.ErrorSabreService = sbrerr.NewErrorSabreService(
+			err.Error(),
+			sbrerr.ErrCallPNRDetails,
+			sbrerr.BadService,
+		)
+		return PNRResp, PNRResp.ErrorSabreService
 	}
 	// parse payload body into []byte buffer from net Response.ReadCloser
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
@@ -319,13 +315,15 @@ func CallPsngrDetail(serviceURL string, req PsngrDetailsRequest) (PnsgrDetailsRe
 	io.Copy(bodyBuffer, resp.Body)
 	resp.Body.Close()
 
-	//fmt.Printf("MARSH-RESP: %s\n\n", bodyBuffer.Bytes())
 	//marshal bytes sabre response body into availResp response struct
-	err = xml.Unmarshal(bodyBuffer.Bytes(), &psngrResp)
+	err = xml.Unmarshal(bodyBuffer.Bytes(), &PNRResp)
 	if err != nil {
-		return psngrResp, err
-		//fmt.Printf("ERROR: %v\n", err)
-		//psngrResp.ErrorSabreXML = NewErrorErrorSabreXML(err.Error(), ErrCallHotelRateDesc, BadParse)
+		PNRResp.ErrorSabreXML = sbrerr.NewErrorSabreXML(
+			err.Error(),
+			sbrerr.ErrCallPNRDetails,
+			sbrerr.BadParse,
+		)
+		return PNRResp, PNRResp.ErrorSabreXML
 	}
-	return psngrResp, nil
+	return PNRResp, nil
 }

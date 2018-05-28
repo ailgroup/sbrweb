@@ -4,10 +4,12 @@ import (
 	"encoding/xml"
 	"strings"
 	"testing"
+
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
-func TestPsngrSet(t *testing.T) {
-	s := SetPsngrDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
+func TestPNRSet(t *testing.T) {
+	s := SetPNRDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
 	s.AddSpecialDetails()
 	s.AddUniqueID("1234ABCD")
 
@@ -29,26 +31,26 @@ func TestPsngrSet(t *testing.T) {
 	}
 }
 
-func TestPsngrBuild(t *testing.T) {
-	body := SetPsngrDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
-	req := BuildPsngrDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
+func TestPNRBuild(t *testing.T) {
+	body := SetPNRDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
+	req := BuildPNRDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
 
 	b, err := xml.Marshal(req)
 	if err != nil {
 		t.Error("Error marshaling passenger details request", err)
 	}
-	if string(b) != string(samplePsngrReq) {
-		t.Errorf("Expected marshal passenger details request \n given: %s \n built: %s", string(samplePsngrReq), string(b))
+	if string(b) != string(samplePNRReq) {
+		t.Errorf("Expected marshal passenger details request \n given: %s \n built: %s", string(samplePNRReq), string(b))
 	}
 }
 
-func TestPsngrDetailCall(t *testing.T) {
-	body := SetPsngrDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
-	req := BuildPsngrDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
+func TestPNRDetailCall(t *testing.T) {
+	body := SetPNRDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
+	req := BuildPNRDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
 
-	resp, err := CallPsngrDetail(serverPsngrDetails.URL, req)
+	resp, err := CallPNRDetail(serverPNRDetails.URL, req)
 	if err != nil {
-		t.Error("Error making request CallPsngrDetailsRequest", err)
+		t.Error("Error making request CallPNRDetailsRequest", err)
 	}
 
 	appres := resp.Body.PassengerDetailsRS.AppResults
@@ -116,5 +118,59 @@ func TestPsngrDetailCall(t *testing.T) {
 	}
 	if itinRef.Source.PseudoCityCode != samplepcc {
 		t.Errorf("ItineraryRef.Source.PseudoCityCode expect: %s, got %s", samplepcc, itinRef.Source.PseudoCityCode)
+	}
+}
+
+func TestPNRDetailCallWarn(t *testing.T) {
+	body := SetPNRDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
+	req := BuildPNRDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
+
+	resp, err := CallPNRDetail(serverBizLogic.URL, req)
+	if err != nil {
+		t.Error("Error making request CallPNRDetailsRequest", err)
+	}
+
+	appRes := resp.Body.PassengerDetailsRS.AppResults
+	//fmt.Printf("ApplicationResults: \n%+v\n", appRes)
+	if len(appRes.Warnings) != 2 {
+		t.Errorf("Wrong number of warnings, want: %d, got %d", 2, len(appRes.Warnings))
+	}
+}
+
+func TestPNRCallBadBodyResponseBody(t *testing.T) {
+	body := SetPNRDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
+	req := BuildPNRDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
+	resp, err := CallPNRDetail(serverBadBody.URL, req)
+
+	if err == nil {
+		t.Error("Expected error making request to serverBadBody")
+	}
+	if err.Error() != resp.ErrorSabreXML.ErrMessage {
+		t.Error("Error() message should match resp.ErrorSabreService.ErrMessage")
+	}
+	if resp.ErrorSabreXML.Code != sbrerr.BadParse {
+		t.Errorf("Expect %d got %d", sbrerr.BadParse, resp.ErrorSabreXML.Code)
+	}
+	if resp.ErrorSabreXML.AppMessage != sbrerr.ErrCallPNRDetails {
+		t.Errorf("Expect %s got %s", sbrerr.ErrCallPNRDetails, resp.ErrorSabreXML.AppMessage)
+	}
+}
+
+func TestPNRDetailsCallDown(t *testing.T) {
+	body := SetPNRDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
+	req := BuildPNRDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
+	resp, err := CallPNRDetail(serverDown.URL, req)
+
+	if err == nil {
+		t.Error("Expected error making request to serverHotelDown")
+	}
+	if err.Error() != resp.ErrorSabreService.ErrMessage {
+		t.Error("Error() message should match resp.ErrorSabreService.ErrMessage")
+	}
+	if resp.ErrorSabreService.Code != sbrerr.BadService {
+		t.Errorf("Expect %d got %d", sbrerr.BadService, resp.ErrorSabreService.Code)
+	}
+	if resp.ErrorSabreService.AppMessage != sbrerr.ErrCallPNRDetails {
+		t.Errorf("Expect %s got %s", sbrerr.ErrCallPNRDetails, resp.ErrorSabreService.AppMessage)
 	}
 }

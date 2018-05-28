@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/ailgroup/sbrweb/sbrerr"
 	"github.com/ailgroup/sbrweb/srvc"
 )
 
@@ -102,8 +103,8 @@ type HotelRateDescResponse struct {
 		HotelDesc HotelRateDescriptionRS
 		Fault     srvc.SOAPFault
 	}
-	ErrorSabreService ErrorSabreService
-	ErrorSabreXML     ErrorSabreXML
+	ErrorSabreService sbrerr.ErrorSabreService
+	ErrorSabreXML     sbrerr.ErrorSabreXML
 }
 
 // CallHotelRateDesc to sabre web services retrieve hotel rates using HotelRateDescriptionLLSRQ. This call only supports requests that contain an RPH from a previous hotel_property_desc call, see BuildHotelRateDescRequest.
@@ -114,7 +115,7 @@ func CallHotelRateDesc(serviceURL string, req HotelRateDescRequest) (HotelRateDe
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
 	if err != nil {
-		rateResp.ErrorSabreService = NewErrorSabreService(err.Error(), ErrCallHotelRateDesc, BadService)
+		rateResp.ErrorSabreService = sbrerr.NewErrorSabreService(err.Error(), sbrerr.ErrCallHotelRateDesc, sbrerr.BadService)
 		return rateResp, rateResp.ErrorSabreService
 	}
 	// parse payload body into []byte buffer from net Response.ReadCloser
@@ -126,7 +127,7 @@ func CallHotelRateDesc(serviceURL string, req HotelRateDescRequest) (HotelRateDe
 	//marshal bytes sabre response body into availResp response struct
 	err = xml.Unmarshal(bodyBuffer.Bytes(), &rateResp)
 	if err != nil {
-		rateResp.ErrorSabreXML = NewErrorErrorSabreXML(err.Error(), ErrCallHotelRateDesc, BadParse)
+		rateResp.ErrorSabreXML = sbrerr.NewErrorSabreXML(err.Error(), sbrerr.ErrCallHotelRateDesc, sbrerr.BadParse)
 		return rateResp, rateResp.ErrorSabreXML
 	}
 	return rateResp, nil

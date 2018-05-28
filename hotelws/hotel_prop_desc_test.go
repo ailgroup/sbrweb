@@ -3,6 +3,8 @@ package hotelws
 import (
 	"encoding/xml"
 	"testing"
+
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
 func TestPropDescValidReqCityCode(t *testing.T) {
@@ -11,7 +13,7 @@ func TestPropDescValidReqCityCode(t *testing.T) {
 		HotelRefSearch(hqcity),
 	)
 	_, err := SetHotelPropDescRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
-	if err != ErrPropDescCityCode {
+	if err != sbrerr.ErrPropDescCityCode {
 		t.Error("ErrPropDescCityCode should return")
 	}
 }
@@ -22,7 +24,7 @@ func TestPropDescValidReqLatLng(t *testing.T) {
 		HotelRefSearch(hqltln),
 	)
 	_, err := SetHotelPropDescRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
-	if err != ErrPropDescLatLng {
+	if err != sbrerr.ErrPropDescLatLng {
 		t.Error("ErrPropDescLatLng should return")
 	}
 }
@@ -33,7 +35,7 @@ func TestPropDescValidMultiHotelRefs(t *testing.T) {
 		HotelRefSearch(hqids),
 	)
 	_, err := SetHotelPropDescRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
-	if err != ErrPropDescHotelRefs {
+	if err != sbrerr.ErrPropDescHotelRefs {
 		t.Error("ErrPropDescHotelRefs should return error")
 	}
 }
@@ -227,11 +229,11 @@ func TestHotelPropDescCallDown(t *testing.T) {
 	if err.Error() != resp.ErrorSabreService.ErrMessage {
 		t.Error("Error() message should match resp.ErrorSabreService.ErrMessage")
 	}
-	if resp.ErrorSabreService.Code != BadService {
-		t.Errorf("Expect %d got %d", BadService, resp.ErrorSabreService.Code)
+	if resp.ErrorSabreService.Code != sbrerr.BadService {
+		t.Errorf("Expect %d got %d", sbrerr.BadService, resp.ErrorSabreService.Code)
 	}
-	if resp.ErrorSabreService.AppMessage != ErrCallHotelPropDesc {
-		t.Errorf("Expect %s got %s", ErrCallHotelPropDesc, resp.ErrorSabreService.AppMessage)
+	if resp.ErrorSabreService.AppMessage != sbrerr.ErrCallHotelPropDesc {
+		t.Errorf("Expect %s got %s", sbrerr.ErrCallHotelPropDesc, resp.ErrorSabreService.AppMessage)
 	}
 }
 
@@ -251,10 +253,10 @@ func TestHotelPropDescCallBadResponseBody(t *testing.T) {
 	if err.Error() != resp.ErrorSabreXML.ErrMessage {
 		t.Error("Error() message should match resp.ErrorSabreService.ErrMessage")
 	}
-	if resp.ErrorSabreXML.Code != BadParse {
-		t.Errorf("Expect %d got %d", BadParse, resp.ErrorSabreXML.Code)
+	if resp.ErrorSabreXML.Code != sbrerr.BadParse {
+		t.Errorf("Expect %d got %d", sbrerr.BadParse, resp.ErrorSabreXML.Code)
 	}
-	if resp.ErrorSabreXML.AppMessage != ErrCallHotelPropDesc {
-		t.Errorf("Expect %s got %s", ErrCallHotelPropDesc, resp.ErrorSabreXML.AppMessage)
+	if resp.ErrorSabreXML.AppMessage != sbrerr.ErrCallHotelPropDesc {
+		t.Errorf("Expect %s got %s", sbrerr.ErrCallHotelPropDesc, resp.ErrorSabreXML.AppMessage)
 	}
 }

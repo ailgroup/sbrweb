@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/ailgroup/sbrweb/sbrerr"
 	"github.com/ailgroup/sbrweb/srvc"
 )
 
@@ -139,8 +140,8 @@ type HotelAvailResponse struct {
 		HotelAvail OTAHotelAvailRS
 		Fault      srvc.SOAPFault
 	}
-	ErrorSabreService ErrorSabreService
-	ErrorSabreXML     ErrorSabreXML
+	ErrorSabreService sbrerr.ErrorSabreService
+	ErrorSabreXML     sbrerr.ErrorSabreXML
 }
 
 // CallHotelAvail to sabre web services
@@ -152,7 +153,7 @@ func CallHotelAvail(serviceURL string, req HotelAvailRequest) (HotelAvailRespons
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
 	if err != nil {
-		availResp.ErrorSabreService = NewErrorSabreService(err.Error(), ErrCallHotelAvail, BadService)
+		availResp.ErrorSabreService = sbrerr.NewErrorSabreService(err.Error(), sbrerr.ErrCallHotelAvail, sbrerr.BadService)
 		return availResp, availResp.ErrorSabreService
 	}
 	// parse payload body into []byte buffer from net Response.ReadCloser
@@ -164,7 +165,7 @@ func CallHotelAvail(serviceURL string, req HotelAvailRequest) (HotelAvailRespons
 	//marshal bytes sabre response body into availResp response struct
 	err = xml.Unmarshal(bodyBuffer.Bytes(), &availResp)
 	if err != nil {
-		availResp.ErrorSabreXML = NewErrorErrorSabreXML(err.Error(), ErrCallHotelAvail, BadParse)
+		availResp.ErrorSabreXML = sbrerr.NewErrorSabreXML(err.Error(), sbrerr.ErrCallHotelAvail, sbrerr.BadParse)
 		return availResp, availResp.ErrorSabreXML
 	}
 	return availResp, nil
