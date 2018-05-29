@@ -69,7 +69,7 @@ func NewPool(expire ExpireScheme, size int, serviceURL, from, pcc, convid, mid, 
 	}
 }
 
-// GenerateSessionID returns 'mid:20060102-15:04:05|urioe'
+// GenerateSessionID returns 'xca123'
 func GenerateSessionID() string {
 	randStr := randStringBytesMaskImprSrc(3)
 	nowtime := time.Now().Format(".999")

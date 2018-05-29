@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ailgroup/sbrweb/sbrerr"
 	"github.com/ailgroup/sbrweb/srvc"
 )
 
@@ -411,11 +412,11 @@ func TestHotelAvailCallDown(t *testing.T) {
 	if err.Error() != resp.ErrorSabreService.ErrMessage {
 		t.Error("Error() message should match resp.ErrorSabreService.ErrMessage")
 	}
-	if resp.ErrorSabreService.Code != BadService {
-		t.Errorf("Expect %d got %d", BadService, resp.ErrorSabreService.Code)
+	if resp.ErrorSabreService.Code != sbrerr.BadService {
+		t.Errorf("Expect %d got %d", sbrerr.BadService, resp.ErrorSabreService.Code)
 	}
-	if resp.ErrorSabreService.AppMessage != ErrCallHotelAvail {
-		t.Errorf("Expect %s got %s", ErrCallHotelAvail, resp.ErrorSabreService.AppMessage)
+	if resp.ErrorSabreService.AppMessage != sbrerr.ErrCallHotelAvail {
+		t.Errorf("Expect %s got %s", sbrerr.ErrCallHotelAvail, resp.ErrorSabreService.AppMessage)
 	}
 }
 
@@ -432,10 +433,10 @@ func TestHotelAvailCallBadResponseBody(t *testing.T) {
 	if err.Error() != resp.ErrorSabreXML.ErrMessage {
 		t.Error("Error() message should match resp.ErrorSabreService.ErrMessage")
 	}
-	if resp.ErrorSabreXML.Code != BadParse {
-		t.Errorf("Expect %d got %d", BadParse, resp.ErrorSabreXML.Code)
+	if resp.ErrorSabreXML.Code != sbrerr.BadParse {
+		t.Errorf("Expect %d got %d", sbrerr.BadParse, resp.ErrorSabreXML.Code)
 	}
-	if resp.ErrorSabreXML.AppMessage != ErrCallHotelAvail {
-		t.Errorf("Expect %s got %s", ErrCallHotelAvail, resp.ErrorSabreXML.AppMessage)
+	if resp.ErrorSabreXML.AppMessage != sbrerr.ErrCallHotelAvail {
+		t.Errorf("Expect %s got %s", sbrerr.ErrCallHotelAvail, resp.ErrorSabreXML.AppMessage)
 	}
 }
