@@ -3,6 +3,8 @@ package hotelws
 import (
 	"encoding/xml"
 	"testing"
+
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
 func TestHotelRateDescMarshal(t *testing.T) {
@@ -13,7 +15,7 @@ func TestHotelRateDescMarshal(t *testing.T) {
 			},
 		},
 	)
-	rate, err := SetHotelRateDescRqStruct(rpc)
+	rate, err := SetHotelRateDescBody(rpc)
 	if err != nil {
 		t.Error("Error SetHotelRateDescRqStruct:", err)
 	}
@@ -53,7 +55,7 @@ func TestRateDescCall(t *testing.T) {
 			},
 		},
 	)
-	raterq, _ := SetHotelRateDescRqStruct(rpc)
+	raterq, _ := SetHotelRateDescBody(rpc)
 
 	req := BuildHotelRateDescRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, raterq)
 
@@ -138,4 +140,56 @@ func TestRateDescCall(t *testing.T) {
 		t.Errorf("TaxFieldTwo expected %s, got %s", "13.73", hprice.TotalTaxes.TaxFieldTwo)
 	}
 
+}
+
+func TestHotelRateDesCallDown(t *testing.T) {
+	rpc := SetRateParams(
+		[]RatePlan{
+			RatePlan{
+				RPH: 12,
+			},
+		},
+	)
+	raterq, _ := SetHotelRateDescBody(rpc)
+	req := BuildHotelRateDescRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, raterq)
+	resp, err := CallHotelRateDesc(serverHotelDown.URL, req)
+	if err == nil {
+		t.Error("Expected error making request to serverHotelDown")
+	}
+	if err.Error() != resp.ErrorSabreService.ErrMessage {
+		t.Error("Error() message should match resp.ErrorSabreService.ErrMessage")
+	}
+	if resp.ErrorSabreService.Code != sbrerr.BadService {
+		t.Errorf("Expect %d got %d", sbrerr.BadService, resp.ErrorSabreService.Code)
+	}
+	if resp.ErrorSabreService.AppMessage != sbrerr.ErrCallHotelRateDesc {
+		t.Errorf("Expect %s got %s", sbrerr.ErrCallHotelRateDesc, resp.ErrorSabreService.AppMessage)
+	}
+}
+
+func TestHotelRateDescCallBadResponseBody(t *testing.T) {
+	rpc := SetRateParams(
+		[]RatePlan{
+			RatePlan{
+				RPH: 12,
+			},
+		},
+	)
+	raterq, _ := SetHotelRateDescBody(rpc)
+
+	req := BuildHotelRateDescRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, raterq)
+
+	resp, err := CallHotelRateDesc(serverBadBody.URL, req)
+	if err == nil {
+		t.Error("Expected error making request to sserverBadBody")
+	}
+	if err.Error() != resp.ErrorSabreXML.ErrMessage {
+		t.Error("Error() message should match resp.ErrorSabreService.ErrMessage")
+	}
+	if resp.ErrorSabreXML.Code != sbrerr.BadParse {
+		t.Errorf("Expect %d got %d", sbrerr.BadParse, resp.ErrorSabreXML.Code)
+	}
+	if resp.ErrorSabreXML.AppMessage != sbrerr.ErrCallHotelRateDesc {
+		t.Errorf("Expect %s got %s", sbrerr.ErrCallHotelRateDesc, resp.ErrorSabreXML.AppMessage)
+	}
 }

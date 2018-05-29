@@ -52,8 +52,8 @@ func (a *HotelPropDescRQ) addCustomerID(cID string) {
 	}
 }
 
-// SetHotelPropDescRqStruct hotel availability request using input parameters
-func SetHotelPropDescRqStruct(guestCount int, query *HotelSearchCriteria, arrive, depart string) (HotelPropDescBody, error) {
+// SetHotelPropDescBody hotel availability request using input parameters
+func SetHotelPropDescBody(guestCount int, query *HotelSearchCriteria, arrive, depart string) (HotelPropDescBody, error) {
 	err := query.validatePropertyRequest()
 	if err != nil {
 		return HotelPropDescBody{}, err

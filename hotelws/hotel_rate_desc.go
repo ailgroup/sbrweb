@@ -34,8 +34,8 @@ type HotelRateDescRQ struct {
 	Avail             AvailRequestSegment
 }
 
-// SetHotelRateDescRqStruct hotel rate description request using input parameters
-func SetHotelRateDescRqStruct(rpc *RatePlanCandidates) (HotelRateDescBody, error) {
+// SetHotelRateDescBody hotel rate description request using input parameters
+func SetHotelRateDescBody(rpc *RatePlanCandidates) (HotelRateDescBody, error) {
 	return HotelRateDescBody{
 		HotelRateDescRQ: HotelRateDescRQ{
 			Version:           hotelRQVersion,

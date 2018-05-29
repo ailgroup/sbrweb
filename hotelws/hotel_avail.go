@@ -52,8 +52,8 @@ func (a *OTAHotelAvailRQ) addCustomerID(cID string) {
 	}
 }
 
-// SetHotelAvailRqStruct hotel availability request using input parameters
-func SetHotelAvailRqStruct(guestCount int, query *HotelSearchCriteria, arrive, depart string) HotelAvailBody {
+// SetHotelAvailBody hotel availability request using input parameters
+func SetHotelAvailBody(guestCount int, query *HotelSearchCriteria, arrive, depart string) HotelAvailBody {
 	a, d := arriveDepartParser(arrive, depart)
 	return HotelAvailBody{
 		OTAHotelAvailRQ: OTAHotelAvailRQ{
