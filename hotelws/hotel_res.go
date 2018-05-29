@@ -3,6 +3,7 @@ package hotelws
 import (
 	"encoding/xml"
 
+	"github.com/ailgroup/sbrweb/itin"
 	"github.com/ailgroup/sbrweb/srvc"
 )
 
@@ -13,23 +14,17 @@ type HotelResRequest struct {
 	Body   HotelResBody
 }
 
-// HotelResBody implements Hotel element for SOAP
-type HotelResBody struct {
-	XMLName xml.Name `xml:"OTA_HotelResRQ"`
-	Hotel   HotelRes
-}
-
-// HotelRes holds hotel information specific to making a hote reservation
-type HotelRes struct {
-	XMLName          xml.Name `xml:"Hotel"`
-	BasicPropertyRes BasicPropertyRes
-	Guarantee        GuaranteeReservation
-}
-
 // BasicPropertyRes is the BasicPropertyInfo element specifically for executing hotel reservations. Easier to duplicate this simple case than omit all the struct fields in the BasicPropertyInfo type.
 type BasicPropertyRes struct {
 	XMLName xml.Name `xml:"BasicPropertyInfo"`
 	RPH     int      `xml:"RPH,attr"`
+}
+
+// CCInfo for passing credit card
+type CCInfo struct {
+	XMLName     xml.Name `xml:"CC_Info"`
+	PaymentCard PaymentCard
+	PersonName  itin.PersonName
 }
 
 // GuaranteeReservation is a gurantee type specifically for executing hotel reservations
@@ -38,14 +33,47 @@ type GuaranteeReservation struct {
 	CCInfo  CCInfo
 }
 
-// CCInfo for passing credit card
-type CCInfo struct {
-	XMLName     xml.Name `xml:"CC_Info"`
-	PaymentCard PaymentCard
+type RoomType struct {
+	XMLName xml.Name `xml:"RoomType"`
 }
 
-func SetHotelResBody() HotelResBody {
-	return HotelResBody{}
+type SpecialPrefs struct {
+	XMLName xml.Name `xml:"SpecialPrefs"`
+}
+
+// HotelRes holds hotel information specific to making a hote reservation
+type HotelRes struct {
+	XMLName          xml.Name `xml:"Hotel"`
+	BasicPropertyRes BasicPropertyRes
+	Guarantee        GuaranteeReservation
+	RoomType         RoomType
+	SpecialPrefs     SpecialPrefs
+}
+
+// HotelResBody implements Hotel element for SOAP
+type HotelResBody struct {
+	XMLName xml.Name `xml:"OTA_HotelResRQ"`
+	Hotel   HotelRes
+}
+
+func SetHotelResBody(rph int, ccCode, ccExpire, ccNumber, pnrLast string) HotelResBody {
+	return HotelResBody{
+		Hotel: HotelRes{
+			BasicPropertyRes: BasicPropertyRes{RPH: rph},
+			Guarantee: GuaranteeReservation{
+				CCInfo: CCInfo{
+					PaymentCard: PaymentCard{
+						Code:       ccCode,
+						ExpireDate: ccExpire,
+						Number:     ccNumber,
+					},
+					PersonName: itin.PersonName{
+						Last: itin.Surname{Val: pnrLast},
+					},
+				},
+			},
+		},
+	}
 }
 
 // BuildHotelResRequest build request body for SOAP reservation service
