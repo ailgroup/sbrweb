@@ -132,7 +132,7 @@ type OTAHotelAvailRS struct {
 	AvailOpts AvailabilityOptions
 }
 
-// HotelAvailResponse is wrapper with namespace prefix definitions for payload
+// HotelAvailResponse for parsing hote availability response
 type HotelAvailResponse struct {
 	Envelope srvc.EnvelopeUnMarsh
 	Header   srvc.SessionHeaderUnmarsh

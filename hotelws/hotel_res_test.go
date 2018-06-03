@@ -7,11 +7,26 @@ import (
 )
 
 func TestHotelResSet(t *testing.T) {
-	body := SetHotelResBody(12, "MC", "2012-12", "1234567890", "Lastname")
-	if body.Hotel.BasicPropertyRes.RPH != 12 {
+	body := SetHotelResBody(12, "GDPST", "MC", "2012-12", "1234567890", "Lastname")
+
+	prefs, err := NewSpecialPrefs(
+		WrittenConf(true),
+	)
+	if err != nil {
+		t.Errorf("NewSpecialPrefs should not error %v", err)
+	}
+	body.addSpecialPrefs(prefs)
+	body.addRoomTypeUnits(2)
+
+	b := body.OTAHotelResRQ
+	if !b.Hotel.SpecialPrefs.WrittenConfirmation.Ind {
+		t.Errorf("SpecialPrefs WrittenConfirmation.Ind expcted: %v got: %v", true, b.Hotel.SpecialPrefs)
+	}
+
+	if b.Hotel.BasicPropertyRes.RPH != 12 {
 		t.Error("RPH is wrong")
 	}
-	ccinfo := body.Hotel.Guarantee.CCInfo
+	ccinfo := b.Hotel.Guarantee.CCInfo
 	if ccinfo.PaymentCard.Code != "MC" {
 		t.Error("PaymentCard.Code is wrong")
 	}
@@ -27,7 +42,7 @@ func TestHotelResSet(t *testing.T) {
 }
 
 func TestHotelResBuild(t *testing.T) {
-	body := SetHotelResBody(12, "MC", "2012-12", "1234567890", "Lastname")
+	body := SetHotelResBody(12, "GDPST", "MC", "2012-12", "1234567890", "Lastname")
 	req := BuildHotelResRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
 	b, err := xml.Marshal(req)
 	if err != nil {

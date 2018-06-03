@@ -133,9 +133,10 @@ type Corporate struct {
 
 // Timepsan for arrival and departure params
 type TimeSpan struct {
-	XMLName xml.Name `xml:"TimeSpan"`
-	Depart  string   `xml:"End,attr,omitempty"`
-	Arrive  string   `xml:"Start,attr,omitempty"`
+	XMLName  xml.Name `xml:"TimeSpan"`
+	Duration int      `xml:"Duration,omitempty"`
+	Depart   string   `xml:"End,attr,omitempty"`
+	Arrive   string   `xml:"Start,attr,omitempty"`
 }
 
 type RatePlan struct {
@@ -249,9 +250,12 @@ type BasicPropertyInfo struct {
 	HotelCityCode   string   `xml:"HotelCityCode,attr"`
 	HotelCode       string   `xml:"HotelCode,attr"`
 	HotelName       string   `xml:"HotelName,attr"`
-	Latitude        string   `xml:"Latitude,attr"`
-	Longitude       string   `xml:"Longitude,attr"`
-	Address         struct {
+	CancelPenalty   struct {
+		PolicyCode string `xml:"PolicyCode"`
+	} `xml:"CancelPenalty"`
+	Latitude  string `xml:"Latitude,attr"`
+	Longitude string `xml:"Longitude,attr"`
+	Address   struct {
 		Line []string `xml:"AddressLine"`
 	} `xml:"Address"`
 	Awards struct {
