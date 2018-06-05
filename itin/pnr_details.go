@@ -3,6 +3,7 @@ package itin
 import (
 	"bytes"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -266,6 +267,37 @@ type ApplicationResults struct {
 		Timestamp string `xml:"timeStamp,attr"`
 	} `xml:"Success"`
 	Warnings []Warning `xml:"Warning"`
+}
+
+func (result ApplicationResults) Ok() bool {
+	switch result.Status {
+	case sbrerr.StatusNotProcess(): //queries
+		return false
+	case sbrerr.StatusComplete(): //queries, pnr
+		if len(result.Warnings) > 0 {
+			return false
+		}
+		return true
+	default:
+		return false
+	}
+}
+
+func (result ApplicationResults) ErrFormat() sbrerr.ErrorSabreResult {
+	var wmsg string
+	for i, w := range result.Warnings {
+		var msg string
+		for is, s := range w.SystemResults {
+			for ms, m := range s.Messages {
+				msg += fmt.Sprintf("SystemResult-%d:Message-%d:Code-%s %s. ", is, ms, m.Code, m.Val)
+			}
+		}
+		wmsg += fmt.Sprintf("Warning-%d:Type-%s Results: %s", i, w.Type, msg)
+	}
+	return sbrerr.ErrorSabreResult{
+		Code:       sbrerr.GetStatus(result.Status),
+		AppMessage: wmsg,
+	}
 }
 
 type ReservationItem struct {

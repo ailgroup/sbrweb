@@ -22,7 +22,12 @@ package hotelws
 
 import (
 	"encoding/xml"
+	"fmt"
+	"strings"
 	"time"
+	"unicode"
+
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
 const (
@@ -35,7 +40,60 @@ const (
 	latlngQueryField      = "latlng_qf"
 	hotelidQueryField     = "hotelID_qf"
 	returnHostCommand     = true
+	ESA                   = "\u0087" //UNICODE: End of Selected Area
+	CrossLorraine         = "\u2628" //UNICODE Cross of Lorraine
 )
+
+var hostCommandReplacer = strings.NewReplacer("\\", "", "/", "", ESA, "")
+
+// sanatize cleans up filtered string terms for file names. removes whitespace and slashes as these either get in the
+func sanatize(str string) string {
+	// use a NewReplacer to clean this up and make it easy to use with multiple replacers
+	//trim := strings.Trim(str, " ")
+	return strings.Map(func(r rune) rune {
+		if unicode.IsSpace(r) {
+			return -1
+		}
+		return r
+	}, hostCommandReplacer.Replace(strings.ToLower(str)))
+}
+
+func (s SystemResults) Translate() string {
+	clean := sanatize(s.Message)
+	switch {
+	case strings.Contains(clean, "ckdate"):
+		return fmt.Sprintf("%s=%s", "Check Date Parameters", s.Message)
+	default:
+		return fmt.Sprintf("%s=%s", s.Message, "No Translation")
+	}
+}
+
+func (result ApplicationResults) ErrFormat() sbrerr.ErrorSabreResult {
+	return sbrerr.ErrorSabreResult{
+		Code: sbrerr.GetStatus(result.Status),
+		AppMessage: fmt.Sprintf(
+			"%s because %s. %s. HostCommand[LNIATA: %s Cryptic: %s]",
+			result.Status,
+			result.Error.Type,
+			result.Error.System.Translate(),
+			result.Error.System.HostCommand.LNIATA,
+			result.Error.System.HostCommand.Cryptic,
+		),
+	}
+}
+
+func (result ApplicationResults) Ok() bool {
+	switch result.Status {
+	case sbrerr.StatusNotProcess(): //queries
+		return false
+	case sbrerr.StatusApproved(): //sessions
+		return true
+	case sbrerr.StatusComplete(): //queries, pnr
+		return true
+	default:
+		return true
+	}
+}
 
 // arriveDepartParser parse string data value into time value.
 func arriveDepartParser(arrive, depart string) (time.Time, time.Time) {
