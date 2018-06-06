@@ -3,7 +3,6 @@ package srvc
 import (
 	"bytes"
 	"encoding/xml"
-	"fmt"
 	"io"
 	"log"
 	"math/rand"
@@ -11,6 +10,8 @@ import (
 	"os"
 	"regexp"
 	"time"
+
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
 const (
@@ -245,9 +246,24 @@ type POSElem struct {
 	Source SourceElem `xml:"Source"`
 }
 
+// Ok simple check for soap fault; return true if empty string
+func (fault SOAPFault) Ok() bool {
+	return fault.Code == ""
+}
+
+// Format on SOAPFault for error checking and printing
+func (fault SOAPFault) Format() sbrerr.ErrorSoapFault {
+	return sbrerr.ErrorSoapFault{
+		StackTrace: fault.Detail.StackTrace,
+		FaultCode:  fault.Code,
+		ErrMessage: fault.String,
+		Code:       sbrerr.SoapFault,
+	}
+}
+
 //SOAPFault catching error messages
 type SOAPFault struct {
-	XMLName xml.Name `xml:"Fault,omitempty"`
+	XMLName xml.Name `xml:"Fault"`
 	Code    string   `xml:"faultcode,omitempty"`
 	String  string   `xml:"faultstring,omitempty"`
 	Actor   string   `xml:"faultactor,omitempty"`
@@ -418,20 +434,19 @@ func CallSessionCreate(serviceURL string, req SessionCreateRequest) (SessionCrea
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
 	if err != nil {
-		return sessionResponse, fmt.Errorf("CallSessionCreate http.Post(). %v", err)
+		return sessionResponse, sbrerr.NewErrorSabreService(err.Error(), sbrerr.ErrCallSessionCreate, sbrerr.BadService)
 	}
 
 	//parse payload body into []byte buffer from net Response.ReadCloser
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
 	io.Copy(bodyBuffer, resp.Body)
-	//defer func() { resp.Body.Close() }()
 	resp.Body.Close()
 
 	//marshal byte body sabre response body into session envelope response struct
 	err = xml.Unmarshal(bodyBuffer.Bytes(), &sessionResponse)
 	if err != nil {
-		return sessionResponse, fmt.Errorf("CallSessionCreate Unmarshal(,&sessionResponse). %v", err)
+		return sessionResponse, sbrerr.NewErrorSabreXML(err.Error(), sbrerr.ErrCallSessionCreate, sbrerr.BadParse)
 	}
 	return sessionResponse, nil
 }
@@ -515,20 +530,20 @@ func CallSessionClose(serviceURL string, e SessionCloseRequest) (SessionCloseRes
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
 	if err != nil {
-		return sessionResponse, fmt.Errorf("CallSessionClose http.Post(). %v", err)
+		return sessionResponse, sbrerr.NewErrorSabreService(err.Error(), sbrerr.ErrCallSessionClose, sbrerr.BadService)
+
 	}
 
 	//parse payload body into []byte buffer from net Response.ReadCloser
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
 	io.Copy(bodyBuffer, resp.Body)
-	//defer func() { resp.Body.Close() }()
 	resp.Body.Close()
 
 	//marshal byte body sabre response body into session envelope response struct
 	err = xml.Unmarshal(bodyBuffer.Bytes(), &sessionResponse)
 	if err != nil {
-		return sessionResponse, fmt.Errorf("CallSessionClose Unmarshal(,&sessionResponse). %v", err)
+		return sessionResponse, sbrerr.NewErrorSabreXML(err.Error(), sbrerr.ErrCallSessionClose, sbrerr.BadParse)
 	}
 	return sessionResponse, nil
 }
@@ -614,20 +629,19 @@ func CallSessionValidate(serviceURL string, req SessionValidateRequest) (Session
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", buffer)
 	if err != nil {
-		return sessionResponse, fmt.Errorf("CallSessionValidate http.Post(). %v", err)
+		return sessionResponse, sbrerr.NewErrorSabreService(err.Error(), sbrerr.ErrCallSessionValidate, sbrerr.BadService)
 	}
 
 	//parse payload body into []byte buffer from net Response.ReadCloser
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
 	io.Copy(bodyBuffer, resp.Body)
-	//defer func() { resp.Body.Close() }()
 	resp.Body.Close()
 
 	//marshal byte body sabre response body into session envelope response struct
 	err = xml.Unmarshal(bodyBuffer.Bytes(), &sessionResponse)
 	if err != nil {
-		return sessionResponse, fmt.Errorf("CallSessionValidate Unmarshal(,&sessionResponse). %v", err)
+		return sessionResponse, sbrerr.NewErrorSabreXML(err.Error(), sbrerr.ErrCallSessionValidate, sbrerr.BadParse)
 	}
 	return sessionResponse, nil
 }

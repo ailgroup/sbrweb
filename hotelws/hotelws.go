@@ -70,7 +70,7 @@ func (s SystemResults) Translate() string {
 
 func (result ApplicationResults) ErrFormat() sbrerr.ErrorSabreResult {
 	return sbrerr.ErrorSabreResult{
-		Code: sbrerr.GetStatus(result.Status),
+		Code: sbrerr.AppStatusCode(result.Status),
 		AppMessage: fmt.Sprintf(
 			"%s because %s. %s. HostCommand[LNIATA: %s Cryptic: %s]",
 			result.Status,

@@ -11,17 +11,21 @@ const (
 	Unknown      AppStatus = iota + 1 //1
 	BadService                        //2
 	BadParse                          //3
-	NotProcessed                      //4
-	Approved                          //5
-	Complete                          //6
+	SoapFault                         //4
+	NotProcessed                      //5
+	Approved                          //6
+	Complete                          //7
 )
 
 const (
-	ErrCallHotelAvail    = "Error CallHotelAvail::OTA_HotelAvailLLSRQ"
-	ErrCallHotelPropDesc = "Error CallHotelPropDesc::HotelPropertyDescriptionLLSRQ"
-	ErrCallHotelRateDesc = "Error CallHotelRateDesc::HotelRateDescriptionLLSRQ"
-	ErrCallHotelRes      = "Error CallHotelRes::OTA_HotelResLLSRQ"
-	ErrCallPNRDetails    = "Error CallPNRDetails::PassengerDetailsRQ"
+	ErrCallSessionCreate   = "Error CallSessionCreate::SessionCreateRQ"
+	ErrCallSessionClose    = "Error CallSessionClose::SessionCloseRQ"
+	ErrCallSessionValidate = "Error CallSessionValidate::SessionValidateRQ"
+	ErrCallHotelAvail      = "Error CallHotelAvail::OTA_HotelAvailLLSRQ"
+	ErrCallHotelPropDesc   = "Error CallHotelPropDesc::HotelPropertyDescriptionLLSRQ"
+	ErrCallHotelRateDesc   = "Error CallHotelRateDesc::HotelRateDescriptionLLSRQ"
+	ErrCallHotelRes        = "Error CallHotelRes::OTA_HotelResLLSRQ"
+	ErrCallPNRDetails      = "Error CallPNRDetails::PassengerDetailsRQ"
 )
 
 var (
@@ -34,6 +38,7 @@ var (
 		"Unknown",
 		"BadService",
 		"BadParse",
+		"SoapFault",
 		"NotProcessed",
 		"Approved",
 		"Complete",
@@ -50,12 +55,12 @@ func StatusComplete() string {
 	return appStatuses[Complete]
 }
 func (code AppStatus) String() string {
-	if code < Unknown || code > BadParse {
+	if code < Unknown || code > Complete {
 		return "Unknown"
 	}
 	return appStatuses[code]
 }
-func GetStatus(input string) AppStatus {
+func AppStatusCode(input string) AppStatus {
 	if input == "0" {
 		return Unknown
 	}
@@ -66,6 +71,12 @@ func GetStatus(input string) AppStatus {
 		return Approved
 	case Complete.String():
 		return Complete
+	case BadParse.String():
+		return BadParse
+	case BadService.String():
+		return BadService
+	case SoapFault.String():
+		return SoapFault
 	default:
 		return Unknown
 	}
@@ -122,4 +133,23 @@ func NewErrorSabreResult(appIn string, code AppStatus) ErrorSabreResult {
 // Error for ErrorSabreResult implements std lib error interface
 func (e ErrorSabreResult) Error() string {
 	return e.AppMessage
+}
+
+// ErrorSoapFault for results issues
+type ErrorSoapFault struct {
+	ErrMessage string    `json:"err_message_soap_fault_string,omitempty"`
+	FaultCode  string    `json:"soap_fault_code,omitempty"`
+	StackTrace string    `json:"soap_fault_stacktrace,omitempty"`
+	Code       AppStatus `json:"app_status"`
+}
+
+// NewErrorSoapFault for response results with errors(bad dates, credit card, etc...)
+func NewErrorSoapFault(errIn string) ErrorSoapFault {
+	//err = strings.Replace(err, "\n", "", -1)
+	return ErrorSoapFault{ErrMessage: errIn, Code: SoapFault}
+}
+
+// Error for ErrorSoapFault implements std lib error interface
+func (e ErrorSoapFault) Error() string {
+	return e.ErrMessage
 }

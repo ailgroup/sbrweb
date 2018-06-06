@@ -11,11 +11,14 @@ TESTING NOTES:
 
 import (
 	"encoding/xml"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"regexp"
 	"testing"
+
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
 var (
@@ -40,8 +43,9 @@ var (
 
 	samplebintokensplit = "-3177016070087638144!110012!0"
 
-	sampleSessionNoAuthFaultCode  = "soap-env:Client.AuthenticationFailed"
-	sampleSessionNoAuthStackTrace = "com.sabre.universalservices.base.security.AuthenticationException: errors.authentication.USG_AUTHENTICATION_FAILED"
+	sampleSessionNoAuthFaultCode   = "soap-env:Client.AuthenticationFailed"
+	sampleSessionNoAuthFaultString = "Authentication failed"
+	sampleSessionNoAuthStackTrace  = "com.sabre.universalservices.base.security.AuthenticationException: errors.authentication.USG_AUTHENTICATION_FAILED"
 
 	sampleSessionInvalidTokenFaultCode  = "soap-env:Client.InvalidSecurityToken"
 	sampleSessionInvalidTokenStackTrace = "com.sabre.universalservices.base.session.SessionException: errors.session.USG_INVALID_SECURITY_TOKEN"
@@ -757,8 +761,35 @@ func TestSessionCreateResponseUnAuth(t *testing.T) {
 	if resp.Body.Fault.Detail.StackTrace != sampleSessionNoAuthStackTrace {
 		t.Errorf("SessionRSBody.Fault.Detail.StackTrace expect %s, got %s", sampleSessionNoAuthStackTrace, resp.Body.Fault.Detail.StackTrace)
 	}
-	//fmt.Printf("SAMPLE: %s\n\n", sampleSessionUnAuth)
-	//fmt.Printf("CURRENT: %+v\n", resp)
+}
+
+func TestSOAPFaultFormat(t *testing.T) {
+	resp := SessionCreateResponse{}
+	xml.Unmarshal(sampleSessionUnAuth, &resp)
+	if resp.Body.Fault.Ok() {
+		t.Error("SOAPFault should exist")
+	}
+
+	format := resp.Body.Fault.Format()
+	if fmt.Sprintf("%T", format) != fmt.Sprintf("%T", sbrerr.ErrorSoapFault{}) {
+		t.Errorf("SOAPFault Format() should be <T> ErrorSoapFault, got: %T", format)
+	}
+	if format.Code != sbrerr.SoapFault {
+		t.Errorf("SOAPFault Format.Code expect: %d, got: %d", sbrerr.SoapFault, format.Code)
+	}
+	if format.ErrMessage != sampleSessionNoAuthFaultString {
+		t.Errorf("SOAPFault Format.ErrMessage expect: %s, got: %s", sampleSessionNoAuthFaultString, format.ErrMessage)
+	}
+	if format.StackTrace != sampleSessionNoAuthStackTrace {
+		t.Errorf("SOAPFault Format.StackTrace expect: %s, got: %s", sampleSessionNoAuthStackTrace, format.StackTrace)
+	}
+	if format.FaultCode != sampleSessionNoAuthFaultCode {
+		t.Errorf("SOAPFault Format.FaultCode expect: %s, got: %s", sampleSessionNoAuthFaultCode, format.FaultCode)
+	}
+	if format.Error() != sampleSessionNoAuthFaultString {
+		t.Errorf("SOAPFault Format.Error() expect: %s, got: %s", sampleSessionNoAuthFaultString, format.Error())
+	}
+
 }
 
 func TestSessionCloseRequest(t *testing.T) {
@@ -802,8 +833,6 @@ func TestSessionCloseRequest(t *testing.T) {
 	if string(b) != string(sampleSessionCloseRQ) {
 		t.Errorf("Expected marshal session close body \n sample: %s \n result: %s", string(sampleSessionCloseRQ), string(b))
 	}
-	//fmt.Printf("SAM: %s\n", sampleSessionCloseRQ)
-	//fmt.Printf("CUR: %+v\n", string(b))
 }
 
 func TestBuildSessionCloseRequestMarshal(t *testing.T) {
@@ -816,8 +845,6 @@ func TestBuildSessionCloseRequestMarshal(t *testing.T) {
 	if string(b) != string(sampleSessionCloseRQ) {
 		t.Error("Session envelope with values does not match test sample")
 	}
-	//fmt.Printf("SAMPLE: %v\n", string(sampleSessionEnvelopeWithValues))
-	//fmt.Printf("CURREN: %v\n", string(b))
 }
 func BenchmarkBuildSessionCloseRequest(b *testing.B) {
 	for n := 0; n < b.N; n++ {
@@ -1076,16 +1103,12 @@ func TestCallSessionValidateServiceNoExist(t *testing.T) {
 
 func TestCallSessionCreateBadBody(t *testing.T) {
 	resp, err := CallSessionCreate(serverBadBody.URL, SessionCreateRequest{})
-	/*
-		fmt.Printf("this is err: %v\n\n", err)
-		fmt.Printf("this is resp: %v\n\n", resp)
-	*/
 	if err == nil {
 		t.Error("Expect error", err)
 	}
-	m, _ := regexp.MatchString("Unmarshal", err.Error())
-	if !m {
-		t.Error("Expect error to match Unmarshal message", err)
+	m := "XML syntax error on line 1: invalid character entity & (no semicolon)"
+	if err.Error() != m {
+		t.Errorf("CallSessionCreate XML error expect: %s, got: %s", m, err.Error())
 	}
 	r := SessionCreateResponse{}
 	if resp != r {
@@ -1094,16 +1117,12 @@ func TestCallSessionCreateBadBody(t *testing.T) {
 }
 func TestCallSessionCloseBadBody(t *testing.T) {
 	resp, err := CallSessionClose(serverBadBody.URL, SessionCloseRequest{})
-	/*
-		fmt.Printf("this is err: %v\n\n", err)
-		fmt.Printf("this is resp: %v\n\n", resp)
-	*/
 	if err == nil {
 		t.Error("Expect error", err)
 	}
-	m, _ := regexp.MatchString("Unmarshal", err.Error())
-	if !m {
-		t.Error("Expect error to match Unmarshal message", err)
+	m := "XML syntax error on line 1: invalid character entity & (no semicolon)"
+	if err.Error() != m {
+		t.Errorf("CallSessionCreate XML error expect: %s, got: %s", m, err.Error())
 	}
 	r := SessionCloseResponse{}
 	if resp != r {
@@ -1112,16 +1131,12 @@ func TestCallSessionCloseBadBody(t *testing.T) {
 }
 func TestCallSessionValidateBadBody(t *testing.T) {
 	resp, err := CallSessionValidate(serverBadBody.URL, SessionValidateRequest{})
-	/*
-		fmt.Printf("this is err: %v\n\n", err)
-		fmt.Printf("this is resp: %v\n\n", resp)
-	*/
 	if err == nil {
 		t.Error("Expect error", err)
 	}
-	m, _ := regexp.MatchString("Unmarshal", err.Error())
-	if !m {
-		t.Error("Expect error to match Unmarshal message", err)
+	m := "XML syntax error on line 1: invalid character entity & (no semicolon)"
+	if err.Error() != m {
+		t.Errorf("CallSessionCreate XML error expect: %s, got: %s", m, err.Error())
 	}
 	r := SessionValidateResponse{}
 	if resp != r {

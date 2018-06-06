@@ -168,5 +168,11 @@ func CallHotelAvail(serviceURL string, req HotelAvailRequest) (HotelAvailRespons
 		availResp.ErrorSabreXML = sbrerr.NewErrorSabreXML(err.Error(), sbrerr.ErrCallHotelAvail, sbrerr.BadParse)
 		return availResp, availResp.ErrorSabreXML
 	}
+	if !availResp.Body.Fault.Ok() {
+		return availResp, availResp.Body.Fault.Format()
+	}
+	if !availResp.Body.HotelAvail.Result.Ok() {
+		return availResp, availResp.Body.HotelAvail.Result.ErrFormat()
+	}
 	return availResp, nil
 }

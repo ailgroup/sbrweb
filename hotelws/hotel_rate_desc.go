@@ -130,5 +130,11 @@ func CallHotelRateDesc(serviceURL string, req HotelRateDescRequest) (HotelRateDe
 		rateResp.ErrorSabreXML = sbrerr.NewErrorSabreXML(err.Error(), sbrerr.ErrCallHotelRateDesc, sbrerr.BadParse)
 		return rateResp, rateResp.ErrorSabreXML
 	}
+	if !rateResp.Body.Fault.Ok() {
+		return rateResp, rateResp.Body.Fault.Format()
+	}
+	if !rateResp.Body.HotelDesc.Result.Ok() {
+		return rateResp, rateResp.Body.HotelDesc.Result.ErrFormat()
+	}
 	return rateResp, nil
 }

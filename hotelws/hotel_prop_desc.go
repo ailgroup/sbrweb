@@ -158,5 +158,11 @@ func CallHotelPropDesc(serviceURL string, req HotelPropDescRequest) (HotelPropDe
 		propResp.ErrorSabreXML = sbrerr.NewErrorSabreXML(err.Error(), sbrerr.ErrCallHotelPropDesc, sbrerr.BadParse)
 		return propResp, propResp.ErrorSabreXML
 	}
+	if !propResp.Body.Fault.Ok() {
+		return propResp, propResp.Body.Fault.Format()
+	}
+	if !propResp.Body.HotelDesc.Result.Ok() {
+		return propResp, propResp.Body.HotelDesc.Result.ErrFormat()
+	}
 	return propResp, nil
 }

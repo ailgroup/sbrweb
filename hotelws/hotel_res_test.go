@@ -2,7 +2,6 @@ package hotelws
 
 import (
 	"encoding/xml"
-	"fmt"
 	"testing"
 )
 
@@ -44,9 +43,9 @@ func TestHotelResSet(t *testing.T) {
 func TestHotelResBuild(t *testing.T) {
 	body := SetHotelResBody(12, "GDPST", "MC", "2012-12", "1234567890", "Lastname")
 	req := BuildHotelResRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
-	b, err := xml.Marshal(req)
+	_, err := xml.Marshal(req)
 	if err != nil {
 		t.Error("Error marshaling hotel resercation request", err)
 	}
-	fmt.Printf("%s\n", b)
+	//fmt.Printf("%s\n", b)
 }

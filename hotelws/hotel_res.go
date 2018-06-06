@@ -222,8 +222,6 @@ type HotelRsrvResponse struct {
 		HotelRes OTAHotelResRS
 		Fault    srvc.SOAPFault
 	}
-	ErrorSabreService sbrerr.ErrorSabreService
-	ErrorSabreXML     sbrerr.ErrorSabreXML
 }
 
 // CallHotelAvail to sabre web services
@@ -236,8 +234,7 @@ func CallHotelRes(serviceURL string, req HotelRsrvRequest) (HotelRsrvResponse, e
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
 	if err != nil {
-		resResp.ErrorSabreService = sbrerr.NewErrorSabreService(err.Error(), sbrerr.ErrCallHotelAvail, sbrerr.BadService)
-		return resResp, resResp.ErrorSabreService
+		return resResp, sbrerr.NewErrorSabreService(err.Error(), sbrerr.ErrCallHotelAvail, sbrerr.BadService)
 	}
 	// parse payload body into []byte buffer from net Response.ReadCloser
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
@@ -249,8 +246,17 @@ func CallHotelRes(serviceURL string, req HotelRsrvRequest) (HotelRsrvResponse, e
 	//marshal bytes sabre response body into availResp response struct
 	err = xml.Unmarshal(bodyBuffer.Bytes(), &resResp)
 	if err != nil {
-		resResp.ErrorSabreXML = sbrerr.NewErrorSabreXML(err.Error(), sbrerr.ErrCallHotelAvail, sbrerr.BadParse)
-		return resResp, resResp.ErrorSabreXML
+		fmt.Println("1")
+		return resResp, sbrerr.NewErrorSabreXML(err.Error(), sbrerr.ErrCallHotelAvail, sbrerr.BadParse)
 	}
+	if !resResp.Body.Fault.Ok() {
+		fmt.Println("2")
+		return resResp, sbrerr.NewErrorSoapFault(resResp.Body.Fault.String)
+	}
+	if !resResp.Body.HotelRes.Result.Ok() {
+		fmt.Println("3")
+		return resResp, resResp.Body.HotelRes.Result.ErrFormat()
+	}
+	fmt.Println("4")
 	return resResp, nil
 }
