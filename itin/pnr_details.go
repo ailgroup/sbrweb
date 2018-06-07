@@ -179,11 +179,11 @@ func (p *PassengerDetailBody) AddUniqueID(id string) {
 // CreatePersonName standalone function for ease of use
 func CreatePersonName(firstName, lastName string) PersonName {
 	return PersonName{
-		NameNumber:    "1.1",
-		NameReference: "ABC123",
-		PassengerType: "ADT",
-		First:         &GivenName{Val: firstName},
-		Last:          Surname{Val: lastName},
+		//NameNumber:    "1.1",
+		//NameReference: "ABC123",
+		//PassengerType: "ADT",
+		First: &GivenName{Val: firstName},
+		Last:  Surname{Val: lastName},
 	}
 }
 

@@ -7,12 +7,13 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ailgroup/sbrweb/itin"
 	"github.com/ailgroup/sbrweb/sbrerr"
 	"github.com/ailgroup/sbrweb/srvc"
 )
 
 /*
+More options here: http://webservices.sabre.com/drc/servicedoc/OTA_HotelResLLSRQ_v2.2.0_Design.xml
+
 Using this API, you can book a hotel and specify:
 
     Confirmation number
@@ -56,25 +57,40 @@ type HotelRequest struct {
 	XMLName          xml.Name `xml:"Hotel"`
 	BasicPropertyRes BasicPropertyRes
 	Guarantee        GuaranteeReservation
-	RoomType         *RoomType
+	GuestCounts      GuestCounts
+	RoomType         RoomType
 	SpecialPrefs     *SpecialPrefs
 	TimeSpan         TimeSpan
 }
 
 // BasicPropertyRes is the BasicPropertyInfo element specifically for executing hotel reservations. Easier to duplicate this simple case than omit all the struct fields in the BasicPropertyInfo type.
 type BasicPropertyRes struct {
-	XMLName xml.Name `xml:"BasicPropertyInfo"`
-	RPH     int      `xml:"RPH,attr"`
+	XMLName     xml.Name `xml:"BasicPropertyInfo"`
+	ChainCode   string   `xml:"ChainCode,attr,omitempty"`
+	HotelCode   string   `xml:"HotelCode,attr,omitempty"`
+	InsertAfter string   `xml:"InsertAfter,attr,omitempty"`
+	RPH         int      `xml:"RPH,attr"`
 }
 
 // CCInfo for passing credit card
 type CCInfo struct {
 	XMLName     xml.Name `xml:"CC_Info"`
 	PaymentCard PaymentCard
-	PersonName  itin.PersonName
+	PersonName  PersonNameRes
+}
+
+type PersonNameRes struct {
+	XMLName xml.Name `xml:"PersonName"`
+	Surname Surname
+}
+
+type Surname struct {
+	XMLName xml.Name `xml:"Surname"`
+	Val     string   `xml:",chardata"`
 }
 
 // GuaranteeReservation is a gurantee type specifically for executing hotel reservations
+// Type can be "G", "GAGT", "GDPST", "GC", "GCR", "GH", "GDPSTH", "GT", or "GDPSTT", or "D"
 type GuaranteeReservation struct {
 	XMLName xml.Name `xml:"Guarantee"`
 	Type    string   `xml:"Type,attr"`
@@ -84,6 +100,7 @@ type GuaranteeReservation struct {
 type RoomType struct {
 	XMLName       xml.Name `xml:"RoomType"`
 	NumberOfUnits int      `xml:"NumberOfUnits,attr"`
+	RoomTypeCode  string   `xml:"RoomTypeCode,attr"`
 }
 
 type WrittenConfirmation struct {
@@ -91,49 +108,45 @@ type WrittenConfirmation struct {
 	Ind     bool     `xml:"Ind,attr"`
 }
 
+type SpecRefText struct {
+	Val string `xml:",chardata"`
+}
+
+// SpecialPrefs allows adding extra customer information
 type SpecialPrefs struct {
 	XMLName             xml.Name `xml:"SpecialPrefs"`
-	WrittenConfirmation *WrittenConfirmation
+	WrittenConfirmation WrittenConfirmation
+	Text                []SpecRefText //`xml:"Text"`
 }
 
-// addRoomTypeUnits to the existing hotel reservation body
-func (h *HotelRsrvBody) addRoomTypeUnits(units int) {
-	h.OTAHotelResRQ.Hotel.RoomType = &RoomType{
-		NumberOfUnits: units,
-	}
-}
-
-// QuerySearchParams is a typed function to support optional query params on creation of new search criterion
-type SpecialPrefOptions func(*SpecialPrefs) error
-
-// NewSpecialPrefs accepts set of SpecialPrefOptions functions and returns modified options
-func NewSpecialPrefs(options ...SpecialPrefOptions) (*SpecialPrefs, error) {
-	prefs := &SpecialPrefs{}
-	for _, qm := range options {
-		err := qm(prefs)
-		if err != nil {
-			return prefs, err
-		}
-	}
-	return prefs, nil
-}
-
-// WrittenConf function sets written confirmation for special preferences
-// Example: NewSpecialPrefs(WrittenConf(true))
-func WrittenConf(opt bool) func(q *SpecialPrefs) error {
-	return func(s *SpecialPrefs) error {
-		s.WrittenConfirmation = &WrittenConfirmation{Ind: opt}
-		return nil
-	}
-}
-
-// addSpecialPrefs to the existing hotel reservation body
-func (h *HotelRsrvBody) addSpecialPrefs(p *SpecialPrefs) {
+// CreateSpecialPrefs creates the value. Must be done before adding special prefs
+func (h *HotelRsrvBody) AddSpecialPrefs(p *SpecialPrefs) {
 	h.OTAHotelResRQ.Hotel.SpecialPrefs = p
 }
 
+// AddSpecialPrefs to the existing hotel reservation body. See CreateSpecialPrefs.
+func (s *SpecialPrefs) AddSpecPrefWritConf(opt bool) {
+	s.WrittenConfirmation = WrittenConfirmation{Ind: opt}
+}
+
+// AddSpecialPrefs to the existing hotel reservation body. See CreateSpecialPrefs.
+func (s *SpecialPrefs) AddSpecPrefText(vals []string) {
+	s.Text = []SpecRefText{}
+	for _, v := range vals {
+		s.Text = append(s.Text, SpecRefText{Val: v})
+	}
+}
+
+// AddRoomType to the existing hotel reservation body
+func (h *HotelRsrvBody) AddRoomType(units int, roomCode string) {
+	h.OTAHotelResRQ.Hotel.RoomType = RoomType{
+		NumberOfUnits: units,
+		RoomTypeCode:  roomCode,
+	}
+}
+
 // NewGuaranteeRes builds and sets guarantee and credit card info on hotel res
-func (h *HotelRsrvBody) NewGuaranteeRes(pnr itin.PersonName, gtype, ccCode, ccExpire, ccNumber string) {
+func (h *HotelRsrvBody) NewGuaranteeRes(lastName, gtype, ccCode, ccExpire, ccNumber string) {
 	h.OTAHotelResRQ.Hotel.Guarantee = GuaranteeReservation{
 		Type: gtype,
 		CCInfo: CCInfo{
@@ -142,12 +155,22 @@ func (h *HotelRsrvBody) NewGuaranteeRes(pnr itin.PersonName, gtype, ccCode, ccEx
 				ExpireDate: ccExpire,
 				Number:     ccNumber,
 			},
-			PersonName: pnr,
+			PersonName: PersonNameRes{
+				Surname: Surname{Val: lastName},
+			},
 		},
 	}
 }
 
-func SetHotelResBody(rph int, timesp TimeSpan) HotelRsrvBody {
+func (h *HotelRsrvBody) NewPropertyRes(rph int, chain, hotel string) {
+	h.OTAHotelResRQ.Hotel.BasicPropertyRes = BasicPropertyRes{
+		ChainCode: chain,
+		HotelCode: hotel,
+		RPH:       rph,
+	}
+}
+
+func SetHotelResBody(guestCount int, timesp TimeSpan) HotelRsrvBody {
 	return HotelRsrvBody{
 		OTAHotelResRQ: OTAHotelResRQ{
 			XMLNS:    srvc.BaseWebServicesNS,
@@ -155,8 +178,8 @@ func SetHotelResBody(rph int, timesp TimeSpan) HotelRsrvBody {
 			XMLNSXsi: srvc.BaseXSINamespace,
 			Version:  "2.2.0",
 			Hotel: HotelRequest{
-				BasicPropertyRes: BasicPropertyRes{RPH: rph},
-				TimeSpan:         timesp,
+				GuestCounts: GuestCounts{Count: guestCount},
+				TimeSpan:    timesp,
 			},
 		},
 	}
@@ -178,8 +201,8 @@ func BuildHotelResRequest(from, pcc, binsectoken, convid, mid, time string, body
 				},
 				CPAID:          pcc,
 				ConversationID: convid,
-				Service:        srvc.ServiceElem{Value: "OTA_HotelResRQ", Type: "sabreXML"},
-				Action:         "OTA_HotelResRQ",
+				Service:        srvc.ServiceElem{Value: "OTA_HotelRes", Type: "sabreXML"},
+				Action:         "OTA_HotelResLLSRQ",
 				MessageData: srvc.MessageDataElem{
 					MessageID: mid,
 					Timestamp: time,

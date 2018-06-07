@@ -5,23 +5,23 @@
     <soap-env:Header>
         <eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0">
             <eb:From>
-                <eb:PartyId type="urn:x12.org:IO5:01">www.rentsomewheels.com</eb:PartyId>
+                <eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId>
             </eb:From>
             <eb:To>
                 <eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId>
             </eb:To>
-            <eb:CPAId>DG7F</eb:CPAId>
+            <eb:CPAId>7TZA</eb:CPAId>
             <eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId>
-            <eb:Service eb:type="sabreXML">OTA_HotelResRQ</eb:Service>
-            <eb:Action>OTA_HotelResRQ</eb:Action>
+            <eb:Service eb:type="sabreXML">OTA_HotelRes</eb:Service>
+            <eb:Action>OTA_HotelResLLSRQ</eb:Action>
             <eb:MessageData>
-                <eb:MessageId>mid:20180216-07:18:42.3|14oUa</eb:MessageId>
-                <eb:Timestamp>2018-06-06T19:14:34Z</eb:Timestamp>
+                <eb:MessageId>mid:20180207-20:19:07.25|QVbg0</eb:MessageId>
+                <eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp>
             </eb:MessageData>
         </eb:MessageHeader>
         <wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" 
             xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility">
-            <wsse:BinarySecurityToken>Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESH!ICESMSLB\/RES.LB!-3138669598916150388!718951!0</wsse:BinarySecurityToken>
+            <wsse:BinarySecurityToken>Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken>
         </wsse:Security>
     </soap-env:Header>
     <soap-env:Body>
@@ -29,16 +29,18 @@
             xmlns:xs="http://www.w3.org/2001/XMLSchema" 
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="2.2.0">
             <Hotel>
-                <BasicPropertyInfo RPH="1"></BasicPropertyInfo>
-                <Guarantee Type="G">
+                <BasicPropertyInfo ChainCode="MR" HotelCode="0001" RPH="12"></BasicPropertyInfo>
+                <Guarantee Type="GDPST">
                     <CC_Info>
-                        <PaymentCard Code="MC" ExpireDate="2019-12" Number="5105105105105100"></PaymentCard>
-                        <PersonName NameNumber="1.1" NameReference="ABC123" PassengerType="ADT">
-                            <GivenName>Test</GivenName>
-                            <Surname>Booking</Surname>
+                        <PaymentCard Code="MC" ExpireDate="2012-12" Number="1234567890"></PaymentCard>
+                        <PersonName>
+                            <Surname>Testlast</Surname>
                         </PersonName>
                     </CC_Info>
                 </Guarantee>
+                <GuestCounts Count="2"></GuestCounts>
+                <RoomType NumberOfUnits="1" RoomTypeCode="ABC123"></RoomType>
+                <TimeSpan End="04-25T00:00" Start="04-22T00:00"></TimeSpan>
             </Hotel>
         </OTA_HotelResRQ>
     </soap-env:Body>

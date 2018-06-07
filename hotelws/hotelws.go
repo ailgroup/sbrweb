@@ -32,7 +32,9 @@ import (
 
 const (
 	hotelRQVersion        = "2.3.0"
-	timeSpanFormatter     = "01-02"
+	TimeFormatMD          = "01-02"
+	TimeFormatMDTHM       = "01-02T15:04"
+	TimeFormatMDHM        = "01-02 15:04"
 	streetQueryField      = "street_qf"
 	cityQueryField        = "city_qf"
 	postalQueryField      = "postal_qf"
@@ -45,6 +47,16 @@ const (
 )
 
 var hostCommandReplacer = strings.NewReplacer("\\", "", "/", "", ESA, "")
+
+// TimeSpanFormatter parse string data value into time value.
+func TimeSpanFormatter(arrive, depart, formIn, formOut string) TimeSpan {
+	a, _ := time.Parse(formIn, arrive)
+	d, _ := time.Parse(formIn, depart)
+	return TimeSpan{
+		Depart: d.Format(formOut),
+		Arrive: a.Format(formOut),
+	}
+}
 
 // sanatize cleans up filtered string terms for file names. removes whitespace and slashes as these either get in the
 func sanatize(str string) string {
@@ -180,16 +192,6 @@ type CustomerID struct {
 type Corporate struct {
 	XMLName xml.Name `xml:"Corporate"`
 	ID      string   `xml:"ID,omitempty"`
-}
-
-// TimeSpanParser parse string data value into time value.
-func TimeSpanParser(arrive, depart string) *TimeSpan {
-	a, _ := time.Parse(timeSpanFormatter, arrive)
-	d, _ := time.Parse(timeSpanFormatter, depart)
-	return &TimeSpan{
-		Depart: d.Format(timeSpanFormatter),
-		Arrive: a.Format(timeSpanFormatter),
-	}
 }
 
 // Timepsan for arrival and departure params
