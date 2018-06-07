@@ -58,7 +58,6 @@ func SetHotelPropDescBody(guestCount int, query *HotelSearchCriteria, arrive, de
 	if err != nil {
 		return HotelPropDescBody{}, err
 	}
-	a, d := arriveDepartParser(arrive, depart)
 	return HotelPropDescBody{
 		HotelPropDescRQ: HotelPropDescRQ{
 			Version:           hotelRQVersion,
@@ -69,10 +68,7 @@ func SetHotelPropDescBody(guestCount int, query *HotelSearchCriteria, arrive, de
 			Avail: AvailRequestSegment{
 				GuestCounts:         &GuestCounts{Count: guestCount},
 				HotelSearchCriteria: query,
-				TimeSpan: &TimeSpan{
-					Depart: d.Format(timeSpanFormatter),
-					Arrive: a.Format(timeSpanFormatter),
-				},
+				TimeSpan:            TimeSpanParser(arrive, depart),
 			},
 		},
 	}, nil

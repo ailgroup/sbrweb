@@ -95,13 +95,6 @@ func (result ApplicationResults) Ok() bool {
 	}
 }
 
-// arriveDepartParser parse string data value into time value.
-func arriveDepartParser(arrive, depart string) (time.Time, time.Time) {
-	a, _ := time.Parse(timeSpanFormatter, arrive)
-	d, _ := time.Parse(timeSpanFormatter, depart)
-	return a, d
-}
-
 // HotelSearchCriteria top level element for criterion
 type HotelSearchCriteria struct {
 	XMLName   xml.Name `xml:"HotelSearchCriteria"`
@@ -189,6 +182,16 @@ type Corporate struct {
 	ID      string   `xml:"ID,omitempty"`
 }
 
+// TimeSpanParser parse string data value into time value.
+func TimeSpanParser(arrive, depart string) *TimeSpan {
+	a, _ := time.Parse(timeSpanFormatter, arrive)
+	d, _ := time.Parse(timeSpanFormatter, depart)
+	return &TimeSpan{
+		Depart: d.Format(timeSpanFormatter),
+		Arrive: a.Format(timeSpanFormatter),
+	}
+}
+
 // Timepsan for arrival and departure params
 type TimeSpan struct {
 	XMLName  xml.Name `xml:"TimeSpan"`
@@ -212,14 +215,14 @@ type RatePlanCandidates struct {
 	RatePlans []*RatePlan
 }
 
-// AvailAvailRequestSegment holds basic hotel availability params: customer ids, guest count, hotel search criteria and arrival departure
+// AvailAvailRequestSegment holds basic hotel availability params: customer ids, guest count, hotel search criteria and arrival departure. nil pointers ignored if empty
 type AvailRequestSegment struct {
-	XMLName             xml.Name  `xml:"AvailRequestSegment"`
-	Customer            *Customer //nil pointer ignored if empty
+	XMLName             xml.Name `xml:"AvailRequestSegment"`
+	Customer            *Customer
 	GuestCounts         *GuestCounts
 	HotelSearchCriteria *HotelSearchCriteria
-	RatePlanCandidates  *RatePlanCandidates //nil pointer ignored if empty
-	TimeSpan            *TimeSpan           //`xml:"TimeSpan"`
+	RatePlanCandidates  *RatePlanCandidates
+	TimeSpan            *TimeSpan
 }
 
 // RoomStay contains all info relevant to the property's available rooms. It is the root-level element after service element for hotel_rate_desc and hotel_property_desc.
@@ -228,11 +231,7 @@ type RoomStay struct {
 	BasicPropertyInfo BasicPropertyInfo
 	Guarantee         Guarantee
 	RoomRates         []RoomRate `xml:"RoomRates>RoomRate"`
-	TimeSpan          struct {
-		Duration string `xml:"Duration,attr"` //string 0001 or int 1?
-		End      string `xml:"End,attr"`
-		Start    string `xml:"Start,attr"`
-	} `xml:"TimeSpan"`
+	TimeSpan          TimeSpan
 }
 
 // Guarantee shows forms of payment accepted by property

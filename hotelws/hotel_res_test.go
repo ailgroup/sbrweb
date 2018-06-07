@@ -3,10 +3,15 @@ package hotelws
 import (
 	"encoding/xml"
 	"testing"
+
+	"github.com/ailgroup/sbrweb/itin"
 )
 
 func TestHotelResSet(t *testing.T) {
-	body := SetHotelResBody(12, "GDPST", "MC", "2012-12", "1234567890", "Lastname")
+	ts := *TimeSpanParser("04-22", "04-25")
+	body := SetHotelResBody(12, ts)
+	p := itin.CreatePersonName("Test", "Lastname")
+	body.NewGuaranteeRes(p, "GDPST", "MC", "2012-12", "1234567890")
 
 	prefs, err := NewSpecialPrefs(
 		WrittenConf(true),
@@ -41,7 +46,10 @@ func TestHotelResSet(t *testing.T) {
 }
 
 func TestHotelResBuild(t *testing.T) {
-	body := SetHotelResBody(12, "GDPST", "MC", "2012-12", "1234567890", "Lastname")
+	ts := *TimeSpanParser("04-22", "04-25")
+	body := SetHotelResBody(12, ts)
+	p := itin.CreatePersonName("Test", "Booking")
+	body.NewGuaranteeRes(p, "GDPST", "MC", "2012-12", "1234567890")
 	req := BuildHotelResRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
 	_, err := xml.Marshal(req)
 	if err != nil {

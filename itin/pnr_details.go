@@ -93,7 +93,7 @@ type PersonName struct {
 	NameReference string   `xml:"NameReference,attr,omitempty"` //ABC123
 	PassengerType string   `xml:"PassengerType,attr,omitempty"` //ADT
 	RPH           int      `xml:"RPH,attr,omitempty"`           //1 OR 001
-	First         GivenName
+	First         *GivenName
 	Middle        *MiddleName
 	Last          Surname
 }
@@ -176,8 +176,19 @@ func (p *PassengerDetailBody) AddUniqueID(id string) {
 	p.PassengerDetailsRQ.PreProcess.UniqueID = &UniqueID{ID: id}
 }
 
+// CreatePersonName standalone function for ease of use
+func CreatePersonName(firstName, lastName string) PersonName {
+	return PersonName{
+		NameNumber:    "1.1",
+		NameReference: "ABC123",
+		PassengerType: "ADT",
+		First:         &GivenName{Val: firstName},
+		Last:          Surname{Val: lastName},
+	}
+}
+
 // SetHotelRateDescRqStruct hotel rate description request using input parameters
-func SetPNRDetailsRequestStruct(phone, firstName, lastName string) PassengerDetailBody {
+func SetPNRDetailBody(phone string, person PersonName) PassengerDetailBody {
 	return PassengerDetailBody{
 		PassengerDetailsRQ: PassengerDetailsRQ{
 			XMLNS:         "http://services.sabre.com/sp/pd/v3_3",
@@ -202,13 +213,7 @@ func SetPNRDetailsRequestStruct(phone, firstName, lastName string) PassengerDeta
 							PhoneUseType: "H",
 						},
 					},
-					PersonName: PersonName{
-						NameNumber:    "1.1",
-						NameReference: "ABC123",
-						PassengerType: "ADT",
-						First:         GivenName{Val: firstName},
-						Last:          Surname{Val: lastName},
-					},
+					PersonName: person,
 				},
 			},
 		},
@@ -363,7 +368,7 @@ func CallPNRDetail(serviceURL string, req PNRDetailsRequest) (PNRDetailsResponse
 	io.Copy(bodyBuffer, resp.Body)
 	resp.Body.Close()
 
-	fmt.Printf("\n\n:CallPNRDetail Response: %s\n\n", bodyBuffer)
+	//fmt.Printf("\n\n:CallPNRDetail Response: %s\n\n", bodyBuffer)
 	//marshal bytes sabre response body into availResp response struct
 	err = xml.Unmarshal(bodyBuffer.Bytes(), &pnrResp)
 	if err != nil {

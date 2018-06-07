@@ -58,6 +58,7 @@ type HotelRequest struct {
 	Guarantee        GuaranteeReservation
 	RoomType         *RoomType
 	SpecialPrefs     *SpecialPrefs
+	TimeSpan         TimeSpan
 }
 
 // BasicPropertyRes is the BasicPropertyInfo element specifically for executing hotel reservations. Easier to duplicate this simple case than omit all the struct fields in the BasicPropertyInfo type.
@@ -131,7 +132,22 @@ func (h *HotelRsrvBody) addSpecialPrefs(p *SpecialPrefs) {
 	h.OTAHotelResRQ.Hotel.SpecialPrefs = p
 }
 
-func SetHotelResBody(rph int, gtype, ccCode, ccExpire, ccNumber, pnrLast string) HotelRsrvBody {
+// NewGuaranteeRes builds and sets guarantee and credit card info on hotel res
+func (h *HotelRsrvBody) NewGuaranteeRes(pnr itin.PersonName, gtype, ccCode, ccExpire, ccNumber string) {
+	h.OTAHotelResRQ.Hotel.Guarantee = GuaranteeReservation{
+		Type: gtype,
+		CCInfo: CCInfo{
+			PaymentCard: PaymentCard{
+				Code:       ccCode,
+				ExpireDate: ccExpire,
+				Number:     ccNumber,
+			},
+			PersonName: pnr,
+		},
+	}
+}
+
+func SetHotelResBody(rph int, timesp TimeSpan) HotelRsrvBody {
 	return HotelRsrvBody{
 		OTAHotelResRQ: OTAHotelResRQ{
 			XMLNS:    srvc.BaseWebServicesNS,
@@ -140,19 +156,7 @@ func SetHotelResBody(rph int, gtype, ccCode, ccExpire, ccNumber, pnrLast string)
 			Version:  "2.2.0",
 			Hotel: HotelRequest{
 				BasicPropertyRes: BasicPropertyRes{RPH: rph},
-				Guarantee: GuaranteeReservation{
-					Type: gtype,
-					CCInfo: CCInfo{
-						PaymentCard: PaymentCard{
-							Code:       ccCode,
-							ExpireDate: ccExpire,
-							Number:     ccNumber,
-						},
-						PersonName: itin.PersonName{
-							Last: itin.Surname{Val: pnrLast},
-						},
-					},
-				},
+				TimeSpan:         timesp,
 			},
 		},
 	}

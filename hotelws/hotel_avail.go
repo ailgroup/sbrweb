@@ -54,7 +54,6 @@ func (a *OTAHotelAvailRQ) addCustomerID(cID string) {
 
 // SetHotelAvailBody hotel availability request using input parameters
 func SetHotelAvailBody(guestCount int, query *HotelSearchCriteria, arrive, depart string) HotelAvailBody {
-	a, d := arriveDepartParser(arrive, depart)
 	return HotelAvailBody{
 		OTAHotelAvailRQ: OTAHotelAvailRQ{
 			Version:           hotelRQVersion,
@@ -65,10 +64,7 @@ func SetHotelAvailBody(guestCount int, query *HotelSearchCriteria, arrive, depar
 			Avail: AvailRequestSegment{
 				GuestCounts:         &GuestCounts{Count: guestCount},
 				HotelSearchCriteria: query,
-				TimeSpan: &TimeSpan{
-					Depart: d.Format(timeSpanFormatter),
-					Arrive: a.Format(timeSpanFormatter),
-				},
+				TimeSpan:            TimeSpanParser(arrive, depart),
 			},
 		},
 	}
