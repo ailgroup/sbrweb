@@ -102,7 +102,7 @@ func TestPropDescUnmarshal(t *testing.T) {
 	rate0 := roomStayRates[0]
 	sample0 := rateSamples[0]
 	if rate0.RPH != sample0.rph {
-		t.Errorf("RPH expected %d, got %d", sample0.rph, rate0.RPH)
+		t.Errorf("RPH expected %s, got %s", sample0.rph, rate0.RPH)
 	}
 	if rate0.GuaranteedRate != sample0.guarrate {
 		t.Errorf("GuaranteedRate expected %s, got %s", sample0.guarrate, rate0.GuaranteedRate)

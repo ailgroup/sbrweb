@@ -7,20 +7,27 @@ import (
 )
 
 func TestHotelResSet(t *testing.T) {
-	body := SetHotelResBody(
-		2,
-		TimeSpanFormatter("04-22", "04-25", TimeFormatMD, TimeFormatMDTHM),
-	)
-	body.NewPropertyResByRPH(12)
+	body := SetHotelResBody(1)
+	body.NewPropertyResByRPH("12")
 	body.NewGuaranteeRes("Testlast", "G", "MC", "2012-12", "1234567890")
+
+	textPrefs := []string{"Tes1", "Test2", "Test3"}
+	prefs := &SpecialPrefs{}
+	prefs.AddSpecPrefWritConf(true)
+	prefs.AddSpecPrefText(textPrefs)
+	body.AddSpecialPrefs(prefs)
+
 	b := body.OTAHotelResRQ
-	if b.Hotel.RoomType.NumberOfUnits != 0 {
+	if len(b.Hotel.SpecialPrefs.Text) != len(textPrefs) {
+		t.Error("SpecialPrefs.Text is wrong")
+	}
+	if !b.Hotel.SpecialPrefs.WrittenConfirmation.Ind {
+		t.Error("SpecialPrefs.WrittenConfirmation is wrong")
+	}
+	if b.Hotel.RoomType.NumberOfUnits != 1 {
 		t.Error("RoomType.NumberOfUnits is wrong")
 	}
-	if b.Hotel.RoomType.RoomTypeCode != "" {
-		t.Error("RoomType.RoomTypeCode is wrong")
-	}
-	if b.Hotel.BasicPropertyRes.RPH != 12 {
+	if b.Hotel.BasicPropertyRes.RPH != "12" {
 		t.Error("RPH is wrong")
 	}
 
@@ -39,19 +46,23 @@ func TestHotelResSet(t *testing.T) {
 	}
 }
 
-func TestHotelResBuild(t *testing.T) {
-	body := SetHotelResBody(
-		2,
-		TimeSpanFormatter("04-22", "04-25", TimeFormatMD, TimeFormatMDTHM),
-	)
+func TestHotelResByHotel(t *testing.T) {
+	body := SetHotelResBody(1)
 	body.NewPropertyResByHotel("SL", "00004")
-	body.NewGuaranteeRes("Testlast", "GDPST", "MC", "2012-12", "1234567890")
-	body.AddRoomType(1, "ABC123")
+	b := body.OTAHotelResRQ
+	if b.Hotel.BasicPropertyRes.ChainCode != "SL" {
+		t.Error("BasicPropertyRes.ChainCode is wrong")
+	}
+	if b.Hotel.BasicPropertyRes.HotelCode != "00004" {
+		t.Error("BasicPropertyRes.HotelCode is wrong")
+	}
+}
 
-	//prefs := &SpecialPrefs{}
-	//prefs.AddSpecPrefWritConf(true)
-	//prefs.AddSpecPrefText([]string{"Tes1", "Test2", "Test3"})
-	//body.AddSpecialPrefs(prefs)
+func TestHotelResBuild(t *testing.T) {
+	body := SetHotelResBody(1)
+	//body.NewPropertyResByHotel("SL", "00004")
+	body.NewPropertyResByRPH("004")
+	body.NewGuaranteeRes("Testlast", "GDPST", "MC", "2012-12", "1234567890")
 
 	req := BuildHotelResRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
 	b, err := xml.Marshal(req)

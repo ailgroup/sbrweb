@@ -2,6 +2,7 @@ package hotelws
 
 import (
 	"encoding/xml"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -347,7 +348,7 @@ func TestHotelAvailUnmarshal(t *testing.T) {
 	}
 
 	options := avail.Body.HotelAvail.AvailOpts.AvailableOptions[0]
-	if options.RPH != 1 {
+	if options.RPH != "1" {
 		t.Errorf("First Availability option should be 1")
 	}
 	rr := options.PropertyInfo.RoomRateAvail
@@ -389,8 +390,8 @@ func TestHotelAvailCallByIDs(t *testing.T) {
 	}
 
 	for idx, o := range resp.Body.HotelAvail.AvailOpts.AvailableOptions {
-		if o.RPH != idx+1 {
-			t.Errorf("AvailableOptions %d RPH expected %d, got %d", idx, idx+1, o.RPH)
+		if o.RPH != fmt.Sprintf("%d", idx+1) {
+			t.Errorf("AvailableOptions %d RPH expected %d, got %s", idx, idx+1, o.RPH)
 		}
 		if o.PropertyInfo.HotelCityCode != "TUL" {
 			t.Errorf("AvailableOptions %d HotelCityCode expected %s, got %s", idx, "TUL", o.PropertyInfo.HotelCityCode)

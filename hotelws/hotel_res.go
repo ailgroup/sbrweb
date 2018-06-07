@@ -54,24 +54,25 @@ type OTAHotelResRQ struct {
 	Hotel             HotelRequest
 }
 
-// HotelForRQ Hotle segment for reservations
+// HotelRequest segment for reservations
 type HotelRequest struct {
 	XMLName          xml.Name `xml:"Hotel"`
 	BasicPropertyRes BasicPropertyRes
 	Guarantee        GuaranteeReservation
-	GuestCounts      GuestCounts
 	RoomType         RoomType
 	SpecialPrefs     *SpecialPrefs
-	TimeSpan         TimeSpan
+	Customer         *Customer
+	GuestCounts      *GuestCounts
+	TimeSpan         *TimeSpan
 }
 
 // BasicPropertyRes is the BasicPropertyInfo element specifically for executing hotel reservations. Easier to duplicate this simple case than omit all the struct fields in the BasicPropertyInfo type.
 type BasicPropertyRes struct {
-	XMLName     xml.Name `xml:"BasicPropertyInfo"`
-	ChainCode   string   `xml:"ChainCode,attr,omitempty"`
-	HotelCode   string   `xml:"HotelCode,attr,omitempty"`
-	InsertAfter string   `xml:"InsertAfter,attr,omitempty"`
-	RPH         int      `xml:"RPH,attr,omitempty"`
+	XMLName   xml.Name `xml:"BasicPropertyInfo"`
+	ChainCode string   `xml:"ChainCode,attr,omitempty"`
+	HotelCode string   `xml:"HotelCode,attr,omitempty"`
+	RPH       string   `xml:"RPH,attr,omitempty"`
+	//InsertAfter string   `xml:"InsertAfter,attr,omitempty"`
 }
 
 // CCInfo for passing credit card
@@ -102,7 +103,7 @@ type GuaranteeReservation struct {
 type RoomType struct {
 	XMLName       xml.Name `xml:"RoomType"`
 	NumberOfUnits int      `xml:"NumberOfUnits,attr"`
-	RoomTypeCode  string   `xml:"RoomTypeCode,attr"`
+	RoomTypeCode  string   `xml:"RoomTypeCode,attr,omitempty"`
 }
 
 type WrittenConfirmation struct {
@@ -139,14 +140,6 @@ func (s *SpecialPrefs) AddSpecPrefText(vals []string) {
 	}
 }
 
-// AddRoomType to the existing hotel reservation body
-func (h *HotelRsrvBody) AddRoomType(units int, roomCode string) {
-	h.OTAHotelResRQ.Hotel.RoomType = RoomType{
-		NumberOfUnits: units,
-		RoomTypeCode:  roomCode,
-	}
-}
-
 // NewGuaranteeRes builds and sets guarantee and credit card info on hotel res
 func (h *HotelRsrvBody) NewGuaranteeRes(lastName, gtype, ccCode, ccExpire, ccNumber string) {
 	h.OTAHotelResRQ.Hotel.Guarantee = GuaranteeReservation{
@@ -165,7 +158,7 @@ func (h *HotelRsrvBody) NewGuaranteeRes(lastName, gtype, ccCode, ccExpire, ccNum
 }
 
 // NewPropertyResByRPH builds property info based on the RPH
-func (h *HotelRsrvBody) NewPropertyResByRPH(rph int) {
+func (h *HotelRsrvBody) NewPropertyResByRPH(rph string) {
 	h.OTAHotelResRQ.Hotel.BasicPropertyRes = BasicPropertyRes{
 		RPH: rph,
 	}
@@ -178,7 +171,29 @@ func (h *HotelRsrvBody) NewPropertyResByHotel(chain, hotel string) {
 		HotelCode: hotel,
 	}
 }
-func SetHotelResBody(guestCount int, timesp TimeSpan) HotelRsrvBody {
+
+// AddCustomer to hotel, nameNum usually == "01.01"
+func (h *HotelRsrvBody) AddCustomer(nameNum string) {
+	h.OTAHotelResRQ.Hotel.Customer = &Customer{
+		NameNumber: nameNum,
+	}
+}
+
+// AddGuestCounts to hotel; VERIFY LINE NUMBER errors are common if this is used in conjuction with other options.
+func (h *HotelRsrvBody) AddGuestCounts(count int) {
+	h.OTAHotelResRQ.Hotel.GuestCounts = &GuestCounts{
+		Count: count,
+	}
+}
+
+// AddTimeSpan to hotel; FORMAT errors are common if this is used in conjuction with other options.
+// Use TimeSpanFormatter("06-07T13:00", "06-08T13:00", TimeFormatMDTHM, TimeFormatMDTHM) to constuct.
+func (h *HotelRsrvBody) AddTimeSpan(timesp TimeSpan) {
+	h.OTAHotelResRQ.Hotel.TimeSpan = &timesp
+}
+
+// SetHotelResBody for basic payload, other functions can append optional data
+func SetHotelResBody(units int) HotelRsrvBody {
 	return HotelRsrvBody{
 		OTAHotelResRQ: OTAHotelResRQ{
 			XMLNS:             srvc.BaseWebServicesNS,
@@ -188,8 +203,9 @@ func SetHotelResBody(guestCount int, timesp TimeSpan) HotelRsrvBody {
 			TimeStamp:         srvc.SabreTimeFormat(),
 			Version:           "2.2.0",
 			Hotel: HotelRequest{
-				GuestCounts: GuestCounts{Count: guestCount},
-				TimeSpan:    timesp,
+				RoomType: RoomType{
+					NumberOfUnits: units,
+				},
 			},
 		},
 	}

@@ -11,7 +11,7 @@ func TestHotelRateDescMarshal(t *testing.T) {
 	rpc := SetRateParams(
 		[]RatePlan{
 			RatePlan{
-				RPH: 12,
+				RPH: "12",
 			},
 		},
 	)
@@ -51,7 +51,7 @@ func TestRateDescCall(t *testing.T) {
 	rpc := SetRateParams(
 		[]RatePlan{
 			RatePlan{
-				RPH: 12,
+				RPH: "12",
 			},
 		},
 	)
@@ -146,7 +146,7 @@ func TestHotelRateDesCallDown(t *testing.T) {
 	rpc := SetRateParams(
 		[]RatePlan{
 			RatePlan{
-				RPH: 12,
+				RPH: "12",
 			},
 		},
 	)
@@ -171,7 +171,7 @@ func TestHotelRateDescCallBadResponseBody(t *testing.T) {
 	rpc := SetRateParams(
 		[]RatePlan{
 			RatePlan{
-				RPH: 12,
+				RPH: "12",
 			},
 		},
 	)

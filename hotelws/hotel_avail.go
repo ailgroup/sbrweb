@@ -110,7 +110,7 @@ type AvailabilityOptions struct {
 }
 
 type AvailabilityOption struct {
-	RPH          int `xml:"RPH,attr"` //string? 001 versus 1
+	RPH          string `xml:"RPH,attr"` //string? 001 versus 1
 	PropertyInfo BasicPropertyInfo
 }
 

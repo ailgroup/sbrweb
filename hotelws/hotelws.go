@@ -80,6 +80,15 @@ func (s SystemResults) Translate() string {
 	}
 }
 
+/* OTHER ERRORS
+
+--see hotel_res_direct_connect.xml, credit card???
+	<stl:Message>      ** - DIRECT CONNECT NOT PROCESSED - **</stl:Message>
+
+--see hotel_res_rq_not_proc_format.xml, too many options??
+	<stl:Message code="0">FORMAT</stl:Message>
+
+*/
 func (result ApplicationResults) ErrFormat() sbrerr.ErrorSabreResult {
 	return sbrerr.ErrorSabreResult{
 		Code: sbrerr.AppStatusCode(result.Status),
@@ -178,6 +187,7 @@ type GuestCounts struct {
 // Customer for corporate or typical sabre customer ids
 type Customer struct {
 	XMLName    xml.Name    `xml:"Customer,omitempty"`
+	NameNumber string      `xml:"NameNumber,attr,omitempty"`
 	Corporate  *Corporate  //nil pointer ignored if empty
 	CustomerID *CustomerID //nil pointer ignored if empty
 }
@@ -208,7 +218,7 @@ type RatePlan struct {
 	DCA_ProductCode string   `xml:"DCA_ProductCode,attr,omitempty"`
 	DecodeAll       string   `xml:"DecodeAll,attr,omitempty"`
 	RateCode        string   `xml:"RateCode,attr,omitempty"`
-	RPH             int      `xml:"RPH,attr,omitempty"`
+	RPH             string   `xml:"RPH,attr,omitempty"`
 }
 
 // RatePlanCandidates determines types of rates queried
@@ -266,7 +276,7 @@ type RoomRate struct {
 	IATA_Product       string   `xml:"IATA_ProductIdentification,attr"`
 	LowInventory       string   `xml:"LowInventoryThreshold,attr"`
 	RateLevelCode      string   `xml:"RateLevelCode,attr"`
-	RPH                int      `xml:"RPH,attr"`
+	RPH                string   `xml:"RPH,attr"`
 	RateChangeInd      string   `xml:"RateChangeInd,attr"`
 	RateConversionInd  string   `xml:"RateConversionInd,attr"`
 	SpecialOffer       string   `xml:"SpecialOffer,attr"`
