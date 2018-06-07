@@ -44,12 +44,14 @@ type HotelRsrvBody struct {
 
 // OTAHotelResRQ holds hotel information specific to making a hote reservation
 type OTAHotelResRQ struct {
-	XMLName  xml.Name `xml:"OTA_HotelResRQ"`
-	XMLNS    string   `xml:"xmlns,attr"`
-	XMLNSXs  string   `xml:"xmlns:xs,attr"`
-	XMLNSXsi string   `xml:"xmlns:xsi,attr"`
-	Version  string   `xml:"Version,attr"`
-	Hotel    HotelRequest
+	XMLName           xml.Name `xml:"OTA_HotelResRQ"`
+	XMLNS             string   `xml:"xmlns,attr"`
+	XMLNSXs           string   `xml:"xmlns:xs,attr"`
+	XMLNSXsi          string   `xml:"xmlns:xsi,attr"`
+	ReturnHostCommand bool     `xml:"ReturnHostCommand,attr"`
+	TimeStamp         string   `xml:"TimeStamp,attr"`
+	Version           string   `xml:"Version,attr"`
+	Hotel             HotelRequest
 }
 
 // HotelForRQ Hotle segment for reservations
@@ -69,7 +71,7 @@ type BasicPropertyRes struct {
 	ChainCode   string   `xml:"ChainCode,attr,omitempty"`
 	HotelCode   string   `xml:"HotelCode,attr,omitempty"`
 	InsertAfter string   `xml:"InsertAfter,attr,omitempty"`
-	RPH         int      `xml:"RPH,attr"`
+	RPH         int      `xml:"RPH,attr,omitempty"`
 }
 
 // CCInfo for passing credit card
@@ -162,21 +164,29 @@ func (h *HotelRsrvBody) NewGuaranteeRes(lastName, gtype, ccCode, ccExpire, ccNum
 	}
 }
 
-func (h *HotelRsrvBody) NewPropertyRes(rph int, chain, hotel string) {
+// NewPropertyResByRPH builds property info based on the RPH
+func (h *HotelRsrvBody) NewPropertyResByRPH(rph int) {
 	h.OTAHotelResRQ.Hotel.BasicPropertyRes = BasicPropertyRes{
-		ChainCode: chain,
-		HotelCode: hotel,
-		RPH:       rph,
+		RPH: rph,
 	}
 }
 
+// NewPropertyResByHotel builds property info based on hotel info
+func (h *HotelRsrvBody) NewPropertyResByHotel(chain, hotel string) {
+	h.OTAHotelResRQ.Hotel.BasicPropertyRes = BasicPropertyRes{
+		ChainCode: chain,
+		HotelCode: hotel,
+	}
+}
 func SetHotelResBody(guestCount int, timesp TimeSpan) HotelRsrvBody {
 	return HotelRsrvBody{
 		OTAHotelResRQ: OTAHotelResRQ{
-			XMLNS:    srvc.BaseWebServicesNS,
-			XMLNSXs:  srvc.BaseXSDNameSpace,
-			XMLNSXsi: srvc.BaseXSINamespace,
-			Version:  "2.2.0",
+			XMLNS:             srvc.BaseWebServicesNS,
+			XMLNSXs:           srvc.BaseXSDNameSpace,
+			XMLNSXsi:          srvc.BaseXSINamespace,
+			ReturnHostCommand: true,
+			TimeStamp:         srvc.SabreTimeFormat(),
+			Version:           "2.2.0",
 			Hotel: HotelRequest{
 				GuestCounts: GuestCounts{Count: guestCount},
 				TimeSpan:    timesp,
@@ -278,7 +288,7 @@ func CallHotelRes(serviceURL string, req HotelRsrvRequest) (HotelRsrvResponse, e
 	}
 	if !resResp.Body.Fault.Ok() {
 		fmt.Println("2")
-		return resResp, sbrerr.NewErrorSoapFault(resResp.Body.Fault.String)
+		return resResp, sbrerr.NewErrorSoapFault(resResp.Body.Fault.Format().Error())
 	}
 	if !resResp.Body.HotelRes.Result.Ok() {
 		fmt.Println("3")

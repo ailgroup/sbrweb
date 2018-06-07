@@ -3,6 +3,7 @@ package srvc
 import (
 	"bytes"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"log"
 	"math/rand"
@@ -253,10 +254,12 @@ func (fault SOAPFault) Ok() bool {
 
 // Format on SOAPFault for error checking and printing
 func (fault SOAPFault) Format() sbrerr.ErrorSoapFault {
+	msg := fault.Detail.ApplicationResults.Error.SystemSpecificResults.Message
+	shrt := fault.Detail.ApplicationResults.Error.SystemSpecificResults.ShortText
 	return sbrerr.ErrorSoapFault{
 		StackTrace: fault.Detail.StackTrace,
 		FaultCode:  fault.Code,
-		ErrMessage: fault.String,
+		ErrMessage: fmt.Sprintf("%s %s %s", msg, fault.String, shrt),
 		Code:       sbrerr.SoapFault,
 	}
 }
@@ -264,12 +267,21 @@ func (fault SOAPFault) Format() sbrerr.ErrorSoapFault {
 //SOAPFault catching error messages
 type SOAPFault struct {
 	XMLName xml.Name `xml:"Fault"`
-	Code    string   `xml:"faultcode,omitempty"`
-	String  string   `xml:"faultstring,omitempty"`
-	Actor   string   `xml:"faultactor,omitempty"`
+	Code    string   `xml:"faultcode"`
+	String  string   `xml:"faultstring"`
+	Actor   string   `xml:"faultactor"`
 	Detail  struct {
-		StackTrace string `xml:"StackTrace,omitempty"`
-	} `xml:"detail,omitempty"`
+		StackTrace         string `xml:"StackTrace"`
+		ApplicationResults struct {
+			Error struct {
+				Type                  string `xml:"type,attr"`
+				SystemSpecificResults struct {
+					Message   string `xml:"Message"`
+					ShortText string `xml:"ShortText"`
+				} `xml:"SystemSpecificResults"`
+			} `xml:"Error"`
+		} `xml:"ApplicationResults"`
+	} `xml:"detail"`
 }
 
 // helper to crete message header

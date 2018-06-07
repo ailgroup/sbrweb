@@ -11,7 +11,7 @@ func TestHotelResSet(t *testing.T) {
 		2,
 		TimeSpanFormatter("04-22", "04-25", TimeFormatMD, TimeFormatMDTHM),
 	)
-	body.NewPropertyRes(12, "MR", "0001")
+	body.NewPropertyResByRPH(12)
 	body.NewGuaranteeRes("Testlast", "G", "MC", "2012-12", "1234567890")
 	b := body.OTAHotelResRQ
 	if b.Hotel.RoomType.NumberOfUnits != 0 {
@@ -44,7 +44,7 @@ func TestHotelResBuild(t *testing.T) {
 		2,
 		TimeSpanFormatter("04-22", "04-25", TimeFormatMD, TimeFormatMDTHM),
 	)
-	body.NewPropertyRes(12, "MR", "0001")
+	body.NewPropertyResByHotel("SL", "00004")
 	body.NewGuaranteeRes("Testlast", "GDPST", "MC", "2012-12", "1234567890")
 	body.AddRoomType(1, "ABC123")
 
