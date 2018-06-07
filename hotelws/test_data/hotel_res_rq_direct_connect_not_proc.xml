@@ -6,9 +6,9 @@
                 <eb:PartyId eb:type="URI">webservices.sabre.com</eb:PartyId>
             </eb:From>
             <eb:To>
-                <eb:PartyId eb:type="URI">www.rentsomewheels.com</eb:PartyId>
+                <eb:PartyId eb:type="URI">www.z.com</eb:PartyId>
             </eb:To>
-            <eb:CPAId>DG7F</eb:CPAId>
+            <eb:CPAId>7TZA</eb:CPAId>
             <eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId>
             <eb:Service eb:type="sabreXML">OTA_HotelRes</eb:Service>
             <eb:Action>OTA_HotelResLLSRS</eb:Action>

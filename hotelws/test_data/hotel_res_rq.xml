@@ -10,7 +10,7 @@
             <eb:To>
                 <eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId>
             </eb:To>
-            <eb:CPAId>ABC123</eb:CPAId>
+            <eb:CPAId>7TZA</eb:CPAId>
             <eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId>
             <eb:Service eb:type="sabreXML">OTA_HotelRes</eb:Service>
             <eb:Action>OTA_HotelResLLSRQ</eb:Action>
