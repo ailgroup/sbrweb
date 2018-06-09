@@ -1,7 +1,11 @@
 #sbrweb
-Connects to Sabre Web services endpoints, both SOAP and REST.
+Connects to Sabre Web services endpoints, both SOAP and REST. It is built around three offerings:
 
-## Big'n
+1. BookingEngine (BEN): `engine`
+1. BookingClient (bClient): `client`
+1. BookingCloud (bCloud): `cloud`
+
+## Engine
 This is a large project with organized subprojects. To get a sense of the number of lines of code, tests, and other files you can `wc -l 'find sbrweb/hotelws -type f'`. 
 
 1. `srvc` (service)

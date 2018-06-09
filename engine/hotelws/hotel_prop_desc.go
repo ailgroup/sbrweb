@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ailgroup/sbrweb/sbrerr"
-	"github.com/ailgroup/sbrweb/srvc"
+	"github.com/ailgroup/sbrweb/engine/sbrerr"
+	"github.com/ailgroup/sbrweb/engine/srvc"
 )
 
 // HotelPropDescRequest for soap package on HotelPropertyDescriptionRQ service

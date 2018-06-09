@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ailgroup/sbrweb/sbrerr"
+	"github.com/ailgroup/sbrweb/engine/sbrerr"
 )
 
 // SetRateParams helper to create a slice of rate plans to append on a an Avail Segement

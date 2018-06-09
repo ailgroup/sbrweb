@@ -4,7 +4,7 @@ import (
 	"encoding/xml"
 	"testing"
 
-	"github.com/ailgroup/sbrweb/sbrerr"
+	"github.com/ailgroup/sbrweb/engine/sbrerr"
 )
 
 func TestHotelRateDescMarshal(t *testing.T) {

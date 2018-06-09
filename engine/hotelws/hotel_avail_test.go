@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ailgroup/sbrweb/sbrerr"
-	"github.com/ailgroup/sbrweb/srvc"
+	"github.com/ailgroup/sbrweb/engine/sbrerr"
+	"github.com/ailgroup/sbrweb/engine/srvc"
 )
 
 func TestAddressSearchReturnError(t *testing.T) {

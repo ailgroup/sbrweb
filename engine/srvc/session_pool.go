@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
-	//"github.com/pkg/profile"
 )
 
 // Session holds sabre session data and other fields for handling in the SessionPool
