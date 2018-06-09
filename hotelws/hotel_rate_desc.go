@@ -34,8 +34,8 @@ type HotelRateDescRQ struct {
 	Avail             AvailRequestSegment
 }
 
-// SetHotelRateDescRqStruct hotel rate description request using input parameters
-func SetHotelRateDescRqStruct(rpc *RatePlanCandidates) (HotelRateDescBody, error) {
+// SetHotelRateDescBody hotel rate description request using input parameters
+func SetHotelRateDescBody(rpc *RatePlanCandidates) (HotelRateDescBody, error) {
 	return HotelRateDescBody{
 		HotelRateDescRQ: HotelRateDescRQ{
 			Version:           hotelRQVersion,
@@ -129,6 +129,12 @@ func CallHotelRateDesc(serviceURL string, req HotelRateDescRequest) (HotelRateDe
 	if err != nil {
 		rateResp.ErrorSabreXML = sbrerr.NewErrorSabreXML(err.Error(), sbrerr.ErrCallHotelRateDesc, sbrerr.BadParse)
 		return rateResp, rateResp.ErrorSabreXML
+	}
+	if !rateResp.Body.Fault.Ok() {
+		return rateResp, rateResp.Body.Fault.Format()
+	}
+	if !rateResp.Body.HotelDesc.Result.Ok() {
+		return rateResp, rateResp.Body.HotelDesc.Result.ErrFormat()
 	}
 	return rateResp, nil
 }

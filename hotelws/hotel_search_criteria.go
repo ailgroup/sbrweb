@@ -1,5 +1,9 @@
 package hotelws
 
+/*
+This file contains functions related to hotel search criteria. See hotelws.go file for the struct and type definitions.
+*/
+
 import (
 	"fmt"
 	"strings"

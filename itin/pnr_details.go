@@ -3,6 +3,7 @@ package itin
 import (
 	"bytes"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -92,7 +93,7 @@ type PersonName struct {
 	NameReference string   `xml:"NameReference,attr,omitempty"` //ABC123
 	PassengerType string   `xml:"PassengerType,attr,omitempty"` //ADT
 	RPH           int      `xml:"RPH,attr,omitempty"`           //1 OR 001
-	First         GivenName
+	First         *GivenName
 	Middle        *MiddleName
 	Last          Surname
 }
@@ -175,8 +176,19 @@ func (p *PassengerDetailBody) AddUniqueID(id string) {
 	p.PassengerDetailsRQ.PreProcess.UniqueID = &UniqueID{ID: id}
 }
 
+// CreatePersonName standalone function for ease of use
+func CreatePersonName(firstName, lastName string) PersonName {
+	return PersonName{
+		//NameNumber:    "1.1",
+		//NameReference: "ABC123",
+		//PassengerType: "ADT",
+		First: &GivenName{Val: firstName},
+		Last:  Surname{Val: lastName},
+	}
+}
+
 // SetHotelRateDescRqStruct hotel rate description request using input parameters
-func SetPNRDetailsRequestStruct(phone, firstName, lastName string) PassengerDetailBody {
+func SetPNRDetailBody(phone string, person PersonName) PassengerDetailBody {
 	return PassengerDetailBody{
 		PassengerDetailsRQ: PassengerDetailsRQ{
 			XMLNS:         "http://services.sabre.com/sp/pd/v3_3",
@@ -201,13 +213,7 @@ func SetPNRDetailsRequestStruct(phone, firstName, lastName string) PassengerDeta
 							PhoneUseType: "H",
 						},
 					},
-					PersonName: PersonName{
-						NameNumber:    "1.1",
-						NameReference: "ABC123",
-						PassengerType: "ADT",
-						First:         GivenName{Val: firstName},
-						Last:          Surname{Val: lastName},
-					},
+					PersonName: person,
 				},
 			},
 		},
@@ -268,6 +274,37 @@ type ApplicationResults struct {
 	Warnings []Warning `xml:"Warning"`
 }
 
+func (result ApplicationResults) Ok() bool {
+	switch result.Status {
+	case sbrerr.StatusNotProcess(): //queries
+		return false
+	case sbrerr.StatusComplete(): //queries, pnr
+		if len(result.Warnings) > 0 {
+			return false
+		}
+		return true
+	default:
+		return false
+	}
+}
+
+func (result ApplicationResults) ErrFormat() sbrerr.ErrorSabreResult {
+	var wmsg string
+	for i, w := range result.Warnings {
+		var msg string
+		for is, s := range w.SystemResults {
+			for ms, m := range s.Messages {
+				msg += fmt.Sprintf("SystemResult-%d:Message-%d:Code-%s %s. ", is, ms, m.Code, m.Val)
+			}
+		}
+		wmsg += fmt.Sprintf("Warning-%d:Type-%s Results: %s", i, w.Type, msg)
+	}
+	return sbrerr.ErrorSabreResult{
+		Code:       sbrerr.AppStatusCode(result.Status),
+		AppMessage: wmsg,
+	}
+}
+
 type ReservationItem struct {
 }
 type ItineraryInfo struct {
@@ -312,18 +349,18 @@ type PNRDetailsResponse struct {
 
 // CallPNRDetailsRequest creates a new PNR or updates an existing PNR, saving the content you pass in the Sabre system. The system assigns a record locator for a new PNR, and returns the record locator of an existing PNR. When the processing of the service is complete, the content remains in the Sabre work area. Previous calls required are hotel_property_desc OR hotel_rate_desc call, see BuildPNRDetailsRequest.
 func CallPNRDetail(serviceURL string, req PNRDetailsRequest) (PNRDetailsResponse, error) {
-	PNRResp := PNRDetailsResponse{}
+	pnrResp := PNRDetailsResponse{}
 	byteReq, _ := xml.Marshal(req)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
 	if err != nil {
-		PNRResp.ErrorSabreService = sbrerr.NewErrorSabreService(
+		pnrResp.ErrorSabreService = sbrerr.NewErrorSabreService(
 			err.Error(),
 			sbrerr.ErrCallPNRDetails,
 			sbrerr.BadService,
 		)
-		return PNRResp, PNRResp.ErrorSabreService
+		return pnrResp, pnrResp.ErrorSabreService
 	}
 	// parse payload body into []byte buffer from net Response.ReadCloser
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
@@ -331,15 +368,22 @@ func CallPNRDetail(serviceURL string, req PNRDetailsRequest) (PNRDetailsResponse
 	io.Copy(bodyBuffer, resp.Body)
 	resp.Body.Close()
 
+	//fmt.Printf("\n\n:CallPNRDetail Response: %s\n\n", bodyBuffer)
 	//marshal bytes sabre response body into availResp response struct
-	err = xml.Unmarshal(bodyBuffer.Bytes(), &PNRResp)
+	err = xml.Unmarshal(bodyBuffer.Bytes(), &pnrResp)
 	if err != nil {
-		PNRResp.ErrorSabreXML = sbrerr.NewErrorSabreXML(
+		pnrResp.ErrorSabreXML = sbrerr.NewErrorSabreXML(
 			err.Error(),
 			sbrerr.ErrCallPNRDetails,
 			sbrerr.BadParse,
 		)
-		return PNRResp, PNRResp.ErrorSabreXML
+		return pnrResp, pnrResp.ErrorSabreXML
 	}
-	return PNRResp, nil
+	if !pnrResp.Body.Fault.Ok() {
+		return pnrResp, sbrerr.NewErrorSoapFault(pnrResp.Body.Fault.String)
+	}
+	if !pnrResp.Body.PassengerDetailsRS.AppResults.Ok() {
+		return pnrResp, pnrResp.Body.PassengerDetailsRS.AppResults.ErrFormat()
+	}
+	return pnrResp, nil
 }

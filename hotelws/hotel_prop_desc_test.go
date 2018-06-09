@@ -12,7 +12,7 @@ func TestPropDescValidReqCityCode(t *testing.T) {
 	q, _ := NewHotelSearchCriteria(
 		HotelRefSearch(hqcity),
 	)
-	_, err := SetHotelPropDescRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
+	_, err := SetHotelPropDescBody(sampleGuestCount, q, sampleArrive, sampleDepart)
 	if err != sbrerr.ErrPropDescCityCode {
 		t.Error("ErrPropDescCityCode should return")
 	}
@@ -23,7 +23,7 @@ func TestPropDescValidReqLatLng(t *testing.T) {
 	q, _ := NewHotelSearchCriteria(
 		HotelRefSearch(hqltln),
 	)
-	_, err := SetHotelPropDescRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
+	_, err := SetHotelPropDescBody(sampleGuestCount, q, sampleArrive, sampleDepart)
 	if err != sbrerr.ErrPropDescLatLng {
 		t.Error("ErrPropDescLatLng should return")
 	}
@@ -34,7 +34,7 @@ func TestPropDescValidMultiHotelRefs(t *testing.T) {
 	q, _ := NewHotelSearchCriteria(
 		HotelRefSearch(hqids),
 	)
-	_, err := SetHotelPropDescRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
+	_, err := SetHotelPropDescBody(sampleGuestCount, q, sampleArrive, sampleDepart)
 	if err != sbrerr.ErrPropDescHotelRefs {
 		t.Error("ErrPropDescHotelRefs should return error")
 	}
@@ -46,7 +46,7 @@ func TestPropDescBuildHotelPropDescMarshal(t *testing.T) {
 	q, _ := NewHotelSearchCriteria(
 		HotelRefSearch(hotelid),
 	)
-	prop, err := SetHotelPropDescRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
+	prop, err := SetHotelPropDescBody(sampleGuestCount, q, sampleArrive, sampleDepart)
 	if err != nil {
 		t.Error("Error SetHotelPropDescRqStruct: ", err)
 	}
@@ -64,7 +64,7 @@ func TestPropDescBuildHotelPropDescMarshal(t *testing.T) {
 }
 
 func TestSetHotelPropDescRqStructCorpID(t *testing.T) {
-	body, _ := SetHotelPropDescRqStruct(sampleGuestCount, &HotelSearchCriteria{}, sampleArrive, sampleDepart)
+	body, _ := SetHotelPropDescBody(sampleGuestCount, &HotelSearchCriteria{}, sampleArrive, sampleDepart)
 	prop := body.HotelPropDescRQ
 	prop.addCorporateID(sampleCID)
 
@@ -102,7 +102,7 @@ func TestPropDescUnmarshal(t *testing.T) {
 	rate0 := roomStayRates[0]
 	sample0 := rateSamples[0]
 	if rate0.RPH != sample0.rph {
-		t.Errorf("RPH expected %d, got %d", sample0.rph, rate0.RPH)
+		t.Errorf("RPH expected %s, got %s", sample0.rph, rate0.RPH)
 	}
 	if rate0.GuaranteedRate != sample0.guarrate {
 		t.Errorf("GuaranteedRate expected %s, got %s", sample0.guarrate, rate0.GuaranteedRate)
@@ -151,7 +151,7 @@ func TestPropDescCall(t *testing.T) {
 	q, _ := NewHotelSearchCriteria(
 		HotelRefSearch(hotelid),
 	)
-	prop, _ := SetHotelPropDescRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
+	prop, _ := SetHotelPropDescBody(sampleGuestCount, q, sampleArrive, sampleDepart)
 	req := BuildHotelPropDescRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, prop)
 
 	resp, err := CallHotelPropDesc(serverHotelPropertyDesc.URL, req)
@@ -219,7 +219,7 @@ func TestHotelPropDescCallDown(t *testing.T) {
 	q, _ := NewHotelSearchCriteria(
 		HotelRefSearch(hotelid),
 	)
-	prop, _ := SetHotelPropDescRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
+	prop, _ := SetHotelPropDescBody(sampleGuestCount, q, sampleArrive, sampleDepart)
 	req := BuildHotelPropDescRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, prop)
 
 	resp, err := CallHotelPropDesc(serverHotelDown.URL, req)
@@ -243,7 +243,7 @@ func TestHotelPropDescCallBadResponseBody(t *testing.T) {
 	q, _ := NewHotelSearchCriteria(
 		HotelRefSearch(hotelid),
 	)
-	prop, _ := SetHotelPropDescRqStruct(sampleGuestCount, q, sampleArrive, sampleDepart)
+	prop, _ := SetHotelPropDescBody(sampleGuestCount, q, sampleArrive, sampleDepart)
 	req := BuildHotelPropDescRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, prop)
 
 	resp, err := CallHotelPropDesc(serverBadBody.URL, req)

@@ -52,9 +52,9 @@ func (a *OTAHotelAvailRQ) addCustomerID(cID string) {
 	}
 }
 
-// SetHotelAvailRqStruct hotel availability request using input parameters
-func SetHotelAvailRqStruct(guestCount int, query *HotelSearchCriteria, arrive, depart string) HotelAvailBody {
-	a, d := arriveDepartParser(arrive, depart)
+// SetHotelAvailBody hotel availability request using input parameters
+func SetHotelAvailBody(guestCount int, query *HotelSearchCriteria, arrive, depart string) HotelAvailBody {
+	ts := TimeSpanFormatter(arrive, depart, TimeFormatMD, TimeFormatMD)
 	return HotelAvailBody{
 		OTAHotelAvailRQ: OTAHotelAvailRQ{
 			Version:           hotelRQVersion,
@@ -65,10 +65,7 @@ func SetHotelAvailRqStruct(guestCount int, query *HotelSearchCriteria, arrive, d
 			Avail: AvailRequestSegment{
 				GuestCounts:         &GuestCounts{Count: guestCount},
 				HotelSearchCriteria: query,
-				TimeSpan: &TimeSpan{
-					Depart: d.Format(timeSpanFormatter),
-					Arrive: a.Format(timeSpanFormatter),
-				},
+				TimeSpan:            &ts,
 			},
 		},
 	}
@@ -113,7 +110,7 @@ type AvailabilityOptions struct {
 }
 
 type AvailabilityOption struct {
-	RPH          int `xml:"RPH,attr"` //string? 001 versus 1
+	RPH          string `xml:"RPH,attr"` //string? 001 versus 1
 	PropertyInfo BasicPropertyInfo
 }
 
@@ -132,7 +129,7 @@ type OTAHotelAvailRS struct {
 	AvailOpts AvailabilityOptions
 }
 
-// HotelAvailResponse is wrapper with namespace prefix definitions for payload
+// HotelAvailResponse for parsing hote availability response
 type HotelAvailResponse struct {
 	Envelope srvc.EnvelopeUnMarsh
 	Header   srvc.SessionHeaderUnmarsh
@@ -167,6 +164,12 @@ func CallHotelAvail(serviceURL string, req HotelAvailRequest) (HotelAvailRespons
 	if err != nil {
 		availResp.ErrorSabreXML = sbrerr.NewErrorSabreXML(err.Error(), sbrerr.ErrCallHotelAvail, sbrerr.BadParse)
 		return availResp, availResp.ErrorSabreXML
+	}
+	if !availResp.Body.Fault.Ok() {
+		return availResp, availResp.Body.Fault.Format()
+	}
+	if !availResp.Body.HotelAvail.Result.Ok() {
+		return availResp, availResp.Body.HotelAvail.Result.ErrFormat()
 	}
 	return availResp, nil
 }

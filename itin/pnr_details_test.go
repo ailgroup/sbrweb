@@ -9,7 +9,8 @@ import (
 )
 
 func TestPNRSet(t *testing.T) {
-	s := SetPNRDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
+	p := CreatePersonName(sampleFirstName, sampleLastName)
+	s := SetPNRDetailBody(samplePhoneReq, p)
 	s.AddSpecialDetails()
 	s.AddUniqueID("1234ABCD")
 	addr := Address{
@@ -58,7 +59,8 @@ func TestPNRSet(t *testing.T) {
 }
 
 func TestPNRBuildMarshal(t *testing.T) {
-	body := SetPNRDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
+	p := CreatePersonName(sampleFirstName, sampleLastName)
+	body := SetPNRDetailBody(samplePhoneReq, p)
 	req := BuildPNRDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
 
 	b, err := xml.Marshal(req)
@@ -71,7 +73,7 @@ func TestPNRBuildMarshal(t *testing.T) {
 }
 
 func TestPNRDetailCall(t *testing.T) {
-	body := SetPNRDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
+	body := SetPNRDetailBody(samplePhoneReq, CreatePersonName(sampleFirstName, sampleLastName))
 	req := BuildPNRDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
 
 	resp, err := CallPNRDetail(serverPNRDetails.URL, req)
@@ -148,23 +150,28 @@ func TestPNRDetailCall(t *testing.T) {
 }
 
 func TestPNRDetailCallWarn(t *testing.T) {
-	body := SetPNRDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
+	body := SetPNRDetailBody(samplePhoneReq, CreatePersonName(sampleFirstName, sampleLastName))
 	req := BuildPNRDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
 
 	resp, err := CallPNRDetail(serverBizLogic.URL, req)
-	if err != nil {
-		t.Error("Error making request CallPNRDetailsRequest", err)
+	if err == nil {
+		t.Error("CallPNRDetailsRequest Should have errors", err)
 	}
-
+	if !resp.Body.Fault.Ok() {
+		t.Error("Soap Fault be Ok() since errors was nil")
+	}
 	appRes := resp.Body.PassengerDetailsRS.AppResults
-	//fmt.Printf("ApplicationResults: \n%+v\n", appRes)
+	if appRes.Ok() {
+		t.Error("Application Results should not be Ok()")
+	}
 	if len(appRes.Warnings) != 2 {
 		t.Errorf("Wrong number of warnings, want: %d, got %d", 2, len(appRes.Warnings))
 	}
 }
 
 func TestPNRCallBadBodyResponseBody(t *testing.T) {
-	body := SetPNRDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
+	p := CreatePersonName(sampleFirstName, sampleLastName)
+	body := SetPNRDetailBody(samplePhoneReq, p)
 	req := BuildPNRDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
 	resp, err := CallPNRDetail(serverBadBody.URL, req)
 
@@ -183,7 +190,7 @@ func TestPNRCallBadBodyResponseBody(t *testing.T) {
 }
 
 func TestPNRDetailsCallDown(t *testing.T) {
-	body := SetPNRDetailsRequestStruct(samplePhoneReq, sampleFirstName, sampleLastName)
+	body := SetPNRDetailBody(samplePhoneReq, CreatePersonName(sampleFirstName, sampleLastName))
 	req := BuildPNRDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
 	resp, err := CallPNRDetail(serverDown.URL, req)
 

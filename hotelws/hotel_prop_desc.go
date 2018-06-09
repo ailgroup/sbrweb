@@ -52,13 +52,13 @@ func (a *HotelPropDescRQ) addCustomerID(cID string) {
 	}
 }
 
-// SetHotelPropDescRqStruct hotel availability request using input parameters
-func SetHotelPropDescRqStruct(guestCount int, query *HotelSearchCriteria, arrive, depart string) (HotelPropDescBody, error) {
+// SetHotelPropDescBody hotel availability request using input parameters
+func SetHotelPropDescBody(guestCount int, query *HotelSearchCriteria, arrive, depart string) (HotelPropDescBody, error) {
 	err := query.validatePropertyRequest()
 	if err != nil {
 		return HotelPropDescBody{}, err
 	}
-	a, d := arriveDepartParser(arrive, depart)
+	ts := TimeSpanFormatter(arrive, depart, TimeFormatMD, TimeFormatMD)
 	return HotelPropDescBody{
 		HotelPropDescRQ: HotelPropDescRQ{
 			Version:           hotelRQVersion,
@@ -69,10 +69,7 @@ func SetHotelPropDescRqStruct(guestCount int, query *HotelSearchCriteria, arrive
 			Avail: AvailRequestSegment{
 				GuestCounts:         &GuestCounts{Count: guestCount},
 				HotelSearchCriteria: query,
-				TimeSpan: &TimeSpan{
-					Depart: d.Format(timeSpanFormatter),
-					Arrive: a.Format(timeSpanFormatter),
-				},
+				TimeSpan:            &ts,
 			},
 		},
 	}, nil
@@ -157,6 +154,12 @@ func CallHotelPropDesc(serviceURL string, req HotelPropDescRequest) (HotelPropDe
 	if err != nil {
 		propResp.ErrorSabreXML = sbrerr.NewErrorSabreXML(err.Error(), sbrerr.ErrCallHotelPropDesc, sbrerr.BadParse)
 		return propResp, propResp.ErrorSabreXML
+	}
+	if !propResp.Body.Fault.Ok() {
+		return propResp, propResp.Body.Fault.Format()
+	}
+	if !propResp.Body.HotelDesc.Result.Ok() {
+		return propResp, propResp.Body.HotelDesc.Result.ErrFormat()
 	}
 	return propResp, nil
 }

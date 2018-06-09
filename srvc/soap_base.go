@@ -11,6 +11,8 @@ import (
 	"os"
 	"regexp"
 	"time"
+
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
 const (
@@ -245,15 +247,41 @@ type POSElem struct {
 	Source SourceElem `xml:"Source"`
 }
 
+// Ok simple check for soap fault; return true if empty string
+func (fault SOAPFault) Ok() bool {
+	return fault.Code == ""
+}
+
+// Format on SOAPFault for error checking and printing
+func (fault SOAPFault) Format() sbrerr.ErrorSoapFault {
+	msg := fault.Detail.ApplicationResults.Error.SystemSpecificResults.Message
+	shrt := fault.Detail.ApplicationResults.Error.SystemSpecificResults.ShortText
+	return sbrerr.ErrorSoapFault{
+		StackTrace: fault.Detail.StackTrace,
+		FaultCode:  fault.Code,
+		ErrMessage: fmt.Sprintf("%s %s %s", msg, fault.String, shrt),
+		Code:       sbrerr.SoapFault,
+	}
+}
+
 //SOAPFault catching error messages
 type SOAPFault struct {
-	XMLName xml.Name `xml:"Fault,omitempty"`
-	Code    string   `xml:"faultcode,omitempty"`
-	String  string   `xml:"faultstring,omitempty"`
-	Actor   string   `xml:"faultactor,omitempty"`
+	XMLName xml.Name `xml:"Fault"`
+	Code    string   `xml:"faultcode"`
+	String  string   `xml:"faultstring"`
+	Actor   string   `xml:"faultactor"`
 	Detail  struct {
-		StackTrace string `xml:"StackTrace,omitempty"`
-	} `xml:"detail,omitempty"`
+		StackTrace         string `xml:"StackTrace"`
+		ApplicationResults struct {
+			Error struct {
+				Type                  string `xml:"type,attr"`
+				SystemSpecificResults struct {
+					Message   string `xml:"Message"`
+					ShortText string `xml:"ShortText"`
+				} `xml:"SystemSpecificResults"`
+			} `xml:"Error"`
+		} `xml:"ApplicationResults"`
+	} `xml:"detail"`
 }
 
 // helper to crete message header
@@ -418,20 +446,19 @@ func CallSessionCreate(serviceURL string, req SessionCreateRequest) (SessionCrea
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
 	if err != nil {
-		return sessionResponse, fmt.Errorf("CallSessionCreate http.Post(). %v", err)
+		return sessionResponse, sbrerr.NewErrorSabreService(err.Error(), sbrerr.ErrCallSessionCreate, sbrerr.BadService)
 	}
 
 	//parse payload body into []byte buffer from net Response.ReadCloser
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
 	io.Copy(bodyBuffer, resp.Body)
-	//defer func() { resp.Body.Close() }()
 	resp.Body.Close()
 
 	//marshal byte body sabre response body into session envelope response struct
 	err = xml.Unmarshal(bodyBuffer.Bytes(), &sessionResponse)
 	if err != nil {
-		return sessionResponse, fmt.Errorf("CallSessionCreate Unmarshal(,&sessionResponse). %v", err)
+		return sessionResponse, sbrerr.NewErrorSabreXML(err.Error(), sbrerr.ErrCallSessionCreate, sbrerr.BadParse)
 	}
 	return sessionResponse, nil
 }
@@ -515,20 +542,20 @@ func CallSessionClose(serviceURL string, e SessionCloseRequest) (SessionCloseRes
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
 	if err != nil {
-		return sessionResponse, fmt.Errorf("CallSessionClose http.Post(). %v", err)
+		return sessionResponse, sbrerr.NewErrorSabreService(err.Error(), sbrerr.ErrCallSessionClose, sbrerr.BadService)
+
 	}
 
 	//parse payload body into []byte buffer from net Response.ReadCloser
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
 	io.Copy(bodyBuffer, resp.Body)
-	//defer func() { resp.Body.Close() }()
 	resp.Body.Close()
 
 	//marshal byte body sabre response body into session envelope response struct
 	err = xml.Unmarshal(bodyBuffer.Bytes(), &sessionResponse)
 	if err != nil {
-		return sessionResponse, fmt.Errorf("CallSessionClose Unmarshal(,&sessionResponse). %v", err)
+		return sessionResponse, sbrerr.NewErrorSabreXML(err.Error(), sbrerr.ErrCallSessionClose, sbrerr.BadParse)
 	}
 	return sessionResponse, nil
 }
@@ -614,20 +641,19 @@ func CallSessionValidate(serviceURL string, req SessionValidateRequest) (Session
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", buffer)
 	if err != nil {
-		return sessionResponse, fmt.Errorf("CallSessionValidate http.Post(). %v", err)
+		return sessionResponse, sbrerr.NewErrorSabreService(err.Error(), sbrerr.ErrCallSessionValidate, sbrerr.BadService)
 	}
 
 	//parse payload body into []byte buffer from net Response.ReadCloser
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
 	io.Copy(bodyBuffer, resp.Body)
-	//defer func() { resp.Body.Close() }()
 	resp.Body.Close()
 
 	//marshal byte body sabre response body into session envelope response struct
 	err = xml.Unmarshal(bodyBuffer.Bytes(), &sessionResponse)
 	if err != nil {
-		return sessionResponse, fmt.Errorf("CallSessionValidate Unmarshal(,&sessionResponse). %v", err)
+		return sessionResponse, sbrerr.NewErrorSabreXML(err.Error(), sbrerr.ErrCallSessionValidate, sbrerr.BadParse)
 	}
 	return sessionResponse, nil
 }
