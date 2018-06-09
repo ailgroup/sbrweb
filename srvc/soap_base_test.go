@@ -44,7 +44,7 @@ var (
 	samplebintokensplit = "-3177016070087638144!110012!0"
 
 	sampleSessionNoAuthFaultCode   = "soap-env:Client.AuthenticationFailed"
-	sampleSessionNoAuthFaultString = "Authentication failed"
+	sampleSessionNoAuthFaultString = " Authentication failed "
 	sampleSessionNoAuthStackTrace  = "com.sabre.universalservices.base.security.AuthenticationException: errors.authentication.USG_AUTHENTICATION_FAILED"
 
 	sampleSessionInvalidTokenFaultCode  = "soap-env:Client.InvalidSecurityToken"
@@ -778,7 +778,7 @@ func TestSOAPFaultFormat(t *testing.T) {
 		t.Errorf("SOAPFault Format.Code expect: %d, got: %d", sbrerr.SoapFault, format.Code)
 	}
 	if format.ErrMessage != sampleSessionNoAuthFaultString {
-		t.Errorf("SOAPFault Format.ErrMessage expect: %s, got: %s", sampleSessionNoAuthFaultString, format.ErrMessage)
+		t.Errorf("SOAPFault Format.ErrMessage expect: '%s', got: '%s'", sampleSessionNoAuthFaultString, format.ErrMessage)
 	}
 	if format.StackTrace != sampleSessionNoAuthStackTrace {
 		t.Errorf("SOAPFault Format.StackTrace expect: %s, got: %s", sampleSessionNoAuthStackTrace, format.StackTrace)

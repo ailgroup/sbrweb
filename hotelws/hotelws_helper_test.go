@@ -140,7 +140,7 @@ var rateSamples = []struct {
 		iataprod:     "FULLY FLEXIBLE-",
 		lowinventory: "false",
 		ratecode:     "",
-		rph:          "01",
+		rph:          "001",
 		ratechange:   "false",
 		rateconv:     "false",
 		specialoff:   "false",

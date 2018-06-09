@@ -348,7 +348,7 @@ func TestHotelAvailUnmarshal(t *testing.T) {
 	}
 
 	options := avail.Body.HotelAvail.AvailOpts.AvailableOptions[0]
-	if options.RPH != "1" {
+	if options.RPH != "001" {
 		t.Errorf("First Availability option should be 1")
 	}
 	rr := options.PropertyInfo.RoomRateAvail
@@ -390,7 +390,7 @@ func TestHotelAvailCallByIDs(t *testing.T) {
 	}
 
 	for idx, o := range resp.Body.HotelAvail.AvailOpts.AvailableOptions {
-		if o.RPH != fmt.Sprintf("%d", idx+1) {
+		if o.RPH != fmt.Sprintf("00%d", idx+1) {
 			t.Errorf("AvailableOptions %d RPH expected %d, got %s", idx, idx+1, o.RPH)
 		}
 		if o.PropertyInfo.HotelCityCode != "TUL" {
