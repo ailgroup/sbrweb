@@ -88,6 +88,9 @@ func (s SystemResults) Translate() string {
 --see hotel_res_rq_not_proc_format.xml, too many options??
 	<stl:Message code="0">FORMAT</stl:Message>
 
+--see...
+	<stl:Message>INVALID CARD NUMBER</stl:Message> card number/code no match, other invalid card number reasons
+
 */
 func (result ApplicationResults) ErrFormat() sbrerr.ErrorSabreResult {
 	return sbrerr.ErrorSabreResult{
