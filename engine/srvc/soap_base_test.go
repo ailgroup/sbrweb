@@ -25,8 +25,8 @@ var (
 	samplerandStr       = regexp.MustCompile(`\w*`)
 	samplerfc333pString = "2017-11-27T09:58:31Z"
 	samplerfc333pReg    = regexp.MustCompile(`\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z`)
-	samplemidStr        = "mid:20180207-20:19:07.25|QVbg0"
 	samplemidReg        = regexp.MustCompile(`mid:\d{8}-\d{2}:\d{2}:\d{2}\.\d{1,2}\|\w{5}`)
+	sampleconvReg       = regexp.MustCompile(`cid:\w{8}\|.{5,}`)
 	samplemid           = "mid:20180216-07:18:42.3|14oUa"
 	sampletime          = "2018-02-16T07:18:42Z"
 	samplepcc           = "7TZA"
@@ -210,12 +210,24 @@ func BenchmarkRandomStringGen(b *testing.B) {
 func TestGenerateMessageID(t *testing.T) {
 	mid := GenerateMessageID()
 	if !samplemidReg.MatchString(mid) {
-		t.Errorf("MessageID formt wrong. Example: '%s', got '%s'", samplemidStr, mid)
+		t.Errorf("MessageID format wrong. Example: '%s', got '%s'", samplemid, mid)
 	}
 }
 func BenchmarkGenerateMessageID(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		GenerateMessageID()
+	}
+}
+
+func TestGenerateConversationID(t *testing.T) {
+	conv := GenerateConversationID(samplefrom)
+	if !sampleconvReg.MatchString(conv) {
+		t.Errorf("ConversaionID format wrong. Example: '%s', got '%s'", sampleconvid, conv)
+	}
+}
+func BenchmarkGenerateConversationID(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		GenerateConversationID(samplefrom)
 	}
 }
 

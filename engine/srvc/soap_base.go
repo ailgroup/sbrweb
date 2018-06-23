@@ -350,9 +350,12 @@ func randStringBytesMaskImprSrc(n int) string {
 
 // GenerateMessageID returns 'mid:20060102-15:04:05|urioe'
 func GenerateMessageID() string {
-	randStr := randStringBytesMaskImprSrc(5)
-	nowtime := time.Now().Format("20060102-15:04:05.99")
-	return "mid:" + nowtime + "|" + randStr
+	return "mid:" + time.Now().Format("20060102-15:04:05.99") + "|" + randStringBytesMaskImprSrc(5)
+}
+
+// GenerateConversationID returns 'cid:1Fv0Oq65|www.z.com'
+func GenerateConversationID(from string) string {
+	return "cid:" + randStringBytesMaskImprSrc(8) + "|" + from
 }
 
 // SessionCreateRQ for session create request

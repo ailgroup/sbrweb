@@ -118,8 +118,8 @@ func (p *SessionPool) newSession() (Session, error) {
 		Sabre:         createRS,
 		TimeStarted:   now,
 		TimeValidated: now,
-		//ExpireTime:    now.Add(time.Minute * time.Duration(RandomInt(3, 14))),
-		ExpireTime: now.Add(time.Minute * time.Duration(1)),
+		ExpireTime:    now.Add(time.Minute * time.Duration(RandomInt(p.Expire.Min, p.Expire.Max))),
+		//ExpireTime: now.Add(time.Minute * time.Duration(1)),
 		FaultError: faultErr,
 	}
 	logSession.Printf(
@@ -163,7 +163,7 @@ func (p *SessionPool) Pick() Session {
 	return sess
 }
 
-// Put session back onto the buffered queue
+// Put session back onto the buffered queue, perhaps return error here for better signalling if ever deferring these
 func (p *SessionPool) Put(sess Session) {
 	p.Sessions <- sess
 	p.logReport("Put-" + sess.ID)
@@ -217,7 +217,7 @@ func (p *SessionPool) RangeKeepalive(keepaliveID string) {
 				newSess, err := p.newSession()
 				if err != nil {
 					logSession.Printf("Network ERROR for ID=%s, expire and retry", newSess.ID)
-					newSess.ExpireTime = time.Now().Add(time.Second * 1)
+					newSess.ExpireTime = time.Now().Add(time.Second * 5)
 				}
 				logSession.Printf("NewSession-%s ID=%s token=%s\n",
 					keepaliveID,
@@ -262,10 +262,11 @@ func generateKeepAliveID() string {
 	return "kid:" + randStr + "|" + nowtime
 }
 
-//Keepalive sessions in the session pool validated
-func Keepalive(p *SessionPool, repeatEvery, endAfter time.Duration) {
+//Keepalive sessions by RangeKeepalive over all sessions in pool
+func Keepalive(p *SessionPool, repeatEvery time.Duration) {
 	//defer profile.Start(profile.MemProfile).Stop()
-	doneChan := time.NewTimer(endAfter).C
+	//endAfter time.Duration
+	doneChan := time.NewTimer(time.Minute * 4).C
 	started := time.Now()
 	keepAliveID := generateKeepAliveID()
 	logSession.Println("Starting KEEPALIVE...", keepAliveID)
