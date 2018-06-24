@@ -29,62 +29,63 @@ const (
 
 var (
 	vRepeatEvery = time.Minute * 3
-	//vEndAfter    = time.Minute * 6
+	sessConf     = &srvc.SessionConf{}
+	vipConf      = &viper.Viper{}
 )
 
+func init() {
+	vipConf = setConfig()
+	sessConf = &srvc.SessionConf{
+		ServiceURL: vipConf.GetString(ConfSabreURL),
+		From:       vipConf.GetString(ConfClientURL),
+		PCC:        vipConf.GetString(ConfSabrePCC),
+		Convid:     srvc.GenerateConversationID(vipConf.GetString(ConfClientURL)),
+		Msgid:      srvc.GenerateMessageID(),
+		Timestr:    srvc.SabreTimeFormat(),
+		Username:   vipConf.GetString(ConfSabreUsername),
+		Password:   vipConf.GetString(ConfSabrePassword),
+	}
+}
+
 func setConfig() *viper.Viper {
-	conf := viper.GetViper()
+	vip := viper.GetViper()
 
-	conf.SetConfigName(ConfFile)
-	conf.AddConfigPath("$HOME")
-	conf.AddConfigPath(".")
-	conf.BindEnv(ConfSabreUsername)
-	conf.BindEnv(ConfSabrePassword)
-	conf.BindEnv(ConfSabrePCC)
+	vip.SetConfigName(ConfFile)
+	vip.AddConfigPath("$HOME")
+	vip.AddConfigPath(".")
+	vip.BindEnv(ConfSabreUsername)
+	vip.BindEnv(ConfSabrePassword)
+	vip.BindEnv(ConfSabrePCC)
 
-	err := conf.ReadInConfig()
+	err := vip.ReadInConfig()
 	if err != nil {
 		panic(fmt.Errorf("Fatal error config file: %s \n", err))
 	}
-	conf.WatchConfig()
-	conf.OnConfigChange(func(e fsnotify.Event) {
+	vip.WatchConfig()
+	vip.OnConfigChange(func(e fsnotify.Event) {
 		fmt.Println("Config file changed:", e.Name)
 	})
 
-	return conf
+	return vip
 }
 
 func main() {
-	c := setConfig()
+	// create scheme for session expirey
 	scheme := srvc.ExpireScheme{
-		Min: c.GetInt(ConfExpireMin),
-		Max: c.GetInt(ConfExpireMax),
+		Min: vipConf.GetInt(ConfExpireMin),
+		Max: vipConf.GetInt(ConfExpireMax),
 	}
-	p := srvc.NewPool(
-		scheme,
-		c.GetInt(ConfPoolSize),
-		c.GetString(ConfSabreURL),
-		c.GetString(ConfClientURL),
-		c.GetString(ConfSabrePCC),
-		srvc.GenerateConversationID(c.GetString(ConfClientURL)),
-		srvc.GenerateMessageID(),
-		srvc.SabreTimeFormat(),
-		c.GetString(ConfSabreUsername),
-		c.GetString(ConfSabrePassword),
-	)
 
-	// background populating the pool
-	// and setting up the teh keepvalid worker
+	// create pool, background populate pool and sett up keepalive
+	p := srvc.NewPool(scheme, sessConf, vipConf.GetInt(ConfPoolSize))
 	go func() {
 		err := p.Populate()
 		if err != nil {
 			panic(err)
 		}
-		//srvc.Keepalive(p, vRepeatEvery, vEndAfter)
 		srvc.Keepalive(p, vRepeatEvery)
 	}()
-	// close down session pool properly, validates against
-	// sabre and re-allocates on sabre side
+	// close down session pool properly against sabre re-allocates useable sessiosn
 	cls := make(chan os.Signal)
 	signal.Notify(cls, os.Interrupt)
 	go func() {
@@ -94,7 +95,7 @@ func main() {
 		os.Exit(1)
 	}()
 
-	// deal with context??
+	// pass context through handlers??
 	m := chi.NewRouter()
 	//Logger Logs the start and end of each request with the elapsed processing time
 	m.Use(middleware.Logger)
@@ -102,10 +103,12 @@ func main() {
 	m.Use(middleware.Heartbeat("/heartbeat"))
 
 	server := app.Server{
-		Config:      c,
+		VConfig:     vipConf,
+		SConfig:     sessConf,
 		Mux:         m,
 		SessionPool: p,
 	}
 	server.RegisterRoutes()
+	fmt.Println("Begin on port:", ":8080")
 	http.ListenAndServe(":8080", m)
 }

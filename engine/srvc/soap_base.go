@@ -511,35 +511,35 @@ type SessionCloseRequest struct {
 
 // BuildSessionCloseRequest build session Close envelope for request.
 // CPAID, Organization, and PseudoCityCode all use the PCC/iPCC. ConversationID, MessageID, BinarySecurityToken must be from the existing session you wish to close.
-func BuildSessionCloseRequest(from, pcc, binsectoken, convid, mid, time string) SessionCloseRequest {
+func BuildSessionCloseRequest(c *SessionConf) SessionCloseRequest {
 	return SessionCloseRequest{
 		Envelope: CreateEnvelope(),
 		Header: SessionHeader{
 			MessageHeader: MessageHeader{
 				MustUnderstand: SabreMustUnderstand,
 				EbVersion:      SabreEBVersion,
-				From:           FromElem{PartyID: CreatePartyID(from, PartyIDTypeURN)},
+				From:           FromElem{PartyID: CreatePartyID(c.From, PartyIDTypeURN)},
 				To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
-				CPAID:          pcc,
-				ConversationID: convid,
+				CPAID:          c.PCC,
+				ConversationID: c.Convid,
 				Service:        ServiceElem{"SessionCloseRQ", "OTA"},
 				Action:         "SessionCloseRQ",
 				MessageData: MessageDataElem{
-					MessageID: mid,
-					Timestamp: time,
+					MessageID: c.Msgid,
+					Timestamp: c.Timestr,
 				},
 			},
 			Security: Security{
 				XMLNSWsseBase:       BaseWsse,
 				XMLNSWsu:            BaseWsuNameSpace,
-				BinarySecurityToken: binsectoken,
+				BinarySecurityToken: c.Binsectok,
 			},
 		},
 		Body: SessionCloseRQBody{
 			SessionCloseRQ: SessionCloseRQ{
 				POS: POSElem{
 					Source: SourceElem{
-						PseudoCityCode: pcc,
+						PseudoCityCode: c.PCC,
 					},
 				},
 			},

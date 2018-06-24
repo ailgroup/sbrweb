@@ -9,7 +9,8 @@ import (
 type Server struct {
 	Mux         *chi.Mux
 	SessionPool *srvc.SessionPool
-	Config      *viper.Viper
+	VConfig     *viper.Viper
+	SConfig     *srvc.SessionConf
 	//DStore datastore.Datastore
 	//FStore *sessions.FilesystemStore
 	//logging...

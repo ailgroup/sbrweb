@@ -100,8 +100,7 @@ func (p *SessionPool) newSession() (Session, error) {
 		TimeStarted:   now,
 		TimeValidated: now,
 		ExpireTime:    now.Add(time.Minute * time.Duration(RandomInt(p.Expire.Min, p.Expire.Max))),
-		//ExpireTime: now.Add(time.Minute * time.Duration(1)),
-		FaultError: faultErr,
+		FaultError:    faultErr,
 	}
 	logSession.Printf(
 		"Status='%s' created session ID=%s with Expirey='%s' for token=%s", sess.Sabre.Body.SessionCreateRS.Status,
@@ -268,15 +267,8 @@ func Keepalive(p *SessionPool, repeatEvery time.Duration) {
 func (p *SessionPool) Close() {
 	networkErrors := []error{}
 	faultErrors := []error{}
-	for createRS := range p.Sessions {
-		closeRQ := BuildSessionCloseRequest(
-			createRS.Sabre.Header.MessageHeader.To.PartyID.Value,
-			createRS.Sabre.Header.MessageHeader.CPAID,
-			createRS.Sabre.Header.Security.BinarySecurityToken.Value,
-			createRS.Sabre.Header.MessageHeader.ConversationID,
-			createRS.Sabre.Header.MessageHeader.MessageData.RefToMessageID,
-			SabreTimeFormat(),
-		)
+	for range p.Sessions {
+		closeRQ := BuildSessionCloseRequest(p.Conf)
 		closeRS, err := CallSessionClose(p.ServiceURL, closeRQ)
 
 		if err != nil {

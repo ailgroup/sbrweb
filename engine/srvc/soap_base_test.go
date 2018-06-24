@@ -53,13 +53,14 @@ var (
 	samplepassword      = "PASSWORD_GOES_HER"
 	sampledomain        = "DEFAULT"
 	sampleSessionConf   = &SessionConf{
-		From:     samplefrom,
-		PCC:      samplepcc,
-		Convid:   sampleconvid,
-		Msgid:    samplemid,
-		Timestr:  sampletime,
-		Username: sampleusername,
-		Password: samplepassword,
+		From:      samplefrom,
+		PCC:       samplepcc,
+		Convid:    sampleconvid,
+		Msgid:     samplemid,
+		Timestr:   sampletime,
+		Username:  sampleusername,
+		Password:  samplepassword,
+		Binsectok: samplebinsectoken,
 	}
 	samplebinsectoken              = string([]byte(`Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0`))
 	samplebintokensplit            = "-3177016070087638144!110012!0"
@@ -941,23 +942,22 @@ func TestSessionCloseRequest(t *testing.T) {
 }
 
 func TestBuildSessionCloseRequestMarshal(t *testing.T) {
-	close := BuildSessionCloseRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime)
-
+	close := BuildSessionCloseRequest(sampleSessionConf)
 	b, err := xml.Marshal(&close)
 	if err != nil {
 		t.Error("Error marshalling session envelope", err)
 	}
 	if string(b) != string(sampleSessionCloseRQ) {
-		t.Error("Session envelope with values does not match test sample")
+		t.Errorf("Close request marshal \n sample: %s \n result: %s", string(sampleSessionCloseRQ), string(b))
 	}
 }
 func BenchmarkBuildSessionCloseRequest(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		BuildSessionCloseRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime)
+		BuildSessionCloseRequest(sampleSessionConf)
 	}
 }
 func BenchmarkBuildSessionCloseRequestMarshal(b *testing.B) {
-	close := BuildSessionCloseRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime)
+	close := BuildSessionCloseRequest(sampleSessionConf)
 	for n := 0; n < b.N; n++ {
 		xml.Marshal(&close)
 	}
@@ -976,8 +976,6 @@ func TestSessionCloseResponse(t *testing.T) {
 	if resp.Body.Fault.String != "" {
 		t.Errorf("Body.Fault.String expect empty: '%s', got: %s", "", resp.Body.Fault.String)
 	}
-	//fmt.Printf("SAMPLE: %s\n\n", sampleSessionCloseRespSuccess)
-	//fmt.Printf("CURREN: %+v\n", resp)
 }
 
 func TestSessionCloseResponseInvalidToken(t *testing.T) {
@@ -999,8 +997,6 @@ func TestSessionCloseResponseInvalidToken(t *testing.T) {
 	if resp.Header.Security.BinarySecurityToken.Value != samplebinsectoken {
 		t.Errorf("Header.Security.BinarySecurityToken.Value expect: %s, got: %s", samplebinsectoken, resp.Header.Security.BinarySecurityToken.Value)
 	}
-	//fmt.Printf("SAMPLE: %s\n\n", sampleSessionCloseRespNoValidToken)
-	//fmt.Printf("CURREN: %+v\n", resp)
 }
 
 func TestSessionValidateResponse(t *testing.T) {
@@ -1024,8 +1020,6 @@ func TestSessionValidateResponse(t *testing.T) {
 	if resp.Header.MessageHeader.MessageData.Timestamp != sampletime {
 		t.Errorf("Header.MessageHeader.MessageData.Timestamp expect: %s, got: %s", sampletime, resp.Header.MessageHeader.MessageData.Timestamp)
 	}
-	//fmt.Printf("SAMPLE: %s\n\n", sampleSessionValidateRS)
-	//fmt.Printf("CURREN: %+v\n", resp)
 }
 
 func TestSessionValidateResponseInvalidToken(t *testing.T) {
@@ -1049,8 +1043,6 @@ func TestSessionValidateResponseInvalidToken(t *testing.T) {
 	if resp.Body.Fault.Detail.StackTrace != sampleSessionInvalidTokenStackTrace {
 		t.Errorf("Body.Fault.Detail.StackTrace expect: %s, got: %s", sampleSessionInvalidTokenStackTrace, resp.Body.Fault.Detail.StackTrace)
 	}
-	//fmt.Printf("SAMPLE: %s\n\n", sampleSessionValidateRSInvalidTokenRS)
-	//fmt.Printf("CURREN: %+v\n", resp)
 }
 func TestBuildSessionValidateRequestMarshal(t *testing.T) {
 	close := BuildSessionValidateRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime)
@@ -1062,8 +1054,6 @@ func TestBuildSessionValidateRequestMarshal(t *testing.T) {
 	if string(b) != string(sampleSessionValidateRQ) {
 		t.Error("Session envelope with values does not match test sample")
 	}
-	//fmt.Printf("SAMPLE: %v\n", string(sampleSessionValidateRQ))
-	//fmt.Printf("CURREN: %v\n", string(b))
 }
 func BenchmarkBuildSessionValidateRequest(b *testing.B) {
 	for n := 0; n < b.N; n++ {
@@ -1166,7 +1156,6 @@ func TestCallSessionValidateBadBody(t *testing.T) {
 func TestCallSessionCreateSuccess(t *testing.T) {
 	//Mock Sabre Web Services
 	req := BuildSessionCreateRequest(sampleSessionConf)
-	//req := BuildSessionCreateRequest(samplefrom, samplepcc, sampleconvid, samplemid, sampletime, sampleusername, samplepassword)
 	resp, err := CallSessionCreate(serverCreateRQ.URL, req)
 	if err != nil {
 		t.Error("Error making request CallSessionCreate", err)
@@ -1196,14 +1185,13 @@ func TestCallSessionCreateSuccess(t *testing.T) {
 }
 func BenchmarkCallSessionCreate(b *testing.B) {
 	req := BuildSessionCreateRequest(sampleSessionConf)
-	//req := BuildSessionCreateRequest(samplefrom, samplepcc, sampleconvid, samplemid, sampletime, sampleusername, samplepassword)
 	for n := 0; n < b.N; n++ {
 		CallSessionCreate(serverCreateRQ.URL, req)
 	}
 }
 
 func TestCallSessionClose(t *testing.T) {
-	req := BuildSessionCloseRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime)
+	req := BuildSessionCloseRequest(sampleSessionConf)
 	resp, err := CallSessionClose(serverCloseRQ.URL, req)
 	if err != nil {
 		t.Error("Error making request CallSessionClose", err)
@@ -1216,7 +1204,7 @@ func TestCallSessionClose(t *testing.T) {
 	}
 }
 func BenchmarkCallSessionClose(b *testing.B) {
-	req := BuildSessionCloseRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime)
+	req := BuildSessionCloseRequest(sampleSessionConf)
 	for n := 0; n < b.N; n++ {
 		CallSessionClose(serverCloseRQ.URL, req)
 	}

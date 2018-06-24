@@ -15,7 +15,7 @@ version = 0.1
 sabre_url = "https://webservices.sabre.com/websvc/"
     [sessions.client]
     url = "www.z.com"
-    pool_size = 10
+    pool_size = 3
 
     [sessions.expire]
     # min/max are in minutes
