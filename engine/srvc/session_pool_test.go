@@ -19,7 +19,8 @@ var (
 
 func TestSessionPoolEmpty(t *testing.T) {
 	poolSize := 3
-	p := NewPool(sampleExpireScheme, poolSize, serverCreateRQ.URL, samplefrom, samplepcc, sampleconvid, samplemid, sampletime, sampleusername, samplepassword)
+	sampleSessionConf.ServiceURL = serverCreateRQ.URL
+	p := NewPool(sampleExpireScheme, sampleSessionConf, poolSize)
 	if p.ServiceURL != serverCreateRQ.URL {
 		t.Errorf("SessionPool.ServiceURL expect: %s, got: %s", serverCreateRQ.URL, p.ServiceURL)
 	}
@@ -40,7 +41,8 @@ func TestSessionPoolEmpty(t *testing.T) {
 // NOTE: this helps test case where we could not get any valid sessions, so we close the buffered channel to prevent indefinite blocking.
 func TestSessionPoolPopluateServerDown(t *testing.T) {
 	poolSize := 3
-	p := NewPool(sampleExpireScheme, poolSize, serverDown.URL, samplefrom, samplepcc, sampleconvid, samplemid, sampletime, sampleusername, samplepassword)
+	sampleSessionConf.ServiceURL = serverDown.URL
+	p := NewPool(sampleExpireScheme, sampleSessionConf, poolSize)
 	p.Populate()
 
 	if len(p.Sessions) != 0 {
@@ -66,7 +68,8 @@ func TestSessionPoolPopluateServerDown(t *testing.T) {
 
 func TestSessionPoolPopluateBadBody(t *testing.T) {
 	poolSize := 2
-	p := NewPool(sampleExpireScheme, poolSize, serverBadBody.URL, samplefrom, samplepcc, sampleconvid, samplemid, sampletime, sampleusername, samplepassword)
+	sampleSessionConf.ServiceURL = serverBadBody.URL
+	p := NewPool(sampleExpireScheme, sampleSessionConf, poolSize)
 	p.Populate()
 	if len(p.NetworkErrors) <= 0 {
 		t.Fail()
@@ -78,13 +81,11 @@ func TestSessionPoolPopluateBadBody(t *testing.T) {
 func TestSessionPoolCloseOnDownServer(t *testing.T) {
 	poolSize := 2
 	//must be a good server or no sessions and buffer blocks...
-	p := NewPool(sampleExpireScheme, poolSize, serverCreateRQ.URL, samplefrom, samplepcc, sampleconvid, samplemid, sampletime, sampleusername, samplepassword)
+	sampleSessionConf.ServiceURL = serverCreateRQ.URL
+	p := NewPool(sampleExpireScheme, sampleSessionConf, poolSize)
 	p.Populate()
-
 	//reroute to unavailable server
 	p.ServiceURL = serverDown.URL
-	//p.ServiceURL = serverBadBody.URL
-
 	p.Close()
 	if len(p.NetworkErrors) <= 0 {
 		t.Fail()
@@ -93,7 +94,8 @@ func TestSessionPoolCloseOnDownServer(t *testing.T) {
 
 func TestSessionPoolPopluateUnauth(t *testing.T) {
 	poolSize := 2
-	p := NewPool(sampleExpireScheme, poolSize, serverCreateRSUnauth.URL, samplefrom, samplepcc, sampleconvid, samplemid, sampletime, sampleusername, samplepassword)
+	sampleSessionConf.ServiceURL = serverCreateRSUnauth.URL
+	p := NewPool(sampleExpireScheme, sampleSessionConf, poolSize)
 	p.Populate()
 	if len(p.NetworkErrors) != 0 {
 		t.Fail()
@@ -115,7 +117,8 @@ func TestSessionPoolPopluateUnauth(t *testing.T) {
 
 func TestSessionPoolCloseInvalidToken(t *testing.T) {
 	poolSize := 2
-	p := NewPool(sampleExpireScheme, poolSize, serverCreateRQ.URL, samplefrom, samplepcc, sampleconvid, samplemid, sampletime, sampleusername, samplepassword)
+	sampleSessionConf.ServiceURL = serverCreateRQ.URL
+	p := NewPool(sampleExpireScheme, sampleSessionConf, poolSize)
 	p.Populate()
 	if len(p.NetworkErrors) != 0 {
 		t.Fail()
@@ -123,11 +126,9 @@ func TestSessionPoolCloseInvalidToken(t *testing.T) {
 	if p.AllowPoolSize != poolSize {
 		t.Error("AllowPoolSize should be more than zero even with SOAP Fault")
 	}
-
 	//reroute serivce to server with close invalid response...
 	p.ServiceURL = serverCloseRSInvalid.URL
 	p.Close()
-
 	if len(p.NetworkErrors) != 0 {
 		t.Error("Network errors should not exist")
 	}
@@ -141,7 +142,8 @@ func TestSessionPoolCloseInvalidToken(t *testing.T) {
 
 func TestSessionPoolPopluatePickPut(t *testing.T) {
 	poolSize := 5
-	p := NewPool(sampleExpireScheme, poolSize, serverCreateRQ.URL, samplefrom, samplepcc, sampleconvid, samplemid, sampletime, sampleusername, samplepassword)
+	sampleSessionConf.ServiceURL = serverCreateRQ.URL
+	p := NewPool(sampleExpireScheme, sampleSessionConf, poolSize)
 	p.Populate()
 	if poolSize != p.AllowPoolSize {
 		t.Errorf("given poolSize: %d should equal AllowPoolSize on Populate: %d", poolSize, p.AllowPoolSize)
@@ -181,7 +183,8 @@ func TestSessionPoolPopluatePickPut(t *testing.T) {
 func TestSessionPoolBlocking(t *testing.T) {
 	poolSize := 5
 	blockingSize := 3
-	p := NewPool(sampleExpireScheme, poolSize, serverCreateRQ.URL, samplefrom, samplepcc, sampleconvid, samplemid, sampletime, sampleusername, samplepassword)
+	sampleSessionConf.ServiceURL = serverCreateRQ.URL
+	p := NewPool(sampleExpireScheme, sampleSessionConf, poolSize)
 	p.Populate()
 
 	sessions := []Session{}
@@ -254,7 +257,7 @@ func TestSessionPoolBlocking(t *testing.T) {
 
 func TestSessionPoolSafeBlocking(t *testing.T) {
 	poolSize := 3
-	p := NewPool(sampleExpireScheme, poolSize, serverCreateRQ.URL, samplefrom, samplepcc, sampleconvid, samplemid, sampletime, sampleusername, samplepassword)
+	p := NewPool(sampleExpireScheme, sampleSessionConf, poolSize)
 	if p.ConfigPoolSize == p.AllowPoolSize {
 		t.Errorf("ConfigPoolSize: %d not equal AllowPoolSize: %d", p.ConfigPoolSize, p.AllowPoolSize)
 	}

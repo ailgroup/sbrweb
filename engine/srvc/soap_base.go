@@ -380,33 +380,52 @@ type SessionCreateRequest struct {
 	Body   SessionCreateRQBody
 }
 
+type SessionConf struct {
+	ServiceURL string
+	From       string
+	PCC        string
+	Binsectok  string
+	Convid     string
+	Msgid      string
+	Timestr    string
+	Username   string
+	Password   string
+}
+
+// SetTime updates the timestamp. Pass around SessionConf and update the timestamp for any new request
+func (s *SessionConf) SetTime() *SessionConf {
+	s.Timestr = SabreTimeFormat()
+	return s
+}
+
 // BuildSessionCreateRequest build session create envelope for request
 // CPAID, Organization, and PseudoCityCode all use the PCC/iPCC. ConversationID is typically a contact email address with unique identifier to the request. MessageID is typically a timestamped identifier to locate specific queries: it should contai a company identifier.
-func BuildSessionCreateRequest(from, pcc, convid, mid, time, username, password string) SessionCreateRequest {
+//func BuildSessionCreateRequest(from, pcc, convid, mid, time, username, password string) SessionCreateRequest {
+func BuildSessionCreateRequest(c *SessionConf) SessionCreateRequest {
 	return SessionCreateRequest{
 		Envelope: CreateEnvelope(),
 		Header: SessionHeader{
 			MessageHeader: MessageHeader{
 				MustUnderstand: SabreMustUnderstand,
 				EbVersion:      SabreEBVersion,
-				From:           FromElem{PartyID: CreatePartyID(from, PartyIDTypeURN)},
+				From:           FromElem{PartyID: CreatePartyID(c.From, PartyIDTypeURN)},
 				To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
-				CPAID:          pcc,
-				ConversationID: convid,
+				CPAID:          c.PCC,
+				ConversationID: c.Convid,
 				Service:        ServiceElem{"SessionCreateRQ", "OTA"},
 				Action:         "SessionCreateRQ",
 				MessageData: MessageDataElem{
-					MessageID: mid,
-					Timestamp: time,
+					MessageID: c.Msgid,
+					Timestamp: c.Timestr,
 				},
 			},
 			Security: Security{
 				XMLNSWsseBase: BaseWsse,
 				XMLNSWsu:      BaseWsuNameSpace,
 				UserNameToken: &UsernameTokenElem{
-					Username:     username,
-					Password:     password,
-					Organization: pcc,
+					Username:     c.Username,
+					Password:     c.Password,
+					Organization: c.PCC,
 					Domain:       sabreDefaultDomain,
 				},
 			},
@@ -417,7 +436,7 @@ func BuildSessionCreateRequest(from, pcc, convid, mid, time, username, password 
 				XMLNS: baseOTANameSpace,
 				POS: POSElem{
 					Source: SourceElem{
-						PseudoCityCode: pcc,
+						PseudoCityCode: c.PCC,
 					},
 				},
 			},
@@ -438,6 +457,11 @@ type SessionCreateResponse struct {
 		} `xml:"SessionCreateRS"`
 		Fault SOAPFault
 	}
+}
+
+func (s *SessionCreateResponse) ParseBinSecToken(c SessionConf) SessionConf {
+	c.Binsectok = s.Header.Security.BinarySecurityToken.Value
+	return c
 }
 
 // CallSessionCreate to sabre web services.

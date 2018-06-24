@@ -16,17 +16,6 @@ type Session struct {
 	FaultError    error
 }
 
-// SessionConfig holds info to create and manage session
-type SessionConfig struct {
-	from      string
-	pcc       string
-	convid    string
-	mid       string
-	timeStamp string
-	username  string
-	password  string
-}
-
 // ExpireScheme for when to expire sessions
 type ExpireScheme struct {
 	Max int
@@ -44,27 +33,19 @@ type SessionPool struct {
 	NetworkErrors   []error
 	FaultErrors     []error
 	Expire          ExpireScheme
-	Conf            SessionConfig
+	Conf            *SessionConf
 }
 
 // NewPool initializes a new pool with the given tasks and at the given
 // concurrency.
-func NewPool(expire ExpireScheme, size int, serviceURL, from, pcc, convid, mid, timeStamp, username, password string) *SessionPool {
+func NewPool(expire ExpireScheme, cred *SessionConf, size int) *SessionPool {
 	return &SessionPool{
 		ConfigPoolSize:  size,
 		Sessions:        make(chan Session, size), //buffered channel blocks!
 		InitializedTime: time.Now(),
-		ServiceURL:      serviceURL,
+		ServiceURL:      cred.ServiceURL,
 		Expire:          expire,
-		Conf: SessionConfig{
-			from:      from,
-			pcc:       pcc,
-			convid:    convid,
-			mid:       mid,
-			timeStamp: timeStamp,
-			username:  username,
-			password:  password,
-		},
+		Conf:            cred,
 	}
 }
 
@@ -92,7 +73,7 @@ func RandomInt(min, max int) int {
 }
 
 func (p *SessionPool) newSession() (Session, error) {
-	createRQ := BuildSessionCreateRequest(p.Conf.from, p.Conf.pcc, p.Conf.convid, p.Conf.mid, p.Conf.timeStamp, p.Conf.username, p.Conf.password)
+	createRQ := BuildSessionCreateRequest(p.Conf)
 	createRS, err := CallSessionCreate(p.ServiceURL, createRQ)
 	if err != nil {
 		p.NetworkErrors = append(p.NetworkErrors, err)
@@ -266,7 +247,7 @@ func generateKeepAliveID() string {
 func Keepalive(p *SessionPool, repeatEvery time.Duration) {
 	//defer profile.Start(profile.MemProfile).Stop()
 	//endAfter time.Duration
-	doneChan := time.NewTimer(time.Minute * 4).C
+	//doneChan := time.NewTimer(time.Minute * 15).C
 	started := time.Now()
 	keepAliveID := generateKeepAliveID()
 	logSession.Println("Starting KEEPALIVE...", keepAliveID)
@@ -279,9 +260,9 @@ func Keepalive(p *SessionPool, repeatEvery time.Duration) {
 			p.RangeKeepalive(keepAliveID)
 			logSession.Printf("KEEPALIVE run(InMin=%.2f, InHour=%.2f)", time.Since(started).Minutes(), time.Since(started).Hours())
 			p.logReport(keepAliveID + "-KeepAlive")
-		case <-doneChan:
-			logSession.Println("KEEPALIVE killed, total time:", time.Since(started))
-			return
+			//case <-doneChan:
+			//	logSession.Println("KEEPALIVE killed, total time:", time.Since(started))
+			//	return
 		}
 	}
 }

@@ -2,12 +2,11 @@ package hotelws
 
 import (
 	"encoding/xml"
-	"fmt"
 	"testing"
 )
 
 func TestHotelResSet(t *testing.T) {
-	body := SetHotelResBody(1)
+	body := SetHotelResBody(1, sconf.Timestr)
 	body.NewPropertyResByRPH("12")
 	body.NewGuaranteeRes("Testlast", "G", "MC", "2012-12", "1234567890")
 
@@ -47,7 +46,7 @@ func TestHotelResSet(t *testing.T) {
 }
 
 func TestHotelResByHotel(t *testing.T) {
-	body := SetHotelResBody(1)
+	body := SetHotelResBody(1, sconf.Timestr)
 	body.NewPropertyResByHotel("SL", "00004")
 	b := body.OTAHotelResRQ
 	if b.Hotel.BasicPropertyRes.ChainCode != "SL" {
@@ -59,15 +58,15 @@ func TestHotelResByHotel(t *testing.T) {
 }
 
 func TestHotelResBuild(t *testing.T) {
-	body := SetHotelResBody(1)
-	//body.NewPropertyResByHotel("SL", "00004")
-	body.NewPropertyResByRPH("004")
-	body.NewGuaranteeRes("Testlast", "GDPST", "MC", "2012-12", "1234567890")
-
-	req := BuildHotelResRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
+	body := SetHotelResBody(1, sconf.Timestr)
+	body.NewPropertyResByRPH("007")
+	body.NewGuaranteeRes("Booking", "G", "MC", "2019-12", "5105105105105100")
+	req := BuildHotelResRequest(sconf, body)
 	b, err := xml.Marshal(req)
 	if err != nil {
-		t.Error("Error marshaling hotel resercation request", err)
+		t.Error("Error marshaling hotel reservation request", err)
 	}
-	fmt.Printf("%s\n", b)
+	if string(b) != string(sampleHotelResRQgood) {
+		t.Errorf("Expected marshal SOAP hotel reservation by RPH \n sample: '%s'\n result: '%s'\n", string(sampleHotelResRQgood), string(b))
+	}
 }

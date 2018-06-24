@@ -22,6 +22,20 @@ import (
 )
 
 var (
+	//serverDown mocks an unreachable service
+	serverDown = &httptest.Server{}
+	//serverBadBody mocks a server that returns malformed body
+	serverBadBody = &httptest.Server{}
+	//serverCreateRSUnauth for testing session create not authorized
+	serverCreateRSUnauth = &httptest.Server{}
+	//serverCloseRSInvalid for testing session create not authorized
+	serverCloseRSInvalid = &httptest.Server{}
+	//serverCreateRQ for testing session create
+	serverCreateRQ = &httptest.Server{}
+	//serverCloseRQ for testing session close
+	serverCloseRQ = &httptest.Server{}
+	//serverValidateRQ for testing session validate
+	serverValidateRQ    = &httptest.Server{}
 	samplerandStr       = regexp.MustCompile(`\w*`)
 	samplerfc333pString = "2017-11-27T09:58:31Z"
 	samplerfc333pReg    = regexp.MustCompile(`\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z`)
@@ -38,11 +52,17 @@ var (
 	sampleusername      = "773400"
 	samplepassword      = "PASSWORD_GOES_HER"
 	sampledomain        = "DEFAULT"
-
-	samplebinsectoken = string([]byte(`Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0`))
-
-	samplebintokensplit = "-3177016070087638144!110012!0"
-
+	sampleSessionConf   = &SessionConf{
+		From:     samplefrom,
+		PCC:      samplepcc,
+		Convid:   sampleconvid,
+		Msgid:    samplemid,
+		Timestr:  sampletime,
+		Username: sampleusername,
+		Password: samplepassword,
+	}
+	samplebinsectoken              = string([]byte(`Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0`))
+	samplebintokensplit            = "-3177016070087638144!110012!0"
 	sampleSessionNoAuthFaultCode   = "soap-env:Client.AuthenticationFailed"
 	sampleSessionNoAuthFaultString = " Authentication failed "
 	sampleSessionNoAuthStackTrace  = "com.sabre.universalservices.base.security.AuthenticationException: errors.authentication.USG_AUTHENTICATION_FAILED"
@@ -95,6 +115,75 @@ var (
 	sampleSessionValidateRSInvalidTokenRS = []byte(`<?xml version="1.0" encoding="UTF-8"?>
 	<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><soap-env:Header><eb:MessageHeader xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" eb:version="2.0.0" soap-env:mustUnderstand="1"><eb:From><eb:PartyId eb:type="URI">webservices.sabre.com</eb:PartyId></eb:From><eb:To><eb:PartyId eb:type="URI">www.z.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="OTA">SessionValidateRQ</eb:Service><eb:Action>ErrorRS</eb:Action><eb:MessageData><eb:MessageId>4215837468837900553</eb:MessageId><eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp><eb:RefToMessageId>mid:20180216-07:18:42.3|14oUa</eb:RefToMessageId></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext"><wsse:BinarySecurityToken valueType="String" EncodingType="wsse:Base64Binary">Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><soap-env:Fault><faultcode>soap-env:Client.InvalidSecurityToken</faultcode><faultstring>Invalid or Expired binary security token: Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</faultstring><detail><StackTrace>com.sabre.universalservices.base.session.SessionException: errors.session.USG_INVALID_SECURITY_TOKEN</StackTrace></detail></soap-env:Fault></soap-env:Body></soap-env:Envelope>`)
 )
+
+//Initialize Mock Sabre Web Servers
+func init() {
+	serverDown = httptest.NewServer(
+		http.HandlerFunc(
+			func(rs http.ResponseWriter, rq *http.Request) {
+				//rs.WriteHeader(500)
+			},
+		))
+	serverDown.Close()
+
+	serverBadBody = httptest.NewServer(
+		http.HandlerFunc(
+			func(rs http.ResponseWriter, rq *http.Request) {
+				//rs.Header()
+				//rs.WriteHeader(500)
+				//rs.Write(sampleBadBody)
+				rs.Write([]byte(`!#BAD_/_BODY_.*__\\fhji(*&^%^%$%^&Y*(J)OPKL:`))
+			},
+		),
+	)
+	//defer func() { serverBadBody.Close() }()
+
+	serverCreateRQ = httptest.NewServer(
+		http.HandlerFunc(
+			func(rs http.ResponseWriter, rq *http.Request) {
+				rs.Write(sampleSessionSuccessResponse)
+			},
+		),
+	)
+	//defer func() { serverCreateRQ.Close() }()
+
+	serverCreateRSUnauth = httptest.NewServer(
+		http.HandlerFunc(
+			func(rs http.ResponseWriter, rq *http.Request) {
+				rs.Write(sampleSessionUnAuth)
+			},
+		),
+	)
+	//defer func() { serverCreateRSInvalid.Close() }()
+
+	serverCloseRQ = httptest.NewServer(
+		http.HandlerFunc(
+			func(rs http.ResponseWriter, rq *http.Request) {
+				rs.Write(sampleSessionCloseRespSuccess)
+			},
+		),
+	)
+	//defer func() { serverCloseRQ.Close() }()
+
+	serverCloseRSInvalid = httptest.NewServer(
+		http.HandlerFunc(
+			func(rs http.ResponseWriter, rq *http.Request) {
+				rs.Write(sampleSessionCloseRespNoValidToken)
+			},
+		),
+	)
+	//defer func() { serverCloseRSInvalid.Close() }()
+
+	serverValidateRQ = httptest.NewServer(
+		http.HandlerFunc(
+			func(rs http.ResponseWriter, rq *http.Request) {
+				rs.Write(sampleSessionValidateRespSuccess)
+			},
+		),
+	)
+	//defer func() { serverValidateRQ.Close() }()
+
+}
 
 func TestLogSetup(t *testing.T) {
 	setUpLogging()
@@ -173,6 +262,15 @@ func TestTimeFormat(t *testing.T) {
 func BenchmarkTimeFormat(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		SabreTimeFormat()
+	}
+}
+
+func TestSessionConfSetTime(t *testing.T) {
+	conf := &SessionConf{
+		Timestr: sampletime,
+	}
+	if conf.SetTime().Timestr != SabreTimeFormat() {
+		t.Error("SessionConf SetTime() should be SabreTimeFormat()")
 	}
 }
 
@@ -674,7 +772,7 @@ func BenchmarkSessionCreateRequestUnmarshal(b *testing.B) {
 }
 
 func TestBuildSessionCreateRequest(t *testing.T) {
-	sess := BuildSessionCreateRequest(samplefrom, samplepcc, sampleconvid, samplemid, sampletime, sampleusername, samplepassword)
+	sess := BuildSessionCreateRequest(sampleSessionConf)
 
 	if sess.Header.MessageHeader.From.PartyID.Value != samplefrom {
 		t.Errorf("Header.MessageHeader.From.PartyID.Value expect: %s, got %s", samplefrom, sess.Header.MessageHeader.From.PartyID.Value)
@@ -691,12 +789,11 @@ func TestBuildSessionCreateRequest(t *testing.T) {
 }
 func BenchmarkBuildSessionCreateRequest(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		BuildSessionCreateRequest(samplefrom, samplepcc, sampleconvid, samplemid, sampletime, sampleusername, samplepassword)
+		BuildSessionCreateRequest(sampleSessionConf)
 	}
 }
 func TestBuildSessionCreateRequestMarshal(t *testing.T) {
-	sess := BuildSessionCreateRequest(samplefrom, samplepcc, sampleconvid, samplemid, sampletime, sampleusername, samplepassword)
-
+	sess := BuildSessionCreateRequest(sampleSessionConf)
 	b, err := xml.Marshal(&sess)
 	if err != nil {
 		t.Error("Error marshalling session envelope", err)
@@ -704,11 +801,9 @@ func TestBuildSessionCreateRequestMarshal(t *testing.T) {
 	if string(b) != string(sampleSessionEnvelopeWithValues) {
 		t.Error("Session envelope with values does not match test sample")
 	}
-	//fmt.Printf("SAMPLE: %v\n", string(sampleSessionEnvelopeWithValues))
-	//fmt.Printf("CURREN: %v\n", string(b))
 }
 func BenchmarkBuildSessionCreateRequestMarshal(b *testing.B) {
-	s := BuildSessionCreateRequest(samplefrom, samplepcc, sampleconvid, samplemid, sampletime, sampleusername, samplepassword)
+	s := BuildSessionCreateRequest(sampleSessionConf)
 	for n := 0; n < b.N; n++ {
 		xml.Marshal(&s)
 	}
@@ -743,8 +838,6 @@ func TestSessionCreateResponse(t *testing.T) {
 	if resp.Body.SessionCreateRS.Status != "Approved" {
 		t.Errorf("resp.SessionRSBody.SessionCreateRS.Status expect %s, got %s", "Approved", resp.Body.SessionCreateRS.Status)
 	}
-	//fmt.Printf("SAMPLE: %s\n\n", sampleSessionSuccessResponse)
-	//fmt.Printf("CURRENT: %+v\n", resp)
 }
 
 func TestSessionCreateResponseUnAuth(t *testing.T) {
@@ -984,92 +1077,6 @@ func BenchmarkBuildSessionValidateRequestMarshal(b *testing.B) {
 	}
 }
 
-var (
-	//serverDown mocks an unreachable service
-	serverDown = &httptest.Server{}
-	//serverBadBody mocks a server that returns malformed body
-	serverBadBody = &httptest.Server{}
-	//serverCreateRSUnauth for testing session create not authorized
-	serverCreateRSUnauth = &httptest.Server{}
-	//serverCloseRSInvalid for testing session create not authorized
-	serverCloseRSInvalid = &httptest.Server{}
-	//serverCreateRQ for testing session create
-	serverCreateRQ = &httptest.Server{}
-	//serverCloseRQ for testing session close
-	serverCloseRQ = &httptest.Server{}
-	//serverValidateRQ for testing session validate
-	serverValidateRQ = &httptest.Server{}
-)
-
-//Initialize Mock Sabre Web Servers
-func init() {
-	serverDown = httptest.NewServer(
-		http.HandlerFunc(
-			func(rs http.ResponseWriter, rq *http.Request) {
-				//rs.WriteHeader(500)
-			},
-		))
-	serverDown.Close()
-
-	serverBadBody = httptest.NewServer(
-		http.HandlerFunc(
-			func(rs http.ResponseWriter, rq *http.Request) {
-				//rs.Header()
-				//rs.WriteHeader(500)
-				//rs.Write(sampleBadBody)
-				rs.Write([]byte(`!#BAD_/_BODY_.*__\\fhji(*&^%^%$%^&Y*(J)OPKL:`))
-			},
-		),
-	)
-	//defer func() { serverBadBody.Close() }()
-
-	serverCreateRQ = httptest.NewServer(
-		http.HandlerFunc(
-			func(rs http.ResponseWriter, rq *http.Request) {
-				rs.Write(sampleSessionSuccessResponse)
-			},
-		),
-	)
-	//defer func() { serverCreateRQ.Close() }()
-
-	serverCreateRSUnauth = httptest.NewServer(
-		http.HandlerFunc(
-			func(rs http.ResponseWriter, rq *http.Request) {
-				rs.Write(sampleSessionUnAuth)
-			},
-		),
-	)
-	//defer func() { serverCreateRSInvalid.Close() }()
-
-	serverCloseRQ = httptest.NewServer(
-		http.HandlerFunc(
-			func(rs http.ResponseWriter, rq *http.Request) {
-				rs.Write(sampleSessionCloseRespSuccess)
-			},
-		),
-	)
-	//defer func() { serverCloseRQ.Close() }()
-
-	serverCloseRSInvalid = httptest.NewServer(
-		http.HandlerFunc(
-			func(rs http.ResponseWriter, rq *http.Request) {
-				rs.Write(sampleSessionCloseRespNoValidToken)
-			},
-		),
-	)
-	//defer func() { serverCloseRSInvalid.Close() }()
-
-	serverValidateRQ = httptest.NewServer(
-		http.HandlerFunc(
-			func(rs http.ResponseWriter, rq *http.Request) {
-				rs.Write(sampleSessionValidateRespSuccess)
-			},
-		),
-	)
-	//defer func() { serverValidateRQ.Close() }()
-
-}
-
 func TestCallSessionCreateServiceNoExist(t *testing.T) {
 	resp, err := CallSessionCreate(serverDown.URL, SessionCreateRequest{})
 	if err == nil {
@@ -1158,7 +1165,8 @@ func TestCallSessionValidateBadBody(t *testing.T) {
 
 func TestCallSessionCreateSuccess(t *testing.T) {
 	//Mock Sabre Web Services
-	req := BuildSessionCreateRequest(samplefrom, samplepcc, sampleconvid, samplemid, sampletime, sampleusername, samplepassword)
+	req := BuildSessionCreateRequest(sampleSessionConf)
+	//req := BuildSessionCreateRequest(samplefrom, samplepcc, sampleconvid, samplemid, sampletime, sampleusername, samplepassword)
 	resp, err := CallSessionCreate(serverCreateRQ.URL, req)
 	if err != nil {
 		t.Error("Error making request CallSessionCreate", err)
@@ -1187,7 +1195,8 @@ func TestCallSessionCreateSuccess(t *testing.T) {
 	}
 }
 func BenchmarkCallSessionCreate(b *testing.B) {
-	req := BuildSessionCreateRequest(samplefrom, samplepcc, sampleconvid, samplemid, sampletime, sampleusername, samplepassword)
+	req := BuildSessionCreateRequest(sampleSessionConf)
+	//req := BuildSessionCreateRequest(samplefrom, samplepcc, sampleconvid, samplemid, sampletime, sampleusername, samplepassword)
 	for n := 0; n < b.N; n++ {
 		CallSessionCreate(serverCreateRQ.URL, req)
 	}

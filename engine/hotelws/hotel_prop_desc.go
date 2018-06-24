@@ -76,7 +76,7 @@ func SetHotelPropDescBody(guestCount int, query *HotelSearchCriteria, arrive, de
 }
 
 // BuildHotelPropDescRequest to make hotel property description request, which will have rate availability information on the response.
-func BuildHotelPropDescRequest(from, pcc, binsectoken, convid, mid, time string, propDesc HotelPropDescBody) HotelPropDescRequest {
+func BuildHotelPropDescRequest(c *srvc.SessionConf, propDesc HotelPropDescBody) HotelPropDescRequest {
 	return HotelPropDescRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -84,24 +84,24 @@ func BuildHotelPropDescRequest(from, pcc, binsectoken, convid, mid, time string,
 				MustUnderstand: srvc.SabreMustUnderstand,
 				EbVersion:      srvc.SabreEBVersion,
 				From: srvc.FromElem{
-					PartyID: srvc.CreatePartyID(from, srvc.PartyIDTypeURN),
+					PartyID: srvc.CreatePartyID(c.From, srvc.PartyIDTypeURN),
 				},
 				To: srvc.ToElem{
 					PartyID: srvc.CreatePartyID(srvc.SabreToBase, srvc.PartyIDTypeURN),
 				},
-				CPAID:          pcc,
-				ConversationID: convid,
+				CPAID:          c.PCC,
+				ConversationID: c.Convid,
 				Service:        srvc.ServiceElem{Value: "HotelPropertyDescription", Type: "sabreXML"},
 				Action:         "HotelPropertyDescriptionLLSRQ",
 				MessageData: srvc.MessageDataElem{
-					MessageID: mid,
-					Timestamp: time,
+					MessageID: c.Msgid,
+					Timestamp: c.Timestr,
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: binsectoken,
+				BinarySecurityToken: c.Binsectok,
 			},
 		},
 		Body: propDesc,

@@ -50,8 +50,7 @@ func TestPropDescBuildHotelPropDescMarshal(t *testing.T) {
 	if err != nil {
 		t.Error("Error SetHotelPropDescRqStruct: ", err)
 	}
-	req := BuildHotelPropDescRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, prop)
-
+	req := BuildHotelPropDescRequest(sconf, prop)
 	b, err := xml.Marshal(req)
 	if err != nil {
 		t.Error("Error marshaling get hotel content", err)
@@ -60,18 +59,15 @@ func TestPropDescBuildHotelPropDescMarshal(t *testing.T) {
 	if string(b) != string(samplePropRQIDs) {
 		t.Errorf("Expected marshal SOAP hotel property description for hotel ids \n sample: %s \n result: %s", string(samplePropRQIDs), string(b))
 	}
-	//fmt.Printf("content marshal \n%s\n", b)
 }
 
 func TestSetHotelPropDescRqStructCorpID(t *testing.T) {
 	body, _ := SetHotelPropDescBody(sampleGuestCount, &HotelSearchCriteria{}, sampleArrive, sampleDepart)
 	prop := body.HotelPropDescRQ
 	prop.addCorporateID(sampleCID)
-
 	if prop.Avail.Customer.Corporate.ID != sampleCID {
 		t.Errorf("SetHotelPropDescRqStruct Corporate.ID  expect: %s, got %s", sampleCID, prop.Avail.Customer.Corporate.ID)
 	}
-
 	prop.addCustomerID(sampleCID)
 	if prop.Avail.Customer.CustomerID.Number != sampleCID {
 		t.Errorf("SetHotelPropDescRqStruct CustomerID.Number  expect: %s, got %s", sampleCID, prop.Avail.Customer.Corporate.ID)
@@ -98,7 +94,6 @@ func TestPropDescUnmarshal(t *testing.T) {
 	if numRates != 16 {
 		t.Error("Number of rates is wrong")
 	}
-
 	rate0 := roomStayRates[0]
 	sample0 := rateSamples[0]
 	if rate0.RPH != sample0.rph {
@@ -141,8 +136,6 @@ func TestPropDescUnmarshal(t *testing.T) {
 	if taxes0 != sampleTaxes0 {
 		t.Errorf("TotalTaxes expected %s, got %s", sampleTaxes0, taxes0)
 	}
-	//fmt.Printf("CURRENT: %+v\n", prop)
-	//fmt.Printf("RATES COUNT: %d\n", len(prop.Body.HotelDesc.RoomStay.RoomRates))
 }
 
 func TestPropDescCall(t *testing.T) {
@@ -152,8 +145,7 @@ func TestPropDescCall(t *testing.T) {
 		HotelRefSearch(hotelid),
 	)
 	prop, _ := SetHotelPropDescBody(sampleGuestCount, q, sampleArrive, sampleDepart)
-	req := BuildHotelPropDescRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, prop)
-
+	req := BuildHotelPropDescRequest(sconf, prop)
 	resp, err := CallHotelPropDesc(serverHotelPropertyDesc.URL, req)
 	if err != nil {
 		t.Error("Error making request CallHotelProperty", err)
@@ -166,7 +158,6 @@ func TestPropDescCall(t *testing.T) {
 	if numRoomRates != 16 {
 		t.Error("Number of rates is wrong")
 	}
-
 	for idx, rr := range roomStayRates {
 		if rr.IATA_Character != iataCharSample[idx] {
 			t.Errorf("IATA_Character %d expected %s, got %s", idx, iataCharSample[idx], rr.IATA_Character)
@@ -183,7 +174,6 @@ func TestPropDescCall(t *testing.T) {
 			t.Errorf("RoomRate %d expected cancel policy option %s, got %s", idx, "D", copt)
 		}
 	}
-
 	indexRoomRate := numRoomRates - 1
 	numRates := len(roomStayRates[indexRoomRate].Rates)
 	if numRates != 1 {
@@ -220,8 +210,7 @@ func TestHotelPropDescCallDown(t *testing.T) {
 		HotelRefSearch(hotelid),
 	)
 	prop, _ := SetHotelPropDescBody(sampleGuestCount, q, sampleArrive, sampleDepart)
-	req := BuildHotelPropDescRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, prop)
-
+	req := BuildHotelPropDescRequest(sconf, prop)
 	resp, err := CallHotelPropDesc(serverHotelDown.URL, req)
 	if err == nil {
 		t.Error("Expected error making request to serverHotelDown")
@@ -244,8 +233,7 @@ func TestHotelPropDescCallBadResponseBody(t *testing.T) {
 		HotelRefSearch(hotelid),
 	)
 	prop, _ := SetHotelPropDescBody(sampleGuestCount, q, sampleArrive, sampleDepart)
-	req := BuildHotelPropDescRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, prop)
-
+	req := BuildHotelPropDescRequest(sconf, prop)
 	resp, err := CallHotelPropDesc(serverBadBody.URL, req)
 	if err == nil {
 		t.Error("Expected error making request to sserverBadBody")

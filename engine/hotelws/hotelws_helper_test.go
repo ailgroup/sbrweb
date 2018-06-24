@@ -3,6 +3,8 @@ package hotelws
 import (
 	"net/http"
 	"net/http/httptest"
+
+	"github.com/ailgroup/sbrweb/engine/srvc"
 )
 
 /*
@@ -113,6 +115,16 @@ var (
 	sampleconvid        = "fds8789h|dev@z.com"
 	samplemid           = "mid:20180207-20:19:07.25|QVbg0"
 	sampletime          = "2018-02-16T07:18:42Z"
+	sconf               = &srvc.SessionConf{
+		From:      samplesite,
+		PCC:       samplepcc,
+		Convid:    sampleconvid,
+		Msgid:     samplemid,
+		Timestr:   sampletime,
+		Binsectok: samplebinsectoken,
+		//Username: sampleusername,
+		//Password: samplepassword,
+	}
 )
 
 var iataCharSample = []string{"P1KRAC", "D1KRAC", "L1KRAC", "P1KBRF", "T1KRAC", "P2TRAC", "K1KRAC", "L2TRAC", "E2DRAC", "E1KRAC", "D2DRAC", "C1KRAC", "U1QRAC", "A2TRAC", "N1KRAC", "N1QRAC"}
@@ -1642,4 +1654,8 @@ var (
 		  <TimeSpan Duration="0005" End="2018-05-16" Start="2018-05-15"/>
 		 </RoomStay>
 		</HotelRateDescriptionRS></soap-env:Body></soap-env:Envelope>`)
+
+	sampleHotelResRQgood = []byte(`<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:eb="http://www.ebxml.org/namespaces/messageHeader" xmlns:xlink="http://www.w3.org/2001/xlink" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap-env:Header><eb:MessageHeader soap-env:mustUnderstand="1" eb:version="2.0.0"><eb:From><eb:PartyId type="urn:x12.org:IO5:01">www.z.com</eb:PartyId></eb:From><eb:To><eb:PartyId type="urn:x12.org:IO5:01">webservices.sabre.com</eb:PartyId></eb:To><eb:CPAId>7TZA</eb:CPAId><eb:ConversationId>fds8789h|dev@z.com</eb:ConversationId><eb:Service eb:type="sabreXML">OTA_HotelRes</eb:Service><eb:Action>OTA_HotelResLLSRQ</eb:Action><eb:MessageData><eb:MessageId>mid:20180207-20:19:07.25|QVbg0</eb:MessageId><eb:Timestamp>2018-02-16T07:18:42Z</eb:Timestamp></eb:MessageData></eb:MessageHeader><wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext" xmlns:wsu="http://schemas.xmlsoap.org/ws/2002/12/utility"><wsse:BinarySecurityToken>Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3177016070087638144!110012!0</wsse:BinarySecurityToken></wsse:Security></soap-env:Header><soap-env:Body><OTA_HotelResRQ xmlns="http://webservices.sabre.com/sabreXML/2011/10" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ReturnHostCommand="true" TimeStamp="2018-02-16T07:18:42Z" Version="2.2.0"><Hotel><BasicPropertyInfo RPH="007"></BasicPropertyInfo><Guarantee Type="G"><CC_Info><PaymentCard Code="MC" ExpireDate="2019-12" Number="5105105105105100"></PaymentCard><PersonName><Surname>Booking</Surname></PersonName></CC_Info></Guarantee><RoomType NumberOfUnits="1"></RoomType></Hotel></OTA_HotelResRQ></soap-env:Body></soap-env:Envelope>`)
+
+	//sampleHotelResRSgood = []byte(``)
 )

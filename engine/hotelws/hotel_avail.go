@@ -72,7 +72,7 @@ func SetHotelAvailBody(guestCount int, query *HotelSearchCriteria, arrive, depar
 }
 
 // BuildHotelAvailRequest to make hotel availability request.
-func BuildHotelAvailRequest(from, pcc, binsectoken, convid, mid, time string, otaHotelAvail HotelAvailBody) HotelAvailRequest {
+func BuildHotelAvailRequest(c *srvc.SessionConf, otaHotelAvail HotelAvailBody) HotelAvailRequest {
 	return HotelAvailRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -80,24 +80,24 @@ func BuildHotelAvailRequest(from, pcc, binsectoken, convid, mid, time string, ot
 				MustUnderstand: srvc.SabreMustUnderstand,
 				EbVersion:      srvc.SabreEBVersion,
 				From: srvc.FromElem{
-					PartyID: srvc.CreatePartyID(from, srvc.PartyIDTypeURN),
+					PartyID: srvc.CreatePartyID(c.From, srvc.PartyIDTypeURN),
 				},
 				To: srvc.ToElem{
 					PartyID: srvc.CreatePartyID(srvc.SabreToBase, srvc.PartyIDTypeURN),
 				},
-				CPAID:          pcc,
-				ConversationID: convid,
+				CPAID:          c.PCC,
+				ConversationID: c.Convid,
 				Service:        srvc.ServiceElem{Value: "OTA_HotelAvailRQ", Type: "sabreXML"},
 				Action:         "OTA_HotelAvailLLSRQ",
 				MessageData: srvc.MessageDataElem{
-					MessageID: mid,
-					Timestamp: time,
+					MessageID: c.Msgid,
+					Timestamp: c.Timestr,
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: binsectoken,
+				BinarySecurityToken: c.Binsectok,
 			},
 		},
 		Body: otaHotelAvail,

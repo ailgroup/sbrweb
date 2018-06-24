@@ -193,14 +193,14 @@ func (h *HotelRsrvBody) AddTimeSpan(timesp TimeSpan) {
 }
 
 // SetHotelResBody for basic payload, other functions can append optional data
-func SetHotelResBody(units int) HotelRsrvBody {
+func SetHotelResBody(units int, timestr string) HotelRsrvBody {
 	return HotelRsrvBody{
 		OTAHotelResRQ: OTAHotelResRQ{
 			XMLNS:             srvc.BaseWebServicesNS,
 			XMLNSXs:           srvc.BaseXSDNameSpace,
 			XMLNSXsi:          srvc.BaseXSINamespace,
 			ReturnHostCommand: true,
-			TimeStamp:         srvc.SabreTimeFormat(),
+			TimeStamp:         timestr,
 			Version:           "2.2.0",
 			Hotel: HotelRequest{
 				RoomType: RoomType{
@@ -212,7 +212,7 @@ func SetHotelResBody(units int) HotelRsrvBody {
 }
 
 // BuildHotelResRequest build request body for SOAP reservation service
-func BuildHotelResRequest(from, pcc, binsectoken, convid, mid, time string, body HotelRsrvBody) HotelRsrvRequest {
+func BuildHotelResRequest(c *srvc.SessionConf, body HotelRsrvBody) HotelRsrvRequest {
 	return HotelRsrvRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -220,24 +220,24 @@ func BuildHotelResRequest(from, pcc, binsectoken, convid, mid, time string, body
 				MustUnderstand: srvc.SabreMustUnderstand,
 				EbVersion:      srvc.SabreEBVersion,
 				From: srvc.FromElem{
-					PartyID: srvc.CreatePartyID(from, srvc.PartyIDTypeURN),
+					PartyID: srvc.CreatePartyID(c.From, srvc.PartyIDTypeURN),
 				},
 				To: srvc.ToElem{
 					PartyID: srvc.CreatePartyID(srvc.SabreToBase, srvc.PartyIDTypeURN),
 				},
-				CPAID:          pcc,
-				ConversationID: convid,
+				CPAID:          c.PCC,
+				ConversationID: c.Convid,
 				Service:        srvc.ServiceElem{Value: "OTA_HotelRes", Type: "sabreXML"},
 				Action:         "OTA_HotelResLLSRQ",
 				MessageData: srvc.MessageDataElem{
-					MessageID: mid,
-					Timestamp: time,
+					MessageID: c.Msgid,
+					Timestamp: c.Timestr,
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: binsectoken,
+				BinarySecurityToken: c.Binsectok,
 			},
 		},
 		Body: body,

@@ -23,7 +23,6 @@ func TestAddressSearchCriteria(t *testing.T) {
 	a, err := NewHotelSearchCriteria(
 		AddressSearch(addr),
 	)
-
 	if err != nil {
 		t.Errorf("NewHotelSearchCriteria with AddressSearch error %v", err)
 	}
@@ -85,7 +84,6 @@ func TestHotelRefSearchCityCodeCriteria(t *testing.T) {
 		if r.Criterion.HotelRefs[i].HotelCityCode != code {
 			t.Errorf("HotelRef[%d].HotelCityCode city expect: %s, got: %s", i, code, r.Criterion.HotelRefs[i].HotelCityCode)
 		}
-
 	}
 }
 
@@ -131,11 +129,9 @@ func TestMultipleHotelCriteria(t *testing.T) {
 		PackageSearch(samplePackages),
 		PropertyTypeSearch(samplePropertyTypes),
 	)
-
 	if err != nil {
 		t.Errorf("NewHotelSearchCriteria with basic criteria error %v", err)
 	}
-
 	counter := 0
 	for _, code := range sampleHotelCode {
 		if r.Criterion.HotelRefs[counter].HotelCode != code {
@@ -149,7 +145,6 @@ func TestMultipleHotelCriteria(t *testing.T) {
 		}
 		counter++
 	}
-
 	if r.Criterion.Address.Street != sampleStreet {
 		t.Error("buildAddress street not correct")
 	}
@@ -179,7 +174,6 @@ func TestSetHotelAvailRqStructMarshal(t *testing.T) {
 	availBody := SetHotelAvailBody(sampleGuestCount, &HotelSearchCriteria{}, sampleArrive, sampleDepart)
 	avail := availBody.OTAHotelAvailRQ
 	avail.addCorporateID(sampleCID)
-
 	if avail.XMLNSXsi != srvc.BaseXSINamespace {
 		t.Errorf("SetHotelAvailRqStruct XMLNSXsi expect: %s, got %s", srvc.BaseXSINamespace, avail.XMLNSXsi)
 	}
@@ -192,7 +186,6 @@ func TestSetHotelAvailRqStructMarshal(t *testing.T) {
 	if avail.Avail.Customer.Corporate.ID != sampleCID {
 		t.Errorf("SetHotelAvailRqStruct Customer.Corporate.ID expect: %s, got %s", sampleCID, avail.Avail.Customer.Corporate.ID)
 	}
-
 	_, err := xml.Marshal(avail)
 	if err != nil {
 		t.Error("Error marshaling get hotel content", err)
@@ -203,16 +196,13 @@ func TestSetHotelAvailRqStructCorpID(t *testing.T) {
 	availBody := SetHotelAvailBody(sampleGuestCount, &HotelSearchCriteria{}, sampleArrive, sampleDepart)
 	avail := availBody.OTAHotelAvailRQ
 	avail.addCorporateID(sampleCID)
-
 	if avail.Avail.Customer.Corporate.ID != sampleCID {
 		t.Errorf("SetHotelAvailRqStruct Corporate.ID  expect: %s, got %s", sampleCID, avail.Avail.Customer.Corporate.ID)
 	}
-
 	avail.addCustomerID(sampleCID)
 	if avail.Avail.Customer.CustomerID.Number != sampleCID {
 		t.Errorf("SetHotelAvailRqStruct CustomerID.Number  expect: %s, got %s", sampleCID, avail.Avail.Customer.Corporate.ID)
 	}
-
 }
 
 func TestAvailIdsMarshal(t *testing.T) {
@@ -221,19 +211,15 @@ func TestAvailIdsMarshal(t *testing.T) {
 	)
 	gcount := 4
 	availBody := SetHotelAvailBody(gcount, q, sampleArrive, sampleDepart)
-
 	avail := availBody.OTAHotelAvailRQ
 	avail.addCorporateID(sampleCID)
 	avail.Avail.RatePlanCandidates = SetRateParams([]RatePlan{RatePlan{CurrencyCode: "USD", DCA_ProductCode: "I7A"}})
-
 	if avail.Avail.GuestCounts.Count != gcount {
 		t.Errorf("SetHotelAvailRqStruct GuestCounts.Count expect: %d, got %d", gcount, avail.Avail.GuestCounts.Count)
 	}
-
 	if len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs) != len(hqids[hotelidQueryField]) {
 		t.Error("HotelRefs shoudl be same length as params", len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs), len(hqids[hotelidQueryField]))
 	}
-
 	b, err := xml.Marshal(avail)
 	if err != nil {
 		t.Error("Error marshaling get hotel content", err)
@@ -241,7 +227,6 @@ func TestAvailIdsMarshal(t *testing.T) {
 	if string(b) != string(sampleAvailRQHotelIDSCoprIDRatePlans) {
 		t.Errorf("Expected marshal hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQHotelIDSCoprIDRatePlans), string(b))
 	}
-	//fmt.Printf("content marshal \n%s\n", b)
 }
 
 func TestAvailCitiesMarshal(t *testing.T) {
@@ -252,15 +237,12 @@ func TestAvailCitiesMarshal(t *testing.T) {
 	availBody := SetHotelAvailBody(gcount, q, sampleArrive, sampleDepart)
 	avail := availBody.OTAHotelAvailRQ
 	avail.addCustomerID(sampleCID)
-
 	if avail.Avail.GuestCounts.Count != gcount {
 		t.Errorf("BuildHotelAvailRq GuestCounts.Count expect: %d, got %d", gcount, avail.Avail.GuestCounts.Count)
 	}
-
 	if len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs) != len(hqcity[cityQueryField]) {
 		t.Error("HotelRefs shoudl be same length as params", len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs), len(hqcity[cityQueryField]))
 	}
-
 	b, err := xml.Marshal(avail)
 	if err != nil {
 		t.Error("Error marshaling get hotel content", err)
@@ -268,7 +250,6 @@ func TestAvailCitiesMarshal(t *testing.T) {
 	if string(b) != string(sampleAvailRQCitiesCustNumber) {
 		t.Errorf("Expected marshal hotel avail for hotel cities \n sample: %s \n result: %s", string(sampleAvailRQCitiesCustNumber), string(b))
 	}
-	//fmt.Printf("content marshal \n%s\n", b)
 }
 
 func TestAvailLatLngMarshal(t *testing.T) {
@@ -277,15 +258,12 @@ func TestAvailLatLngMarshal(t *testing.T) {
 	)
 	availBody := SetHotelAvailBody(sampleGuestCount, q, sampleArrive, sampleDepart)
 	avail := availBody.OTAHotelAvailRQ
-
 	if avail.Avail.GuestCounts.Count != sampleGuestCount {
 		t.Errorf("BuildHotelAvailRq GuestCounts.Count expect: %d, got %d", sampleGuestCount, avail.Avail.GuestCounts.Count)
 	}
-
 	if len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs) != len(hqltln[latlngQueryField]) {
 		t.Error("HotelRefs shoudl be same length as params", len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs), len(hqltln[latlngQueryField]))
 	}
-
 	b, err := xml.Marshal(avail)
 	if err != nil {
 		t.Error("Error marshaling get hotel content", err)
@@ -293,7 +271,6 @@ func TestAvailLatLngMarshal(t *testing.T) {
 	if string(b) != string(sampleAvailRQLatLng) {
 		t.Errorf("Expected marshal set hotel avail for hotel lat/lng \n sample: %s \n result: %s", string(sampleAvailRQLatLng), string(b))
 	}
-	//fmt.Printf("content marshal \n%s\n", b)
 }
 
 func TestAvailPropertyTypesPackagesMarshal(t *testing.T) {
@@ -303,7 +280,6 @@ func TestAvailPropertyTypesPackagesMarshal(t *testing.T) {
 	)
 	availBody := SetHotelAvailBody(sampleGuestCount, q, sampleArrive, sampleDepart)
 	avail := availBody.OTAHotelAvailRQ
-
 	b, err := xml.Marshal(avail)
 	if err != nil {
 		t.Error("Error marshaling get hotel content", err)
@@ -311,7 +287,6 @@ func TestAvailPropertyTypesPackagesMarshal(t *testing.T) {
 	if string(b) != string(sampleAvailRQPropPackages) {
 		t.Errorf("Expected marshal set hotel avail for hotel packages and property types \n sample: %s \n result: %s", string(sampleAvailRQLatLng), string(b))
 	}
-	//fmt.Printf("content marshal \n%s\n", b)
 }
 
 func TestBuildHotelAvailRequestMarshal(t *testing.T) {
@@ -319,8 +294,7 @@ func TestBuildHotelAvailRequestMarshal(t *testing.T) {
 		HotelRefSearch(hqids),
 	)
 	avail := SetHotelAvailBody(sampleGuestCount, q, sampleArrive, sampleDepart)
-	req := BuildHotelAvailRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, avail)
-
+	req := BuildHotelAvailRequest(sconf, avail)
 	b, err := xml.Marshal(req)
 	if err != nil {
 		t.Error("Error marshaling get hotel content", err)
@@ -329,7 +303,6 @@ func TestBuildHotelAvailRequestMarshal(t *testing.T) {
 	if string(b) != string(sampleAvailRQHotelIDS) {
 		t.Errorf("Expected marshal SOAP hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQHotelIDS), string(b))
 	}
-	//fmt.Printf("content marshal \n%s\n", b)
 }
 
 func TestHotelAvailUnmarshal(t *testing.T) {
@@ -369,10 +342,6 @@ func TestHotelAvailUnmarshal(t *testing.T) {
 	if rateRange.Min != "134.00" {
 		t.Errorf("RateRange Min should be %s, got %s", "USD", rateRange.Min)
 	}
-
-	//fmt.Printf("SAMPLE: %s\n", sampleEnvelope)
-	//fmt.Printf("CURRENT: %+v\n", success)
-	//fmt.Printf("CURRENT: %+v\n", avail)
 }
 
 func TestHotelAvailCallByIDs(t *testing.T) {
@@ -380,7 +349,7 @@ func TestHotelAvailCallByIDs(t *testing.T) {
 		HotelRefSearch(hqids),
 	)
 	avail := SetHotelAvailBody(sampleGuestCount, q, sampleArrive, sampleDepart)
-	req := BuildHotelAvailRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, avail)
+	req := BuildHotelAvailRequest(sconf, avail)
 	resp, err := CallHotelAvail(serverHotelAvailability.URL, req)
 	if err != nil {
 		t.Error("Error making request CallHotelAvail", err)
@@ -405,7 +374,7 @@ func TestHotelAvailCallDown(t *testing.T) {
 		HotelRefSearch(hqids),
 	)
 	avail := SetHotelAvailBody(sampleGuestCount, q, sampleArrive, sampleDepart)
-	req := BuildHotelAvailRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, avail)
+	req := BuildHotelAvailRequest(sconf, avail)
 	resp, err := CallHotelAvail(serverHotelDown.URL, req)
 	if err == nil {
 		t.Error("Expected error making request to serverHotelDown")
@@ -426,7 +395,7 @@ func TestHotelAvailCallBadResponseBody(t *testing.T) {
 		HotelRefSearch(hqids),
 	)
 	avail := SetHotelAvailBody(sampleGuestCount, q, sampleArrive, sampleDepart)
-	req := BuildHotelAvailRequest(samplesite, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, avail)
+	req := BuildHotelAvailRequest(sconf, avail)
 	resp, err := CallHotelAvail(serverBadBody.URL, req)
 	if err == nil {
 		t.Error("Expected error making request to sserverBadBody")

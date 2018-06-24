@@ -51,7 +51,7 @@ func SetHotelRateDescBody(rpc *RatePlanCandidates) (HotelRateDescBody, error) {
 }
 
 // BuildHotelRateDescRequest to make hotel property description request, done after hotel property description iff HRD_RequiredForSell=true.
-func BuildHotelRateDescRequest(from, pcc, binsectoken, convid, mid, time string, body HotelRateDescBody) HotelRateDescRequest {
+func BuildHotelRateDescRequest(c *srvc.SessionConf, body HotelRateDescBody) HotelRateDescRequest {
 	return HotelRateDescRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -59,24 +59,24 @@ func BuildHotelRateDescRequest(from, pcc, binsectoken, convid, mid, time string,
 				MustUnderstand: srvc.SabreMustUnderstand,
 				EbVersion:      srvc.SabreEBVersion,
 				From: srvc.FromElem{
-					PartyID: srvc.CreatePartyID(from, srvc.PartyIDTypeURN),
+					PartyID: srvc.CreatePartyID(c.From, srvc.PartyIDTypeURN),
 				},
 				To: srvc.ToElem{
 					PartyID: srvc.CreatePartyID(srvc.SabreToBase, srvc.PartyIDTypeURN),
 				},
-				CPAID:          pcc,
-				ConversationID: convid,
+				CPAID:          c.PCC,
+				ConversationID: c.Convid,
 				Service:        srvc.ServiceElem{Value: "HotelRateDescriptionLLSRQ", Type: "sabreXML"},
 				Action:         "HotelRateDescriptionLLSRQ",
 				MessageData: srvc.MessageDataElem{
-					MessageID: mid,
-					Timestamp: time,
+					MessageID: c.Msgid,
+					Timestamp: c.Timestr,
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: binsectoken,
+				BinarySecurityToken: c.Binsectok,
 			},
 		},
 		Body: body,
