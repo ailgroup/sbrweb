@@ -246,13 +246,10 @@ func generateKeepAliveID() string {
 //Keepalive sessions by RangeKeepalive over all sessions in pool
 func Keepalive(p *SessionPool, repeatEvery time.Duration) {
 	//defer profile.Start(profile.MemProfile).Stop()
-	//endAfter time.Duration
-	//doneChan := time.NewTimer(time.Minute * 15).C
 	started := time.Now()
 	keepAliveID := generateKeepAliveID()
 	logSession.Println("Starting KEEPALIVE...", keepAliveID)
 
-	//keep validating until exhaust endAfter
 	for {
 		select {
 		case <-time.After(repeatEvery):
@@ -260,9 +257,9 @@ func Keepalive(p *SessionPool, repeatEvery time.Duration) {
 			p.RangeKeepalive(keepAliveID)
 			logSession.Printf("KEEPALIVE run(InMin=%.2f, InHour=%.2f)", time.Since(started).Minutes(), time.Since(started).Hours())
 			p.logReport(keepAliveID + "-KeepAlive")
-			//case <-doneChan:
-			//	logSession.Println("KEEPALIVE killed, total time:", time.Since(started))
-			//	return
+		default:
+			logSession.Println("KEEPALIVE killed, total time:", time.Since(started))
+			return
 		}
 	}
 }

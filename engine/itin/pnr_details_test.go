@@ -61,8 +61,7 @@ func TestPNRSet(t *testing.T) {
 func TestPNRBuildMarshal(t *testing.T) {
 	p := CreatePersonName(sampleFirstName, sampleLastName)
 	body := SetPNRDetailBody(samplePhoneReq, p)
-	req := BuildPNRDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
-
+	req := BuildPNRDetailsRequest(sampleConf, body)
 	b, err := xml.Marshal(req)
 	if err != nil {
 		t.Error("Error marshaling passenger details request", err)
@@ -74,13 +73,11 @@ func TestPNRBuildMarshal(t *testing.T) {
 
 func TestPNRDetailCall(t *testing.T) {
 	body := SetPNRDetailBody(samplePhoneReq, CreatePersonName(sampleFirstName, sampleLastName))
-	req := BuildPNRDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
-
+	req := BuildPNRDetailsRequest(sampleConf, body)
 	resp, err := CallPNRDetail(serverPNRDetails.URL, req)
 	if err != nil {
 		t.Error("Error making request CallPNRDetailsRequest", err)
 	}
-
 	appres := resp.Body.PassengerDetailsRS.AppResults
 	if appres.Status != "Complete" {
 		t.Errorf("AppResults.Status expect: %s, got %s", "Complete", appres.Status)
@@ -91,7 +88,6 @@ func TestPNRDetailCall(t *testing.T) {
 	if len(appres.Warnings) != 0 {
 		t.Errorf("AppResults.Warnings expect: %d, got %d", 0, len(appres.Warnings))
 	}
-
 	travelItin := resp.Body.PassengerDetailsRS.TravelItineraryReadRS.TravelItinerary
 	customer := travelItin.Customer
 
@@ -108,7 +104,6 @@ func TestPNRDetailCall(t *testing.T) {
 	if numbersOne.RPH != 1 {
 		t.Errorf("customer.ContactNumbers[0].RPH expect: %d, got %d", 1, numbersOne.RPH)
 	}
-
 	person := customer.PersonName
 	if person.WithInfant {
 		t.Error("PersonName.WithInfant should be false")
@@ -151,8 +146,7 @@ func TestPNRDetailCall(t *testing.T) {
 
 func TestPNRDetailCallWarn(t *testing.T) {
 	body := SetPNRDetailBody(samplePhoneReq, CreatePersonName(sampleFirstName, sampleLastName))
-	req := BuildPNRDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
-
+	req := BuildPNRDetailsRequest(sampleConf, body)
 	resp, err := CallPNRDetail(serverBizLogic.URL, req)
 	if err == nil {
 		t.Error("CallPNRDetailsRequest Should have errors", err)
@@ -172,9 +166,8 @@ func TestPNRDetailCallWarn(t *testing.T) {
 func TestPNRCallBadBodyResponseBody(t *testing.T) {
 	p := CreatePersonName(sampleFirstName, sampleLastName)
 	body := SetPNRDetailBody(samplePhoneReq, p)
-	req := BuildPNRDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
+	req := BuildPNRDetailsRequest(sampleConf, body)
 	resp, err := CallPNRDetail(serverBadBody.URL, req)
-
 	if err == nil {
 		t.Error("Expected error making request to serverBadBody")
 	}
@@ -191,9 +184,8 @@ func TestPNRCallBadBodyResponseBody(t *testing.T) {
 
 func TestPNRDetailsCallDown(t *testing.T) {
 	body := SetPNRDetailBody(samplePhoneReq, CreatePersonName(sampleFirstName, sampleLastName))
-	req := BuildPNRDetailsRequest(samplefrom, samplepcc, samplebinsectoken, sampleconvid, samplemid, sampletime, body)
+	req := BuildPNRDetailsRequest(sampleConf, body)
 	resp, err := CallPNRDetail(serverDown.URL, req)
-
 	if err == nil {
 		t.Error("Expected error making request to serverHotelDown")
 	}

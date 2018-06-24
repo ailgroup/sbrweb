@@ -3,6 +3,8 @@ package itin
 import (
 	"net/http"
 	"net/http/httptest"
+
+	"github.com/ailgroup/sbrweb/engine/srvc"
 )
 
 var (
@@ -70,6 +72,14 @@ var (
 	sampleLastName    = "Babbage"
 	samplePhoneRes    = "123-456-7890-H.1.1"
 	samplePhoneReq    = "123-456-7890"
+	sampleConf        = &srvc.SessionConf{
+		From:      samplefrom,
+		PCC:       samplepcc,
+		Convid:    sampleconvid,
+		Msgid:     samplemid,
+		Binsectok: samplebinsectoken,
+		Timestr:   sampletime,
+	}
 )
 
 var (

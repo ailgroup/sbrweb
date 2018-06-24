@@ -221,7 +221,7 @@ func SetPNRDetailBody(phone string, person PersonName) PassengerDetailBody {
 }
 
 // BuildPNRDetailsRequest passenger details for booking
-func BuildPNRDetailsRequest(from, pcc, binsectoken, convid, mid, time string, body PassengerDetailBody) PNRDetailsRequest {
+func BuildPNRDetailsRequest(c *srvc.SessionConf, body PassengerDetailBody) PNRDetailsRequest {
 	return PNRDetailsRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -229,24 +229,24 @@ func BuildPNRDetailsRequest(from, pcc, binsectoken, convid, mid, time string, bo
 				MustUnderstand: srvc.SabreMustUnderstand,
 				EbVersion:      srvc.SabreEBVersion,
 				From: srvc.FromElem{
-					PartyID: srvc.CreatePartyID(from, srvc.PartyIDTypeURN),
+					PartyID: srvc.CreatePartyID(c.From, srvc.PartyIDTypeURN),
 				},
 				To: srvc.ToElem{
 					PartyID: srvc.CreatePartyID(srvc.SabreToBase, srvc.PartyIDTypeURN),
 				},
-				CPAID:          pcc,
-				ConversationID: convid,
+				CPAID:          c.PCC,
+				ConversationID: c.Convid,
 				Service:        srvc.ServiceElem{Value: "PassengerDetailsRQ", Type: "sabreXML"},
 				Action:         "PassengerDetailsRQ",
 				MessageData: srvc.MessageDataElem{
-					MessageID: mid,
-					Timestamp: time,
+					MessageID: c.Msgid,
+					Timestamp: c.Timestr,
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: binsectoken,
+				BinarySecurityToken: c.Binsectok,
 			},
 		},
 		Body: body,
