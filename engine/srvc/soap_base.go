@@ -398,6 +398,12 @@ func (s *SessionConf) SetTime() *SessionConf {
 	return s
 }
 
+// SetBinSec updates the timestamp. Pass around SessionConf and update the timestamp for any new request
+func (s *SessionConf) SetBinSec(session SessionCreateResponse) *SessionConf {
+	s.Binsectok = session.Header.Security.BinarySecurityToken.Value
+	return s
+}
+
 // BuildSessionCreateRequest build session create envelope for request
 // CPAID, Organization, and PseudoCityCode all use the PCC/iPCC. ConversationID is typically a contact email address with unique identifier to the request. MessageID is typically a timestamped identifier to locate specific queries: it should contai a company identifier.
 //func BuildSessionCreateRequest(from, pcc, convid, mid, time, username, password string) SessionCreateRequest {
@@ -457,11 +463,6 @@ type SessionCreateResponse struct {
 		} `xml:"SessionCreateRS"`
 		Fault SOAPFault
 	}
-}
-
-func (s *SessionCreateResponse) ParseBinSecToken(c SessionConf) SessionConf {
-	c.Binsectok = s.Header.Security.BinarySecurityToken.Value
-	return c
 }
 
 // CallSessionCreate to sabre web services.

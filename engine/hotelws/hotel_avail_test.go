@@ -217,8 +217,8 @@ func TestAvailIdsMarshal(t *testing.T) {
 	if avail.Avail.GuestCounts.Count != gcount {
 		t.Errorf("SetHotelAvailRqStruct GuestCounts.Count expect: %d, got %d", gcount, avail.Avail.GuestCounts.Count)
 	}
-	if len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs) != len(hqids[hotelidQueryField]) {
-		t.Error("HotelRefs shoudl be same length as params", len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs), len(hqids[hotelidQueryField]))
+	if len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs) != len(hqids[HotelidQueryField]) {
+		t.Error("HotelRefs shoudl be same length as params", len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs), len(hqids[HotelidQueryField]))
 	}
 	b, err := xml.Marshal(avail)
 	if err != nil {
@@ -240,8 +240,8 @@ func TestAvailCitiesMarshal(t *testing.T) {
 	if avail.Avail.GuestCounts.Count != gcount {
 		t.Errorf("BuildHotelAvailRq GuestCounts.Count expect: %d, got %d", gcount, avail.Avail.GuestCounts.Count)
 	}
-	if len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs) != len(hqcity[cityQueryField]) {
-		t.Error("HotelRefs shoudl be same length as params", len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs), len(hqcity[cityQueryField]))
+	if len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs) != len(hqcity[CityQueryField]) {
+		t.Error("HotelRefs shoudl be same length as params", len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs), len(hqcity[CityQueryField]))
 	}
 	b, err := xml.Marshal(avail)
 	if err != nil {
@@ -261,8 +261,8 @@ func TestAvailLatLngMarshal(t *testing.T) {
 	if avail.Avail.GuestCounts.Count != sampleGuestCount {
 		t.Errorf("BuildHotelAvailRq GuestCounts.Count expect: %d, got %d", sampleGuestCount, avail.Avail.GuestCounts.Count)
 	}
-	if len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs) != len(hqltln[latlngQueryField]) {
-		t.Error("HotelRefs shoudl be same length as params", len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs), len(hqltln[latlngQueryField]))
+	if len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs) != len(hqltln[LatlngQueryField]) {
+		t.Error("HotelRefs shoudl be same length as params", len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs), len(hqltln[LatlngQueryField]))
 	}
 	b, err := xml.Marshal(avail)
 	if err != nil {

@@ -42,7 +42,7 @@ func TestPropDescValidMultiHotelRefs(t *testing.T) {
 
 func TestPropDescBuildHotelPropDescMarshal(t *testing.T) {
 	var hotelid = make(HotelRefCriterion)
-	hotelid[hotelidQueryField] = []string{"10"}
+	hotelid[HotelidQueryField] = []string{"10"}
 	q, _ := NewHotelSearchCriteria(
 		HotelRefSearch(hotelid),
 	)
@@ -140,7 +140,7 @@ func TestPropDescUnmarshal(t *testing.T) {
 
 func TestPropDescCall(t *testing.T) {
 	var hotelid = make(HotelRefCriterion)
-	hotelid[hotelidQueryField] = []string{"10"}
+	hotelid[HotelidQueryField] = []string{"10"}
 	q, _ := NewHotelSearchCriteria(
 		HotelRefSearch(hotelid),
 	)
@@ -205,7 +205,7 @@ func TestPropDescCall(t *testing.T) {
 
 func TestHotelPropDescCallDown(t *testing.T) {
 	var hotelid = make(HotelRefCriterion)
-	hotelid[hotelidQueryField] = []string{"10"}
+	hotelid[HotelidQueryField] = []string{"10"}
 	q, _ := NewHotelSearchCriteria(
 		HotelRefSearch(hotelid),
 	)
@@ -228,7 +228,7 @@ func TestHotelPropDescCallDown(t *testing.T) {
 
 func TestHotelPropDescCallBadResponseBody(t *testing.T) {
 	var hotelid = make(HotelRefCriterion)
-	hotelid[hotelidQueryField] = []string{"10"}
+	hotelid[HotelidQueryField] = []string{"10"}
 	q, _ := NewHotelSearchCriteria(
 		HotelRefSearch(hotelid),
 	)

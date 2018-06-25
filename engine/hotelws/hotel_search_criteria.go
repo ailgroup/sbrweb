@@ -79,13 +79,13 @@ func AddressSearch(params AddressCriterion) func(q *HotelSearchCriteria) error {
 		}
 		for k, v := range params {
 			switch k {
-			case streetQueryField:
+			case StreetQueryField:
 				a.Street = v
-			case cityQueryField:
+			case CityQueryField:
 				a.City = v
-			case postalQueryField:
+			case PostalQueryField:
 				a.Postal = v
-			case countryCodeQueryField:
+			case CountryCodeQueryField:
 				a.CountryCode = v
 			}
 		}
@@ -103,15 +103,15 @@ func HotelRefSearch(params HotelRefCriterion) func(q *HotelSearchCriteria) error
 		}
 		for k, v := range params {
 			switch k {
-			case cityQueryField:
+			case CityQueryField:
 				for _, city := range v {
 					q.Criterion.HotelRefs = append(q.Criterion.HotelRefs, &HotelRef{HotelCityCode: city})
 				}
-			case hotelidQueryField:
+			case HotelidQueryField:
 				for _, code := range v {
 					q.Criterion.HotelRefs = append(q.Criterion.HotelRefs, &HotelRef{HotelCode: code})
 				}
-			case latlngQueryField:
+			case LatlngQueryField:
 				for _, l := range v {
 					latlng := strings.Split(l, ",")
 					q.Criterion.HotelRefs = append(q.Criterion.HotelRefs, &HotelRef{Latitude: latlng[0], Longitude: latlng[1]})

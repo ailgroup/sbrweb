@@ -31,6 +31,7 @@ var (
 	vRepeatEvery = time.Minute * 3
 	sessConf     = &srvc.SessionConf{}
 	vipConf      = &viper.Viper{}
+	port         = ":8080"
 )
 
 func init() {
@@ -76,21 +77,21 @@ func main() {
 		Max: vipConf.GetInt(ConfExpireMax),
 	}
 
-	// create pool, background populate pool and sett up keepalive
+	// create and populate pool, start keepalive, watch for signal close down
 	p := srvc.NewPool(scheme, sessConf, vipConf.GetInt(ConfPoolSize))
+	keepKill := make(chan os.Signal, 1)
+	signal.Notify(keepKill, os.Interrupt)
+	shutDown := make(chan os.Signal, 1)
+	signal.Notify(shutDown, os.Interrupt)
 	go func() {
 		err := p.Populate()
 		if err != nil {
-			panic(err)
+			fmt.Printf("Error popluating session pool %v\n", err)
+			os.Exit(1)
 		}
-		srvc.Keepalive(p, vRepeatEvery)
-	}()
-	// close down session pool properly against sabre re-allocates useable sessiosn
-	cls := make(chan os.Signal)
-	signal.Notify(cls, os.Interrupt)
-	go func() {
-		sig := <-cls
-		fmt.Printf("Got %s signal. Closing down...\n", sig)
+		srvc.Keepalive(p, vRepeatEvery, keepKill)
+		sig := <-shutDown
+		fmt.Printf("\nGot '%s' SIGNAL. Shutdown keepalive, session pool, and exit program...\n", sig)
 		p.Close()
 		os.Exit(1)
 	}()
@@ -109,6 +110,6 @@ func main() {
 		SessionPool: p,
 	}
 	server.RegisterRoutes()
-	fmt.Println("Begin on port:", ":8080")
-	http.ListenAndServe(":8080", m)
+	fmt.Println("Begin on port:", port)
+	http.ListenAndServe(port, m)
 }

@@ -3,6 +3,7 @@ package srvc
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
 )
 
@@ -243,8 +244,8 @@ func generateKeepAliveID() string {
 }
 
 //Keepalive sessions by RangeKeepalive over all sessions in pool
-func Keepalive(p *SessionPool, repeatEvery time.Duration) {
-	//defer profile.Start(profile.MemProfile).Stop()
+func Keepalive(p *SessionPool, repeatEvery time.Duration, doneChan chan os.Signal) {
+	//create done channel to close down on sigint
 	started := time.Now()
 	keepAliveID := generateKeepAliveID()
 	logSession.Println("Starting KEEPALIVE...", keepAliveID)
@@ -256,8 +257,8 @@ func Keepalive(p *SessionPool, repeatEvery time.Duration) {
 			p.RangeKeepalive(keepAliveID)
 			logSession.Printf("KEEPALIVE run(InMin=%.2f, InHour=%.2f)", time.Since(started).Minutes(), time.Since(started).Hours())
 			p.logReport(keepAliveID + "-KeepAlive")
-		default:
-			logSession.Println("KEEPALIVE killed, total time:", time.Since(started))
+		case <-doneChan:
+			logSession.Println("KEEPALIVE done, total lifetime:", time.Since(started))
 			return
 		}
 	}
@@ -267,7 +268,8 @@ func Keepalive(p *SessionPool, repeatEvery time.Duration) {
 func (p *SessionPool) Close() {
 	networkErrors := []error{}
 	faultErrors := []error{}
-	for range p.Sessions {
+	for createRS := range p.Sessions {
+		p.Conf.SetBinSec(createRS.Sabre)
 		closeRQ := BuildSessionCloseRequest(p.Conf)
 		closeRS, err := CallSessionClose(p.ServiceURL, closeRQ)
 

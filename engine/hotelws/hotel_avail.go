@@ -143,6 +143,7 @@ type HotelAvailResponse struct {
 
 // CallHotelAvail to sabre web services
 func CallHotelAvail(serviceURL string, req HotelAvailRequest) (HotelAvailResponse, error) {
+	//allocate return types
 	availResp := HotelAvailResponse{}
 	//construct payload
 	byteReq, _ := xml.Marshal(req)

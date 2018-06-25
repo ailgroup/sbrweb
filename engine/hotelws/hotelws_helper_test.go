@@ -31,14 +31,14 @@ var (
 //Initialize Mock Sabre Web Servers and test data
 func init() {
 	// init data chunks...
-	hqcity[cityQueryField] = sampleHotelCityCode
-	hqids[hotelidQueryField] = sampleHotelCode
-	hqltln[latlngQueryField] = sampleLatLang
+	hqcity[CityQueryField] = sampleHotelCityCode
+	hqids[HotelidQueryField] = sampleHotelCode
+	hqltln[LatlngQueryField] = sampleLatLang
 
-	addr[streetQueryField] = sampleStreet
-	addr[cityQueryField] = sampleCity
-	addr[postalQueryField] = samplePostal
-	addr[countryCodeQueryField] = sampleCountryCode
+	addr[StreetQueryField] = sampleStreet
+	addr[CityQueryField] = sampleCity
+	addr[PostalQueryField] = samplePostal
+	addr[CountryCodeQueryField] = sampleCountryCode
 
 	// init test servers...
 	serverHotelDown = httptest.NewServer(
