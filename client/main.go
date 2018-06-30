@@ -20,6 +20,7 @@ const (
 	ConfSabrePassword = "SABRE_PASSWORD"
 	ConfSabrePCC      = "SABRE_PCC"
 	ConfFile          = "config"
+	ConfTimeZone      = "app_timezone"
 	ConfExpireMin     = "sessions.expire.min"
 	ConfExpireMax     = "sessions.expire.max"
 	ConfPoolSize      = "sessions.client.pool_size"
@@ -28,23 +29,26 @@ const (
 )
 
 var (
-	vRepeatEvery = time.Minute * 3
-	sessConf     = &srvc.SessionConf{}
-	vipConf      = &viper.Viper{}
-	port         = ":8080"
+	vRepeatEvery      = time.Minute * 3
+	sessConf          = &srvc.SessionConf{}
+	vipConf           = &viper.Viper{}
+	port              = ":8080"
+	ClientAppTimeZone = &time.Location{}
 )
 
 func init() {
+	ClientAppTimeZone = time.UTC
 	vipConf = setConfig()
 	sessConf = &srvc.SessionConf{
-		ServiceURL: vipConf.GetString(ConfSabreURL),
-		From:       vipConf.GetString(ConfClientURL),
-		PCC:        vipConf.GetString(ConfSabrePCC),
-		Convid:     srvc.GenerateConversationID(vipConf.GetString(ConfClientURL)),
-		Msgid:      srvc.GenerateMessageID(),
-		Timestr:    srvc.SabreTimeFormat(),
-		Username:   vipConf.GetString(ConfSabreUsername),
-		Password:   vipConf.GetString(ConfSabrePassword),
+		ServiceURL:  vipConf.GetString(ConfSabreURL),
+		From:        vipConf.GetString(ConfClientURL),
+		PCC:         vipConf.GetString(ConfSabrePCC),
+		Convid:      srvc.GenerateConversationID(vipConf.GetString(ConfClientURL)),
+		Msgid:       srvc.GenerateMessageID(),
+		Timestr:     srvc.SabreTimeFormat(),
+		Username:    vipConf.GetString(ConfSabreUsername),
+		Password:    vipConf.GetString(ConfSabrePassword),
+		AppTimeZone: ClientAppTimeZone,
 	}
 }
 
@@ -57,6 +61,9 @@ func setConfig() *viper.Viper {
 	vip.BindEnv(ConfSabreUsername)
 	vip.BindEnv(ConfSabrePassword)
 	vip.BindEnv(ConfSabrePCC)
+
+	//loc, _ := time.LoadLocation("Europe/Berlin")
+	vip.SetDefault("app_timezone", "UTC")
 
 	err := vip.ReadInConfig()
 	if err != nil {

@@ -381,15 +381,16 @@ type SessionCreateRequest struct {
 }
 
 type SessionConf struct {
-	ServiceURL string
-	From       string
-	PCC        string
-	Binsectok  string
-	Convid     string
-	Msgid      string
-	Timestr    string
-	Username   string
-	Password   string
+	ServiceURL  string
+	From        string
+	PCC         string
+	Binsectok   string
+	Convid      string
+	Msgid       string
+	Timestr     string
+	Username    string
+	Password    string
+	AppTimeZone *time.Location
 }
 
 // SetTime updates the timestamp. Pass around SessionConf and update the timestamp for any new request

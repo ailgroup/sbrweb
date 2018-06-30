@@ -2,24 +2,13 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/ailgroup/sbrweb/apperr"
 	"github.com/go-playground/form"
 )
 
-/*
-type AvailParamsBase struct {
-	GuestCount int    `json:"guest_count" form:"guest_count" validate:"gt=0,lt=5"`
-	Arrive     string `json:"arrive" form:"arrive" validate:"required"`
-	Depart     string `json:"depart" form:"depart" validate:"required"`
-}
-type AvailParamsIDs struct {
-	AvailParamsBase
-	HotelIDs []string `json:"hotel_ids" form:"hotel_ids" validate:"required,dive,min=1,max=10"`
-}
-*/
 type AvailParamsBase struct {
 	GuestCount int    `json:"guest_count" form:"guest_count"`
 	Arrive     string `json:"arrive" form:"arrive"`
@@ -38,47 +27,60 @@ type AvailParamsLatLng struct {
 	LatLng []string
 }
 
-// Validate AvailParamsBase fields arrive, depart, guest_count looking at date formats and counts.
-func (b AvailParamsBase) Validate() error {
-	tArrive, ok, err := ValidArriveDepart(b.Arrive)
-	if !ok {
-		return ErrStayFormat(ErrArriveFmtMsg, err.Error(), b.Arrive, timeShortForm)
+// Validate AvailParamsBase fields. Time date formats arrive/depart are using app timezone location aware validations. Integer guest_count checks against min/max.
+func (b AvailParamsBase) Validate(loc *time.Location) error {
+	//check for null or empty values first
+	if b.Arrive == "" {
+		return ErrArriveNull
 	}
-
-	tDepart, ok, err := ValidArriveDepart(b.Depart)
-	if !ok {
-		return ErrStayFormat(ErrDepartFmtMsg, err.Error(), b.Depart, timeShortForm)
+	if b.Depart == "" {
+		return ErrDepartNull
 	}
-
-	if !startBeforeEnd(tArrive, tDepart) {
-		return ErrStayRange(ErrStayRangeMsg, b.Arrive, b.Depart)
-	}
-
 	if b.GuestCount == 0 {
 		return ErrGuestCountNullOrZero
 	}
-	if Gt(b.GuestCount, GuestGTE) {
-		return ErrLtGt(ErrGuestLTEMsg, b.GuestCount, GuestGTE)
+
+	tArrive, ok, err := StayFormat(b.Arrive, loc)
+	if !ok {
+		return ErrStayFormat(ErrArriveFmtMsg, err.Error(), tArrive.String(), timeShortForm)
 	}
-	if Lt(b.GuestCount, GuestLTE) {
-		return ErrLtGt(ErrGuestGTEMsg, b.GuestCount, GuestLTE)
+	//get app time zone location
+	today := BeginOfDay(time.Now().In(loc))
+	if ArriveNotInPast(tArrive, today) {
+		return ErrArriveInPast(ErrStayInPastMsg, tArrive.String(), today)
+	}
+	tDepart, ok, err := StayFormat(b.Depart, loc)
+	if !ok {
+		return ErrStayFormat(ErrDepartFmtMsg, err.Error(), tDepart.String(), timeShortForm)
+	}
+	if DepartBeforeArrive(tDepart, tArrive) {
+		return ErrStayRange(ErrStayRangeMsg, tDepart.String(), tArrive.String())
+	}
+	if Gt(b.GuestCount, GuestMax) {
+		return ErrLtGt(ErrGuestMaxMsg, b.GuestCount, GuestMax)
+	}
+	if Lt(b.GuestCount, GuestMin) {
+		return ErrLtGt(ErrGuestMinMsg, b.GuestCount, GuestMin)
 	}
 	return nil
 }
 
-func (a AvailParamsIDs) Validate() error {
-	if err := a.AvailParamsBase.Validate(); err != nil {
+// Validate AvailParamsIDs runs params base validations and for hotel_ids
+func (a AvailParamsIDs) Validate(loc *time.Location) error {
+	if err := a.AvailParamsBase.Validate(loc); err != nil {
 		return err
 	}
-	fmt.Printf("%v %d\n", a.HotelIDs, len(a.HotelIDs))
+	//defense against no param or weird values like 'hotel_ids=', 'hotel_ids="', 'hotel_ids=""'
+	if len(a.HotelIDs) == 0 {
+		return ErrHotelIDNullOrZero
+	}
 	if len(a.HotelIDs) == 1 {
 		if (a.HotelIDs[0] == "") || (a.HotelIDs[0] == "\"") || (a.HotelIDs[0] == "\"\"") {
 			return ErrHotelIDNullOrZero
 		}
 	}
-
-	if Gt(len(a.HotelIDs), HotelIDsLTE) {
-		return ErrLtGt(ErrHotelIDsLTEMsg, len(a.HotelIDs), HotelIDsLTE)
+	if Gt(len(a.HotelIDs), HotelIDsMax) {
+		return ErrLtGt(ErrHotelIDsMaxsg, len(a.HotelIDs), HotelIDsMax)
 	}
 	return nil
 }
@@ -90,60 +92,24 @@ https://github.com/tidwall/gjson
 curl -H "Accept: application/json"  -X GET -d '{"arrive":"06-28","depart":"06-29","guest_count":"2", "hotel_ids":["007"]}' http://localhost:8080/avail | jq
 */
 func (s *Server) HotelAvailIDsHandler() http.HandlerFunc {
-	var availPIDs AvailParamsIDs
+	var params AvailParamsIDs
 	var decoder *form.Decoder
 	//closure to execute
 	return func(w http.ResponseWriter, r *http.Request) {
-		availPIDs = AvailParamsIDs{}
+		params = AvailParamsIDs{}
 		decoder = form.NewDecoder()
-		if err := decoder.Decode(&availPIDs, r.URL.Query()); err != nil {
-			appMsg := fmt.Sprintf("Cannot Decode Query: %v", r.URL.Query())
-			b, _ := json.Marshal(
-				apperr.NewErrorBadInput(
-					err.Error(),
-					appMsg,
-					apperr.BadInput,
-					http.StatusBadRequest,
-				),
-			)
+		// decode params, check errors
+		if err := decoder.Decode(&params, r.URL.Query()); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write(b)
+			w.Write(apperr.DecodeBadInput("HotelAvailIDsHandler", r.URL.Query(), err, http.StatusBadRequest))
 			return
 		}
-		fmt.Printf("\n%+v\n", availPIDs)
-		if err := availPIDs.Validate(); err != nil {
-			b, _ := json.Marshal(
-				apperr.NewErrorInvalid(
-					err.Error(),
-					"Invalid",
-					apperr.Invalid,
-					http.StatusUnprocessableEntity,
-				),
-			)
+		// validate query params
+		if err := params.Validate(s.SConfig.AppTimeZone); err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
-			w.Write(b)
+			w.Write(apperr.DecodeInvalid("HotelAvailIDsHandler", err, http.StatusUnprocessableEntity))
 			return
 		}
-		/*
-			// decode, validate params
-			if err := decoder.Decode(&params, r.URL.Query()); err != nil {
-				appMsg := fmt.Sprintf("Cannot Decode Query: %v", r.URL.Query())
-				b, _ := json.Marshal(
-					apperr.NewErrorBadInput(err.Error(), appMsg, apperr.BadInput, http.StatusBadRequest),
-				)
-				w.WriteHeader(http.StatusBadRequest)
-				w.Write(b)
-				return
-			}
-			if err := params.Validate(); err != nil {
-				b, _ := json.Marshal(
-					apperr.NewErrorInvalid(err.Error(), "Invalid Request", apperr.BadInput, http.StatusUnprocessableEntity),
-				)
-				w.WriteHeader(http.StatusUnprocessableEntity)
-				w.Write(b)
-				return
-			}
-		*/
 		/*
 			//get session
 			sess := s.SessionPool.Pick()
@@ -158,21 +124,25 @@ func (s *Server) HotelAvailIDsHandler() http.HandlerFunc {
 			q, _ := hotelws.NewHotelSearchCriteria(
 				hotelws.HotelRefSearch(searchids),
 			)
-			g, _ := strconv.Atoi(params.Base.GuestCount)
-			availBody := hotelws.SetHotelAvailBody(g, q, params.Base.Arrive, params.Base.Depart)
+			availBody := hotelws.SetHotelAvailBody(
+				params.AvailParamsBase.GuestCount,
+				q,
+				params.AvailParamsBase.Arrive,
+				params.AvailParamsBase.Depart,
+			)
 			req := hotelws.BuildHotelAvailRequest(s.SConfig, availBody)
 			resp, _ := hotelws.CallHotelAvail(s.SConfig.ServiceURL, req)
+		*/
 
+		/*
 			b, _ := json.Marshal(resp)
 			w.WriteHeader(http.StatusOK)
 			w.Write(b)
 		*/
-		//b, _ := json.Marshal(params)
-		//w.WriteHeader(http.StatusOK)
-		//w.Write(b)
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(availPIDs)
+		//json.NewEncoder(w).Encode(resp)
+		json.NewEncoder(w).Encode(params)
 	}
 }
 
