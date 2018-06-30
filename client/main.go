@@ -70,15 +70,7 @@ func setConfig() *viper.Viper {
 	return vip
 }
 
-func main() {
-	// create scheme for session expirey
-	scheme := srvc.ExpireScheme{
-		Min: vipConf.GetInt(ConfExpireMin),
-		Max: vipConf.GetInt(ConfExpireMax),
-	}
-
-	// create and populate pool, start keepalive, watch for signal close down
-	p := srvc.NewPool(scheme, sessConf, vipConf.GetInt(ConfPoolSize))
+func runPool(p *srvc.SessionPool) {
 	keepKill := make(chan os.Signal, 1)
 	signal.Notify(keepKill, os.Interrupt)
 	shutDown := make(chan os.Signal, 1)
@@ -95,6 +87,18 @@ func main() {
 		p.Close()
 		os.Exit(1)
 	}()
+}
+
+func main() {
+	// create scheme for session expirey
+	scheme := srvc.ExpireScheme{
+		Min: vipConf.GetInt(ConfExpireMin),
+		Max: vipConf.GetInt(ConfExpireMax),
+	}
+
+	// create and populate pool, start keepalive, watch for signal close down
+	pool := srvc.NewPool(scheme, sessConf, vipConf.GetInt(ConfPoolSize))
+	//runPool(pool)
 
 	// pass context through handlers??
 	m := chi.NewRouter()
@@ -107,7 +111,7 @@ func main() {
 		VConfig:     vipConf,
 		SConfig:     sessConf,
 		Mux:         m,
-		SessionPool: p,
+		SessionPool: pool,
 	}
 	server.RegisterRoutes()
 	fmt.Println("Begin on port:", port)
