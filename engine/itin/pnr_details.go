@@ -300,7 +300,7 @@ func (result ApplicationResults) ErrFormat() sbrerr.ErrorSabreResult {
 		wmsg += fmt.Sprintf("Warning-%d:Type-%s Results: %s", i, w.Type, msg)
 	}
 	return sbrerr.ErrorSabreResult{
-		Code:       sbrerr.AppStatusCode(result.Status),
+		Code:       sbrerr.SabreEngineStatusCode(result.Status),
 		AppMessage: wmsg,
 	}
 }

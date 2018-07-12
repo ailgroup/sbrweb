@@ -94,7 +94,7 @@ func (s SystemResults) Translate() string {
 */
 func (result ApplicationResults) ErrFormat() sbrerr.ErrorSabreResult {
 	return sbrerr.ErrorSabreResult{
-		Code: sbrerr.AppStatusCode(result.Status),
+		Code: sbrerr.SabreEngineStatusCode(result.Status),
 		AppMessage: fmt.Sprintf(
 			"%s because %s. %s. HostCommand[LNIATA: %s Cryptic: %s]",
 			result.Status,
@@ -271,7 +271,7 @@ type PaymentCard struct {
 }
 
 type RoomRate struct {
-	XMLName            xml.Name `xml:"RoomRate"`
+	XMLName            xml.Name `xml:"RoomRate" json:"-"`
 	DirectConnect      string   `xml:"RDirectConnect,attr"`
 	GuaranteeSurcharge string   `xml:"GuaranteeSurchargeRequired,attr"`
 	GuaranteedRate     string   `xml:"GuaranteedRateProgram,attr"`
@@ -313,7 +313,7 @@ type AdditionalInfo struct {
 
 // BasicPropertyInfo contains all info relevant to property. It is the root-level element after service element for hotel_avail; and is embedded in the RoomStay element.
 type BasicPropertyInfo struct {
-	XMLName         xml.Name `xml:"BasicPropertyInfo"`
+	XMLName         xml.Name `xml:"BasicPropertyInfo" json:"-"`
 	AreadID         string   `xml:"AreadID,attr"`
 	ChainCode       string   `xml:"ChainCode,attr"`
 	Distance        string   `xml:"Distance,attr"`

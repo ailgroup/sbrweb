@@ -105,7 +105,7 @@ func BuildHotelAvailRequest(c *srvc.SessionConf, otaHotelAvail HotelAvailBody) H
 }
 
 type AvailabilityOptions struct {
-	XMLName          xml.Name             `xml:"AvailabilityOptions"`
+	XMLName          xml.Name             `xml:"AvailabilityOptions" json:"-"`
 	AvailableOptions []AvailabilityOption `xml:"AvailabilityOption"`
 }
 

@@ -4,17 +4,17 @@ import (
 	"errors"
 )
 
-type AppStatus int
+type SabreStatus int
 
 // List statuses for common error handling and parsing. Generally, the lower number are more serious.
 const (
-	Unknown      AppStatus = iota + 1 //1
-	BadService                        //2
-	BadParse                          //3
-	SoapFault                         //4
-	NotProcessed                      //5
-	Approved                          //6
-	Complete                          //7
+	Unknown      SabreStatus = iota + 1 //1
+	BadService                          //2
+	BadParse                            //3
+	SoapFault                           //4
+	NotProcessed                        //5
+	Approved                            //6
+	Complete                            //7
 )
 
 const (
@@ -33,7 +33,7 @@ var (
 	ErrPropDescLatLng    = errors.New("Latitude or Longitude not allowed in HotelPropDesc")
 	ErrPropDescHotelRefs = errors.New("Criterion.HotelRef cannot be greater than 1, can only search using one criterion")
 
-	appStatuses = [...]string{
+	sabreEngineStatuses = [...]string{
 		"0",
 		"Unknown",
 		"BadService",
@@ -46,21 +46,21 @@ var (
 )
 
 func StatusNotProcess() string {
-	return appStatuses[NotProcessed]
+	return sabreEngineStatuses[NotProcessed]
 }
 func StatusApproved() string {
-	return appStatuses[Approved]
+	return sabreEngineStatuses[Approved]
 }
 func StatusComplete() string {
-	return appStatuses[Complete]
+	return sabreEngineStatuses[Complete]
 }
-func (code AppStatus) String() string {
+func (code SabreStatus) String() string {
 	if code < Unknown || code > Complete {
 		return "Unknown"
 	}
-	return appStatuses[code]
+	return sabreEngineStatuses[code]
 }
-func AppStatusCode(input string) AppStatus {
+func SabreEngineStatusCode(input string) SabreStatus {
 	if input == "0" {
 		return Unknown
 	}
@@ -84,13 +84,13 @@ func AppStatusCode(input string) AppStatus {
 
 // ErrorSabreService container for network issues
 type ErrorSabreService struct {
-	ErrMessage string    `json:"err_message_sabre_service,omitempty"`
-	AppMessage string    `json:"app_message_sabre_service,omitempty"`
-	Code       AppStatus `json:"app_status"`
+	ErrMessage string `json:",omitempty"`
+	AppMessage string `json:",omitempty"`
+	Code       SabreStatus
 }
 
 // NewErrorSabreService for http or sabre web services networking problems
-func NewErrorSabreService(errIn, appIn string, code AppStatus) ErrorSabreService {
+func NewErrorSabreService(errIn, appIn string, code SabreStatus) ErrorSabreService {
 	//err = strings.Replace(err, "\n", "", -1)
 	return ErrorSabreService{ErrMessage: errIn, AppMessage: appIn, Code: code}
 }
@@ -102,13 +102,13 @@ func (e ErrorSabreService) Error() string {
 
 // ErrorSabreXML container for xml issues
 type ErrorSabreXML struct {
-	ErrMessage string    `json:"err_message_sabre_xml,omitempty"`
-	AppMessage string    `json:"app_message_sabre_xml,omitempty"`
-	Code       AppStatus `json:"app_status"`
+	ErrMessage string `json:",omitempty"`
+	AppMessage string `json:",omitempty"`
+	Code       SabreStatus
 }
 
 // ErrorSabreXML for parsing web services responses
-func NewErrorSabreXML(errIn, appIn string, code AppStatus) ErrorSabreXML {
+func NewErrorSabreXML(errIn, appIn string, code SabreStatus) ErrorSabreXML {
 	//err = strings.Replace(err, "\n", "", -1)
 	return ErrorSabreXML{ErrMessage: errIn, AppMessage: appIn, Code: code}
 }
@@ -120,12 +120,12 @@ func (e ErrorSabreXML) Error() string {
 
 // ErrorSabreResult for results issues
 type ErrorSabreResult struct {
-	AppMessage string    `json:"app_message_sabre_results,omitempty"`
-	Code       AppStatus `json:"app_status"`
+	AppMessage string `json:",omitempty"`
+	Code       SabreStatus
 }
 
 // NewErrorSabreResult for response results with errors(bad dates, credit card, etc...)
-func NewErrorSabreResult(appIn string, code AppStatus) ErrorSabreResult {
+func NewErrorSabreResult(appIn string, code SabreStatus) ErrorSabreResult {
 	//err = strings.Replace(err, "\n", "", -1)
 	return ErrorSabreResult{AppMessage: appIn, Code: code}
 }
@@ -137,10 +137,10 @@ func (e ErrorSabreResult) Error() string {
 
 // ErrorSoapFault for results issues
 type ErrorSoapFault struct {
-	ErrMessage string    `json:"err_message_soap_fault_string,omitempty"`
-	FaultCode  string    `json:"soap_fault_code,omitempty"`
-	StackTrace string    `json:"soap_fault_stacktrace,omitempty"`
-	Code       AppStatus `json:"app_status"`
+	ErrMessage string `json:",omitempty"`
+	FaultCode  string `json:",omitempty"`
+	StackTrace string `json:",omitempty"`
+	Code       SabreStatus
 }
 
 // NewErrorSoapFault for response results with errors(bad dates, credit card, etc...)

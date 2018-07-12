@@ -105,7 +105,7 @@ func main() {
 
 	// create and populate pool, start keepalive, watch for signal close down
 	pool := srvc.NewPool(scheme, sessConf, vipConf.GetInt(ConfPoolSize))
-	//runPool(pool)
+	runPool(pool)
 
 	// pass context through handlers??
 	m := chi.NewRouter()

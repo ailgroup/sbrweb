@@ -23,7 +23,7 @@ func TestStatusHelperFuncs(t *testing.T) {
 }
 
 var sampleStatuses = []struct {
-	code   AppStatus
+	code   SabreStatus
 	expect string
 }{
 	{-100, "Unknown"},
@@ -52,7 +52,7 @@ func TestAppStatus(t *testing.T) {
 }
 
 var sampleCodes = []struct {
-	expect AppStatus
+	expect SabreStatus
 	input  string
 }{
 	{1, "Unknown"},
@@ -73,8 +73,8 @@ var sampleCodes = []struct {
 
 func TestGetStatus(t *testing.T) {
 	for i, c := range sampleCodes {
-		if AppStatusCode(c.input) != c.expect {
-			t.Errorf("sampleCodes: %d for input %s expect %d got %d", i, c.input, c.expect, AppStatusCode(c.input))
+		if SabreEngineStatusCode(c.input) != c.expect {
+			t.Errorf("sampleCodes: %d for input %s expect %d got %d", i, c.input, c.expect, SabreEngineStatusCode(c.input))
 		}
 	}
 }

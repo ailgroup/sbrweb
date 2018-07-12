@@ -6,18 +6,23 @@ import (
 	"time"
 
 	"github.com/ailgroup/sbrweb/apperr"
+	"github.com/ailgroup/sbrweb/engine/hotelws"
 	"github.com/go-playground/form"
 )
 
 type AvailParamsBase struct {
-	GuestCount int    `json:"guest_count" form:"guest_count"`
-	Arrive     string `json:"arrive" form:"arrive"`
-	Depart     string `json:"depart" form:"depart"`
+	GuestCount  int    `form:"guest_count"`
+	InputArrive string `form:"arrive"`
+	InputDepart string `form:"depart"`
+	OutArrive   string
+	OutDepart   string
 }
 type AvailParamsIDs struct {
-	AvailParamsBase
-	HotelIDs []string `json:"hotel_ids" form:"hotel_ids"`
+	*AvailParamsBase
+	HotelIDs []string `form:"hotel_ids"`
 }
+
+/* TODO...
 type AvailParamsCityCodes struct {
 	Base      AvailParamsBase
 	CityCodes []string
@@ -26,21 +31,28 @@ type AvailParamsLatLng struct {
 	Base   AvailParamsBase
 	LatLng []string
 }
+*/
 
-// Validate AvailParamsBase fields. Time date formats arrive/depart are using app timezone location aware validations. Integer guest_count checks against min/max.
-func (b AvailParamsBase) Validate(loc *time.Location) error {
+type AvailabilityResponse struct {
+	RequestParams     AvailParamsIDs
+	SabreEngineErrors interface{} `json:",omitempty"`
+	HotelAvail        hotelws.AvailabilityOptions
+}
+
+// Validate AvailParamsBase fields. Time date formats arrive/depart are using app timezone location aware validations and set the outgoing arrive/depart formats for sabre. Integer guest_count checks against min/max.
+func (b *AvailParamsBase) ValidateAndFormat(loc *time.Location) error {
 	//check for null or empty values first
-	if b.Arrive == "" {
+	if b.InputArrive == "" {
 		return ErrArriveNull
 	}
-	if b.Depart == "" {
+	if b.InputDepart == "" {
 		return ErrDepartNull
 	}
 	if b.GuestCount == 0 {
 		return ErrGuestCountNullOrZero
 	}
 
-	tArrive, ok, err := StayFormat(b.Arrive, loc)
+	tArrive, ok, err := StayFormat(b.InputArrive, loc)
 	if !ok {
 		return ErrStayFormat(ErrArriveFmtMsg, err.Error(), tArrive.String(), timeShortForm)
 	}
@@ -49,13 +61,16 @@ func (b AvailParamsBase) Validate(loc *time.Location) error {
 	if ArriveNotInPast(tArrive, today) {
 		return ErrArriveInPast(ErrStayInPastMsg, tArrive.String(), today)
 	}
-	tDepart, ok, err := StayFormat(b.Depart, loc)
+	tDepart, ok, err := StayFormat(b.InputDepart, loc)
 	if !ok {
 		return ErrStayFormat(ErrDepartFmtMsg, err.Error(), tDepart.String(), timeShortForm)
 	}
 	if DepartBeforeArrive(tDepart, tArrive) {
 		return ErrStayRange(ErrStayRangeMsg, tDepart.String(), tArrive.String())
 	}
+	b.OutArrive = tArrive.Format(hotelws.TimeFormatMD)
+	b.OutDepart = tDepart.Format(hotelws.TimeFormatMD)
+
 	if Gt(b.GuestCount, GuestMax) {
 		return ErrLtGt(ErrGuestMaxMsg, b.GuestCount, GuestMax)
 	}
@@ -67,7 +82,7 @@ func (b AvailParamsBase) Validate(loc *time.Location) error {
 
 // Validate AvailParamsIDs runs params base validations and for hotel_ids
 func (a AvailParamsIDs) Validate(loc *time.Location) error {
-	if err := a.AvailParamsBase.Validate(loc); err != nil {
+	if err := a.AvailParamsBase.ValidateAndFormat(loc); err != nil {
 		return err
 	}
 	//defense against no param or weird values like 'hotel_ids=', 'hotel_ids="', 'hotel_ids=""'
@@ -87,17 +102,17 @@ func (a AvailParamsIDs) Validate(loc *time.Location) error {
 
 /*
 HotelAvailHandler wraps SOAP call to sabre hotel availability service
-https://github.com/tidwall/gjson
 
-curl -H "Accept: application/json"  -X GET -d '{"arrive":"06-28","depart":"06-29","guest_count":"2", "hotel_ids":["007"]}' http://localhost:8080/avail | jq
+	Example:
+		curl -H "Accept: application/json" -X GET 'http://localhost:8080/avail?guest_count=4&arrive=2018-07-17&depart=2018-07-18&hotel_ids=10'
 */
 func (s *Server) HotelAvailIDsHandler() http.HandlerFunc {
-	var params AvailParamsIDs
-	var decoder *form.Decoder
 	//closure to execute
 	return func(w http.ResponseWriter, r *http.Request) {
-		params = AvailParamsIDs{}
-		decoder = form.NewDecoder()
+		w.Header().Set("Content-Type", "application/json")
+		params := &AvailParamsIDs{}
+		decoder := form.NewDecoder()
+		response := AvailabilityResponse{}
 		// decode params, check errors
 		if err := decoder.Decode(&params, r.URL.Query()); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -110,39 +125,38 @@ func (s *Server) HotelAvailIDsHandler() http.HandlerFunc {
 			w.Write(apperr.DecodeInvalid("HotelAvailIDsHandler", err, http.StatusUnprocessableEntity))
 			return
 		}
-		/*
-			//get session
-			sess := s.SessionPool.Pick()
-			//defer close on session
-			defer s.SessionPool.Put(sess)
-			//get binary security token
-			s.SConfig.SetBinSec(sess.Sabre)
-			// parse incoming params as JSON
-			searchids := make(hotelws.HotelRefCriterion)
-			searchids[hotelws.HotelidQueryField] = params.HotelIDs
+		response.RequestParams = *params
+		//get session, defer close
+		sess := s.SessionPool.Pick()
+		defer s.SessionPool.Put(sess)
+		//get binary security token
+		s.SConfig.SetBinSec(sess.Sabre)
+		// parse incoming params as JSON
+		searchids := make(hotelws.HotelRefCriterion)
+		searchids[hotelws.HotelidQueryField] = params.HotelIDs
 
-			q, _ := hotelws.NewHotelSearchCriteria(
-				hotelws.HotelRefSearch(searchids),
-			)
-			availBody := hotelws.SetHotelAvailBody(
-				params.AvailParamsBase.GuestCount,
-				q,
-				params.AvailParamsBase.Arrive,
-				params.AvailParamsBase.Depart,
-			)
-			req := hotelws.BuildHotelAvailRequest(s.SConfig, availBody)
-			resp, _ := hotelws.CallHotelAvail(s.SConfig.ServiceURL, req)
-		*/
+		q, _ := hotelws.NewHotelSearchCriteria(
+			hotelws.HotelRefSearch(searchids),
+		)
+		availBody := hotelws.SetHotelAvailBody(
+			params.AvailParamsBase.GuestCount,
+			q,
+			params.AvailParamsBase.OutArrive,
+			params.AvailParamsBase.OutDepart,
+		)
 
-		/*
-			b, _ := json.Marshal(resp)
-			w.WriteHeader(http.StatusOK)
-			w.Write(b)
-		*/
+		req := hotelws.BuildHotelAvailRequest(s.SConfig, availBody)
+		call, err := hotelws.CallHotelAvail(s.SConfig.ServiceURL, req)
+		if err != nil {
+			w.WriteHeader(http.StatusFailedDependency)
+			w.Write(apperr.DecodeUnknown("CallHotelAvail::HotelAvailIDsHandler", r.URL.Query(), err, http.StatusFailedDependency))
+			return
+		}
 
-		w.Header().Set("Content-Type", "application/json")
-		//json.NewEncoder(w).Encode(resp)
-		json.NewEncoder(w).Encode(params)
+		response.HotelAvail = call.Body.HotelAvail.AvailOpts
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(response)
 	}
 }
 

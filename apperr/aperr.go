@@ -54,13 +54,45 @@ func AppStatusCode(input string) AppStatus {
 	}
 }
 
+// ErrorUnknown container for validation errors
+type ErrorUnknown struct {
+	ErrMessage string `json:",omitempty"`
+	AppMessage string `json:",omitempty"`
+	Code       AppStatus
+	HTTPStatus uint
+	ServerTime time.Time
+}
+
+// NewErrorUnknown for validation errors
+func NewErrorUnknown(errIn, appIn string, code AppStatus, hts uint) ErrorUnknown {
+	return ErrorUnknown{ErrMessage: errIn, AppMessage: appIn, Code: code, HTTPStatus: hts, ServerTime: time.Now()}
+}
+
+// Error for ErrorUnknown implements std lib error interface
+func (e ErrorUnknown) Error() string {
+	return e.ErrMessage
+}
+
+// DecodeInvalid builds an ErrorInvalid response given a set of url.Values
+func DecodeUnknown(handlerMsg string, val url.Values, err error, httpstatus uint) []byte {
+	b, _ := json.Marshal(
+		NewErrorUnknown(
+			err.Error(),
+			fmt.Sprintf("%s. Unknown for Query: %v", handlerMsg, val),
+			Unknown,
+			httpstatus,
+		),
+	)
+	return b
+}
+
 // ErrorInvalid container for validation errors
 type ErrorInvalid struct {
-	ErrMessage string    `json:"err_invalid,omitempty"`
-	AppMessage string    `json:"app_invalid,omitempty"`
-	Code       AppStatus `json:"app_status"`
-	HTTPStatus uint      `json:"http_status"`
-	ServerTime time.Time `json:"server_time"`
+	ErrMessage string `json:",omitempty"`
+	AppMessage string `json:",omitempty"`
+	Code       AppStatus
+	HTTPStatus uint
+	ServerTime time.Time
 }
 
 // NewErrorInvalid for validation errors
@@ -89,11 +121,11 @@ func DecodeInvalid(handlerMsg string, err error, httpstatus uint) []byte {
 
 // ErrorBadInput container for bad input or json parsing
 type ErrorBadInput struct {
-	ErrMessage string    `json:"err_bad_input,omitempty"`
-	AppMessage string    `json:"app_bad_input,omitempty"`
-	Code       AppStatus `json:"app_status"`
-	HTTPStatus uint      `json:"http_status"`
-	ServerTime time.Time `json:"server_time"`
+	ErrMessage string `json:",omitempty"`
+	AppMessage string `json:",omitempty"`
+	Code       AppStatus
+	HTTPStatus uint
+	ServerTime time.Time
 }
 
 // NewErrorBadInput for json parsing or other bad input
