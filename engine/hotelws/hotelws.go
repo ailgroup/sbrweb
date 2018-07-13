@@ -288,7 +288,7 @@ type RoomRate struct {
 	HotelRateCode      string `xml:"HotelRateCode"`
 }
 type AdditionalInfo struct {
-	XMLName    xml.Name `xml:"AdditionalInfo"`
+	XMLName    xml.Name `xml:"AdditionalInfo" json:"-"`
 	Commission struct {
 		NonCommission string `xml:"NonCommission,attr"`
 		Val           string `xml:",char"`
