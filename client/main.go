@@ -45,7 +45,7 @@ func init() {
 		PCC:         vipConf.GetString(ConfSabrePCC),
 		Convid:      srvc.GenerateConversationID(vipConf.GetString(ConfClientURL)),
 		Msgid:       srvc.GenerateMessageID(),
-		Timestr:     srvc.SabreTimeFormat(),
+		Timestr:     srvc.SabreTimeNowFmt(),
 		Username:    vipConf.GetString(ConfSabreUsername),
 		Password:    vipConf.GetString(ConfSabrePassword),
 		AppTimeZone: ClientAppTimeZone,

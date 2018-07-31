@@ -324,8 +324,8 @@ func SabreTokenParse(tok string) string {
 	return binaryTokenMatcher.FindAllString(tok, -1)[0]
 }
 
-// SabreTimeFormat returns '2017-11-27T09:58:31Z'
-func SabreTimeFormat() string {
+// SabreTimeNowFmt returns time.Now in format: '2017-11-27T09:58:31Z'
+func SabreTimeNowFmt() string {
 	return time.Now().Format(StandardTimeFormatter)
 }
 
@@ -395,7 +395,7 @@ type SessionConf struct {
 
 // SetTime updates the timestamp. Pass around SessionConf and update the timestamp for any new request
 func (s *SessionConf) SetTime() *SessionConf {
-	s.Timestr = SabreTimeFormat()
+	s.Timestr = SabreTimeNowFmt()
 	return s
 }
 

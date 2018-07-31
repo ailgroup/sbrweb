@@ -179,7 +179,7 @@ func (p *SessionPool) RangeKeepalive(keepaliveID string) {
 				sess.Sabre.Header.Security.BinarySecurityToken.Value,
 				sess.Sabre.Header.MessageHeader.ConversationID,
 				sess.Sabre.Header.MessageHeader.MessageData.RefToMessageID,
-				SabreTimeFormat(),
+				SabreTimeNowFmt(),
 			)
 			validateRS, err := CallSessionValidate(p.ServiceURL, validateRQ)
 			if err != nil {

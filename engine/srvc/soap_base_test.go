@@ -255,14 +255,14 @@ func BenchmarkEnvelopeUnmarshal(b *testing.B) {
 }
 
 func TestTimeFormat(t *testing.T) {
-	format := SabreTimeFormat()
+	format := SabreTimeNowFmt()
 	if !samplerfc333pReg.MatchString(format) {
 		t.Errorf("Timestamp formt needs to be '%s' but got '%s'", samplerfc333pString, format)
 	}
 }
 func BenchmarkTimeFormat(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		SabreTimeFormat()
+		SabreTimeNowFmt()
 	}
 }
 
@@ -270,7 +270,7 @@ func TestSessionConfSetTime(t *testing.T) {
 	conf := &SessionConf{
 		Timestr: sampletime,
 	}
-	if conf.SetTime().Timestr != SabreTimeFormat() {
+	if conf.SetTime().Timestr != SabreTimeNowFmt() {
 		t.Error("SessionConf SetTime() should be SabreTimeFormat()")
 	}
 }
