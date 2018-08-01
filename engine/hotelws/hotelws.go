@@ -209,14 +209,14 @@ type Corporate struct {
 
 // Timepsan for arrival and departure params
 type TimeSpan struct {
-	XMLName  xml.Name `xml:"TimeSpan"`
+	XMLName  xml.Name `xml:"TimeSpan" json:"-"`
 	Duration int      `xml:"Duration,omitempty"`
 	Depart   string   `xml:"End,attr,omitempty"`
 	Arrive   string   `xml:"Start,attr,omitempty"`
 }
 
 type RatePlan struct {
-	XMLName         xml.Name `xml:"RatePlanCandidate"`
+	XMLName         xml.Name `xml:"RatePlanCandidate" json:"-"`
 	CurrencyCode    string   `xml:"CurrencyCode,attr,omitempty"`
 	DCA_ProductCode string   `xml:"DCA_ProductCode,attr,omitempty"`
 	DecodeAll       string   `xml:"DecodeAll,attr,omitempty"`
@@ -242,7 +242,7 @@ type AvailRequestSegment struct {
 
 // RoomStay contains all info relevant to the property's available rooms. It is the root-level element after service element for hotel_rate_desc and hotel_property_desc.
 type RoomStay struct {
-	XMLName           xml.Name `xml:"RoomStay"`
+	XMLName           xml.Name `xml:"RoomStay" json:"-"`
 	BasicPropertyInfo BasicPropertyInfo
 	Guarantee         Guarantee
 	RoomRates         []RoomRate `xml:"RoomRates>RoomRate"`
@@ -251,16 +251,16 @@ type RoomStay struct {
 
 // Guarantee shows forms of payment accepted by property
 type Guarantee struct {
-	XMLName            xml.Name `xml:"Guarantee"`
+	XMLName            xml.Name `xml:"Guarantee" json:"-"`
 	GuaranteesAccepted GuaranteesAccepted
 	DepositsAccepted   DepositsAccepted
 }
 type GuaranteesAccepted struct {
-	XMLName      xml.Name      `xml:"GuaranteesAccepted"`
+	XMLName      xml.Name      `xml:"GuaranteesAccepted" json:"-"`
 	PaymentCards []PaymentCard `xml:"PaymentCard"`
 }
 type DepositsAccepted struct {
-	XMLName      xml.Name      `xml:"DepositsAccepted"`
+	XMLName      xml.Name      `xml:"DepositsAccepted" json:"-"`
 	PaymentCards []PaymentCard `xml:"PaymentCard"`
 }
 type PaymentCard struct {
@@ -370,18 +370,18 @@ type Charge struct {
 }
 
 type AdditionalGuestAmount struct {
-	XMLName        xml.Name `xml:"AdditionalGuestAmount"`
+	XMLName        xml.Name `xml:"AdditionalGuestAmount" json:"-"`
 	MaxExtraPerson int      `xml:"MaxExtraPersonsAllowed,attr"`
 	NumCribs       int      `xml:"NumCribs,attr"`
 	Charges        []Charge `xml:"Charges"`
 }
 
 type TotalSurcharges struct {
-	XMLName xml.Name `xml:"TotalSurcharges"`
+	XMLName xml.Name `xml:"TotalSurcharges" json:"-"`
 	Amount  string   `xml:"Amount,attr"`
 }
 type TotalTaxes struct {
-	XMLName     xml.Name `xml:"TotalTaxes"`
+	XMLName     xml.Name `xml:"TotalTaxes" json:"-"`
 	Amount      string   `xml:"Amount,attr"`
 	TaxFieldOne string   `xml:"TaxFieldOne"`
 	TaxFieldTwo string   `xml:"TaxFieldTwo"`
@@ -389,7 +389,7 @@ type TotalTaxes struct {
 }
 
 type HotelPricing struct {
-	XMLName         xml.Name `xml:"HotelTotalPricing"`
+	XMLName         xml.Name `xml:"HotelTotalPricing" json:"-"`
 	Amount          string   `xml:"Amount,attr"`
 	Disclaimer      string   `xml:"Disclaimer"`
 	TotalSurcharges TotalSurcharges
@@ -397,7 +397,7 @@ type HotelPricing struct {
 }
 
 type Rate struct {
-	XMLName                xml.Name                `xml:"Rate"`
+	XMLName                xml.Name                `xml:"Rate" json:"-"`
 	Amount                 string                  `xml:"Amount,attr"`
 	ChangeIndicator        string                  `xml:"ChangeIndicator,attr"`
 	CurrencyCode           string                  `xml:"CurrencyCode,attr"`
@@ -411,7 +411,7 @@ type Rate struct {
 }
 
 type VendorMessages struct {
-	XMLName               xml.Name              `xml:"VendorMessages"`
+	XMLName               xml.Name              `xml:"VendorMessages" json:"-"`
 	Attractions           Attractions           `xml:"Attractions"`
 	AdditionalAttractions AdditionalAttractions `xml:"AdditionalAttractions"`
 	Awards                Awards                `xml:"Awards"`
@@ -494,7 +494,7 @@ type AdditionalAttractions struct {
 }
 
 type IndexD struct {
-	XMLName            xml.Name `xml:"Index"`
+	XMLName            xml.Name `xml:"Index" json:"-"`
 	CountryState       string   `xml:"CountryState,attr"`
 	DistanceDirection  string   `xml:"DistanceDirection,attr"`
 	LocationCode       string   `xml:"LocationCode,attr"`
@@ -526,7 +526,7 @@ type ContactNumber struct {
 }
 
 type ApplicationResults struct {
-	XMLName xml.Name   `xml:"ApplicationResults"`
+	XMLName xml.Name   `xml:"ApplicationResults" json:"-"`
 	Status  string     `xml:"status,attr"`
 	Success ReqSuccess `xml:"Success"`
 	Error   ReqError   `xml:"Error"`
