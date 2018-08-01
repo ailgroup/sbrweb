@@ -73,7 +73,7 @@ func TestRateDescCall(t *testing.T) {
 
 	roomStayRates := resp.Body.HotelDesc.RoomStay.RoomRates
 	numRoomRates := len(roomStayRates)
-	if numRoomRates != 1 {
+	if numRoomRates != 2 {
 		t.Error("Number of room rates is wrong")
 	}
 
@@ -134,7 +134,50 @@ func TestRateDescCall(t *testing.T) {
 	if hprice.TotalTaxes.TaxFieldTwo != "13.73" {
 		t.Errorf("TaxFieldTwo expected %s, got %s", "13.73", hprice.TotalTaxes.TaxFieldTwo)
 	}
+}
 
+var trackenc = []struct {
+	b64str string
+	input  []string
+}{
+	{"aWR4OjB8cnBoOjAwMXxpYXRhY2hhcjpKMUtBMTZ8dG90YWw6MzA3LjUw", []string{"idx:0", "rph:001", "iatachar:J1KA16", "total:307.50"}},
+	{"aWR4OjF8cnBoOjAwMnxpYXRhY2hhcjpGVzhNTlVUfHRvdGFsOjE3Mi45NQ==", []string{"idx:1", "rph:002", "iatachar:FW8MNUT", "total:172.95"}},
+}
+
+func TestSetTrackedEncode(t *testing.T) {
+	// assume RPH is from previous hotel property description call
+	rpc := SetRateParams(
+		[]RatePlan{
+			RatePlan{
+				RPH: "12",
+			},
+		},
+	)
+	raterq, _ := SetHotelRateDescBody(rpc)
+	req := BuildHotelRateDescRequest(sconf, raterq)
+	resp, _ := CallHotelRateDesc(serverHotelRateDesc.URL, req)
+	resp.SetTrackedEncode()
+	for i, rate := range resp.Body.HotelDesc.RoomStay.RoomRates {
+		if rate.TrackedEncoding != trackenc[i].b64str {
+			t.Errorf("TrackedEncoding expect: '%s', got '%s'", trackenc[i].b64str, rate.TrackedEncoding)
+		}
+		res, err := rate.DecodeTrackedEncoding()
+		if err != nil {
+			t.Errorf("Error on DecodeTrackedEncoding() %v", err)
+		}
+		if res[0] != trackenc[i].input[0] {
+			t.Errorf("epxected %s, got %s", trackenc[i].input[0], res[0])
+		}
+		if res[1] != trackenc[i].input[1] {
+			t.Errorf("epxected %s, got %s", trackenc[i].input[1], res[1])
+		}
+		if res[2] != trackenc[i].input[2] {
+			t.Errorf("epxected %s, got %s", trackenc[i].input[2], res[2])
+		}
+		if res[3] != trackenc[i].input[3] {
+			t.Errorf("epxected %s, got %s", trackenc[i].input[3], res[3])
+		}
+	}
 }
 
 func TestHotelRateDesCallDown(t *testing.T) {

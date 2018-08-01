@@ -1604,7 +1604,7 @@ var (
 		   </GuaranteesAccepted>
 		  </Guarantee>
 		  <RoomRates>
-		   <RoomRate ClientID="¤¤¤" DirectConnect="false" GuaranteeSurchargeRequired="G" GuaranteedRateProgram="false" HRD_RequiredForSell="false" IATA_CharacteristicIdentification="J1KA16" IATA_ProductIdentification="1KING:AAA/CAA RATE" LowInventoryThreshold="false" RateAccessCode="¤¤¤" RateCategory="¤" RateChangeInd="false" RateConversionInd="false" RoomLocationCode="J1" SpecialOffer="false">
+		   <RoomRate ClientID="¤¤¤" DirectConnect="false" GuaranteeSurchargeRequired="G" GuaranteedRateProgram="false" HRD_RequiredForSell="false" IATA_CharacteristicIdentification="J1KA16" IATA_ProductIdentification="1KING:AAA/CAA RATE" LowInventoryThreshold="false" RateAccessCode="¤¤¤" RateCategory="¤" RPH="001" RateChangeInd="false" RateConversionInd="false" RoomLocationCode="J1" SpecialOffer="false">
 			<AdditionalInfo>
 			 <CancelPolicy Numeric="02" Option="D"/>
 			 <Commission NonCommission="false">10.00 PERCENT COMMISSION</Commission>
@@ -1648,6 +1648,52 @@ var (
 			   </TotalTaxes>
 			  </HotelTotalPricing>
 			 </Rate>
+			</Rates>
+		   </RoomRate>
+		   <RoomRate ClientID="¤¤¤" DirectConnect="false" GuaranteeSurchargeRequired="G" GuaranteedRateProgram="false" HRD_RequiredForSell="false" IATA_CharacteristicIdentification="FW8MNUT" IATA_ProductIdentification="BEST AVAILABLE" LowInventoryThreshold="false" RateAccessCode="¤¤¤" RateCategory="¤" RPH="002" RateChangeInd="false" RateConversionInd="false" RoomLocationCode="J1" SpecialOffer="false">
+			<AdditionalInfo>
+			 <CancelPolicy Numeric="02" Option="D"/>
+			 <Commission NonCommission="false">10.00 PERCENT COMMISSION</Commission>
+			 <DCA_Cancellation>
+			  <Text>2 DAYS-PRIOR 1 NTS PENALTY</Text>
+			 </DCA_Cancellation>
+			 <DCA_Guarantee>
+			  <Text>GUARANTEE REQRD- MAJOR CREDIT CARDS.</Text>
+			 </DCA_Guarantee>
+			 <PaymentCard Code="DS"/>
+			 <PaymentCard Code="CA"/>
+			 <PaymentCard Code="MC"/>
+			 <PaymentCard Code="CB"/>
+			 <PaymentCard Code="VI"/>
+			 <PaymentCard Code="VS"/>
+			 <PaymentCard Code="AX"/>
+			 <PaymentCard Code="JC"/>
+			 <PaymentCard Code="DC"/>
+			 <Taxes>TAXES NOT INCLUDED IN ROOM RAT</Taxes>
+			 <Text>AAA OR CAA MEMBERSHIP ID REQUIRED AT CHECK-IN.</Text>
+			 <Text>NON SMOKING WATERVIEW: HIGH FLOOR ROOM: LED</Text>
+			 <Text>SMART TV: FRIDGE / COMP BOTTLED WATER:</Text>
+			 <Text>HEAVENLY</Text>
+			 <Text>AAA OR CAA MEMBERSHIP REQUIRED AT BE SHOWN AT</Text>
+			 <Text>CHECK-IN.</Text>
+			</AdditionalInfo>
+			<Rates>
+			 <Rate Amount="140.00" ChangeIndicator="false" CurrencyCode="USD" HRD_RequiredForSell="false" PackageIndicator="false" RateConversionInd="false" ReturnOfRateInd="false" RoomOnRequest="false">
+			  <AdditionalGuestAmounts>
+			   <AdditionalGuestAmount MaxExtraPersonsAllowed="1" NumAdults="1" NumCribs="1">
+				<Charges AdultRollAway="0.00" Crib="0.00" ExtraPerson="20.00"/>
+			   </AdditionalGuestAmount>
+			  </AdditionalGuestAmounts>
+			  <HotelTotalPricing Amount="172.95">
+			   <Disclaimer>INCLUDES TAXES AND SURCHARGES</Disclaimer>
+			   <TotalTaxes Amount="32.95">
+				<TaxFieldOne>19.22</TaxFieldOne>
+				<TaxFieldTwo>13.73</TaxFieldTwo>
+				<Text>CITY TAX</Text>
+				<Text>OCCUPANCY TAX</Text>
+			   </TotalTaxes>
+			  </HotelTotalPricing>
+		     </Rate>
 			</Rates>
 		   </RoomRate>
 		  </RoomRates>

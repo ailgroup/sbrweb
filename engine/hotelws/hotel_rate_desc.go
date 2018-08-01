@@ -116,8 +116,7 @@ func (r *HotelRateDescResponse) SetTrackedEncode() {
 		strslc = append(strslc, fmt.Sprintf("%s:%s", TrackEncRPH, rate.RPH))
 		strslc = append(strslc, fmt.Sprintf("%s:%s", TrackEncIATAChar, rate.IATA_Character))
 		strslc = append(strslc, fmt.Sprintf("%s:%s", TrackEncTotal, rate.Rates[0].HotelPricing.Amount))
-
-		rate.TrackedEncoding = B64Enc(strings.Join(strslc, TrackEncDelimiter))
+		r.Body.HotelDesc.RoomStay.RoomRates[i].TrackedEncoding = B64Enc(strings.Join(strslc, TrackEncDelimiter))
 	}
 }
 

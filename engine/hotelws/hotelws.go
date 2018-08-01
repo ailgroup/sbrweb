@@ -75,7 +75,7 @@ func TimeSpanFormatter(arrive, depart, formIn, formOut string) TimeSpan {
 	}
 }
 
-// sanatize cleans up filtered string terms for file names. removes whitespace and slashes as these either get in the
+// sanatize cleans up filtered string terms for file names. removes whitespace and slashes
 func sanatize(str string) string {
 	// use a NewReplacer to clean this up and make it easy to use with multiple replacers
 	//trim := strings.Trim(str, " ")
@@ -289,16 +289,20 @@ type PaymentCard struct {
 
 type RoomRate struct {
 	XMLName            xml.Name `xml:"RoomRate" json:"-"`
-	DirectConnect      string   `xml:"RDirectConnect,attr"`
+	ClientID           string   `xml:"ClientID,attr"`
+	DirectConnect      string   `xml:"DirectConnect,attr"`
 	GuaranteeSurcharge string   `xml:"GuaranteeSurchargeRequired,attr"`
 	GuaranteedRate     string   `xml:"GuaranteedRateProgram,attr"`
 	IATA_Character     string   `xml:"IATA_CharacteristicIdentification,attr"`
 	IATA_Product       string   `xml:"IATA_ProductIdentification,attr"`
 	LowInventory       string   `xml:"LowInventoryThreshold,attr"`
+	RateAccessCode     string   `xml:"RateAccessCode,attr"`
+	RateCategory       string   `xml:"RateCategory,attr"`
 	RateLevelCode      string   `xml:"RateLevelCode,attr"`
 	RPH                string   `xml:"RPH,attr"`
 	RateChangeInd      string   `xml:"RateChangeInd,attr"`
 	RateConversionInd  string   `xml:"RateConversionInd,attr"`
+	RoomLocationCode   string   `xml:"RoomLocationCode,attr"`
 	SpecialOffer       string   `xml:"SpecialOffer,attr"`
 	Rates              []Rate   `xml:"Rates>Rate"`
 	AdditionalInfo     AdditionalInfo
