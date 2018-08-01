@@ -21,6 +21,7 @@ One may implement Sabre hotel searching through building various criteria functi
 package hotelws
 
 import (
+	b64 "encoding/base64"
 	"encoding/xml"
 	"fmt"
 	"strings"
@@ -41,12 +42,28 @@ const (
 	CountryCodeQueryField = "countryCode_qf"
 	LatlngQueryField      = "latlng_qf"
 	HotelidQueryField     = "hotelID_qf"
+	TrackEncDelimiter     = "|"
+	TrackEncIndex         = "idx"
+	TrackEncRPH           = "rph"
+	TrackEncIATAChar      = "iatachar"
+	TrackEncTotal         = "total"
 	returnHostCommand     = true
 	ESA                   = "\u0087" //UNICODE: End of Selected Area
 	CrossLorraine         = "\u2628" //UNICODE Cross of Lorraine
 )
 
 var hostCommandReplacer = strings.NewReplacer("\\", "", "/", "", ESA, "")
+
+// B64Enc  base64 encode a string
+func B64Enc(str string) string {
+	return b64.URLEncoding.EncodeToString([]byte(str))
+}
+
+// B64Dec decode a base64 string
+func B64Dec(b64str string) (string, error) {
+	uDec, err := b64.URLEncoding.DecodeString(b64str)
+	return string(uDec), err
+}
 
 // TimeSpanFormatter parse string data value into time value.
 func TimeSpanFormatter(arrive, depart, formIn, formOut string) TimeSpan {
@@ -286,7 +303,19 @@ type RoomRate struct {
 	Rates              []Rate   `xml:"Rates>Rate"`
 	AdditionalInfo     AdditionalInfo
 	HotelRateCode      string `xml:"HotelRateCode"`
+	TrackedEncoding    string `json:"tracked_encoding"`
 }
+
+func (r *RoomRate) DecodeTrackedEncoding() ([]string, error) {
+	res := []string{}
+	bytEnc, err := B64Dec(r.TrackedEncoding)
+	if err != nil {
+		return res, err
+	}
+	res = strings.Split(string(bytEnc), TrackEncDelimiter)
+	return res, nil
+}
+
 type AdditionalInfo struct {
 	XMLName    xml.Name `xml:"AdditionalInfo" json:"-"`
 	Commission struct {
