@@ -207,11 +207,11 @@ var proptrack = []struct {
 	b64str string
 	input  []string
 }{
-	{"aWR4OjB8cnBoOjAwMXxpYXRhY2hhcjpQMUtSQUN8dG90YWw6MzM1LjQ1", []string{"idx:0", "rph:001", "iatachar:P1KRAC", "total:335.45"}},
-	{"aWR4OjF8cnBoOjAwMnxpYXRhY2hhcjpEMUtSQUN8dG90YWw6MzM1LjQ1", []string{"idx:1", "rph:002", "iatachar:D1KRAC", "total:335.45"}},
+	{"cnBoOjAwMXxybXQ6UDFLUkFDfHJ0eDowLXR0bDozMzUuNDUtbnh0OmZhbHNl", []string{"rph:001", "rmt:P1KRAC", "rtx:0-ttl:335.45-nxt:false"}},
+	{"cnBoOjAwMnxybXQ6RDFLUkFDfHJ0eDowLXR0bDozMzUuNDUtbnh0OmZhbHNl", []string{"rph:002", "rmt:D1KRAC", "rtx:0-ttl:335.45-nxt:false"}},
 }
 
-func TestSetTrackedEncodePropDesc(t *testing.T) {
+func TestSetRoomMetaDataPropDesc(t *testing.T) {
 	var hotelid = make(HotelRefCriterion)
 	hotelid[HotelidQueryField] = []string{"10"}
 	q, _ := NewHotelSearchCriteria(
@@ -220,7 +220,7 @@ func TestSetTrackedEncodePropDesc(t *testing.T) {
 	prop, _ := SetHotelPropDescBody(sampleGuestCount, q, sampleArrive, sampleDepart)
 	req := BuildHotelPropDescRequest(sconf, prop)
 	resp, _ := CallHotelPropDesc(serverHotelPropertyDesc.URL, req)
-	resp.SetTrackedEncode()
+	resp.SetRoomMetaData()
 	for i, rate := range resp.Body.HotelDesc.RoomStay.RoomRates {
 		//only test the first 2
 		if i > 1 {
@@ -233,17 +233,10 @@ func TestSetTrackedEncodePropDesc(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error on DecodeTrackedEncoding() %v", err)
 		}
-		if res[0] != proptrack[i].input[0] {
-			t.Errorf("epxected %s, got %s", proptrack[i].input[0], res[0])
-		}
-		if res[1] != proptrack[i].input[1] {
-			t.Errorf("epxected %s, got %s", proptrack[i].input[1], res[1])
-		}
-		if res[2] != proptrack[i].input[2] {
-			t.Errorf("epxected %s, got %s", proptrack[i].input[2], res[2])
-		}
-		if res[3] != proptrack[i].input[3] {
-			t.Errorf("epxected %s, got %s", proptrack[i].input[3], res[3])
+		for ix, b64 := range res {
+			if b64 != proptrack[i].input[ix] {
+				t.Errorf("epxected %s, got %s", proptrack[i].input[ix], b64)
+			}
 		}
 	}
 }

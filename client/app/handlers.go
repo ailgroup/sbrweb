@@ -259,7 +259,7 @@ func (s *Server) RatesHotelIDHandler() http.HandlerFunc {
 			return
 		}
 
-		call.SetTrackedEncode()
+		call.SetRoomMetaData()
 		response.RoomStay = call.Body.HotelDesc.RoomStay
 
 		w.WriteHeader(http.StatusOK)

@@ -140,11 +140,11 @@ var ratetrack = []struct {
 	b64str string
 	input  []string
 }{
-	{"aWR4OjB8cnBoOjAwMXxpYXRhY2hhcjpKMUtBMTZ8dG90YWw6MzA3LjUw", []string{"idx:0", "rph:001", "iatachar:J1KA16", "total:307.50"}},
-	{"aWR4OjF8cnBoOjAwMnxpYXRhY2hhcjpGVzhNTlVUfHRvdGFsOjE3Mi45NQ==", []string{"idx:1", "rph:002", "iatachar:FW8MNUT", "total:172.95"}},
+	{"cnBoOjAwMXxybXQ6SjFLQTE2fHJ0eDowLXR0bDozMDcuNTA=", []string{"rph:001", "rmt:J1KA16", "rtx:0-ttl:307.50"}},
+	{"cnBoOjAwMnxybXQ6Rlc4TU5VVHxydHg6MC10dGw6MTcyLjk1", []string{"rph:002", "rmt:FW8MNUT", "rtx:0-ttl:172.95"}},
 }
 
-func TestSetTrackedEncodeRateDesc(t *testing.T) {
+func TestSetRoomMetaDataRateDesc(t *testing.T) {
 	// assume RPH is from previous hotel property description call
 	rpc := SetRateParams(
 		[]RatePlan{
@@ -165,17 +165,10 @@ func TestSetTrackedEncodeRateDesc(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error on DecodeTrackedEncoding() %v", err)
 		}
-		if res[0] != ratetrack[i].input[0] {
-			t.Errorf("epxected %s, got %s", ratetrack[i].input[0], res[0])
-		}
-		if res[1] != ratetrack[i].input[1] {
-			t.Errorf("epxected %s, got %s", ratetrack[i].input[1], res[1])
-		}
-		if res[2] != ratetrack[i].input[2] {
-			t.Errorf("epxected %s, got %s", ratetrack[i].input[2], res[2])
-		}
-		if res[3] != ratetrack[i].input[3] {
-			t.Errorf("epxected %s, got %s", ratetrack[i].input[3], res[3])
+		for ix, b64 := range res {
+			if b64 != ratetrack[i].input[ix] {
+				t.Errorf("epxected %s, got %s", ratetrack[i].input[ix], b64)
+			}
 		}
 	}
 }

@@ -112,11 +112,12 @@ type HotelRateDescResponse struct {
 func (r *HotelRateDescResponse) SetTrackedEncode() {
 	for i, rate := range r.Body.HotelDesc.RoomStay.RoomRates {
 		strslc := []string{}
-		strslc = append(strslc, fmt.Sprintf("%s:%d", TrackEncIndex, i))
-		strslc = append(strslc, fmt.Sprintf("%s:%s", TrackEncRPH, rate.RPH))
-		strslc = append(strslc, fmt.Sprintf("%s:%s", TrackEncIATAChar, rate.IATA_Character))
-		strslc = append(strslc, fmt.Sprintf("%s:%s", TrackEncTotal, rate.Rates[0].HotelPricing.Amount))
-		r.Body.HotelDesc.RoomStay.RoomRates[i].B64RoomMetaData = B64Enc(strings.Join(strslc, TrackEncDelimiter))
+		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaRPHKey, rate.RPH))
+		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaIATACharKey, rate.IATA_Character))
+		for ri, rr := range rate.Rates {
+			strslc = append(strslc, fmt.Sprintf("%s:%d-%s:%s", RoomMetaRatesIdxKey, ri, RoomMetaTotalKey, rr.HotelPricing.Amount))
+		}
+		r.Body.HotelDesc.RoomStay.RoomRates[i].B64RoomMetaData = B64Enc(strings.Join(strslc, RoomMetaDelimiter))
 	}
 }
 

@@ -42,11 +42,13 @@ const (
 	CountryCodeQueryField = "countryCode_qf"
 	LatlngQueryField      = "latlng_qf"
 	HotelidQueryField     = "hotelID_qf"
-	TrackEncDelimiter     = "|"
-	TrackEncIndex         = "idx"
-	TrackEncRPH           = "rph"
-	TrackEncIATAChar      = "iatachar"
-	TrackEncTotal         = "total"
+	RoomMetaDelimiter     = "|"
+	RoomMetaIdxKey        = "idx"
+	RoomMetaRPHKey        = "rph" //reference place holder
+	RoomMetaIATACharKey   = "rmt" //room type
+	RoomMetaRatesIdxKey   = "rtx" //rate index
+	RoomMetaTotalKey      = "ttl" //total
+	RoomMetaRateNextKey   = "nxt" //next
 	returnHostCommand     = true
 	ESA                   = "\u0087" //UNICODE: End of Selected Area
 	CrossLorraine         = "\u2628" //UNICODE Cross of Lorraine
@@ -289,24 +291,24 @@ type PaymentCard struct {
 
 type RoomRate struct {
 	XMLName            xml.Name `xml:"RoomRate" json:"-"`
-	ClientID           string   `xml:"ClientID,attr,omitempty"`
-	DirectConnect      string   `xml:"DirectConnect,attr,omitempty"`
-	GuaranteeSurcharge string   `xml:"GuaranteeSurchargeRequired,attr,omitempty"`
-	GuaranteedRate     string   `xml:"GuaranteedRateProgram,attr,omitempty"`
-	IATA_Character     string   `xml:"IATA_CharacteristicIdentification,attr,omitempty"`
-	IATA_Product       string   `xml:"IATA_ProductIdentification,attr,omitempty"`
-	LowInventory       string   `xml:"LowInventoryThreshold,attr,omitempty"`
-	RateAccessCode     string   `xml:"RateAccessCode,attr,omitempty"`
-	RateCategory       string   `xml:"RateCategory,attr,omitempty"`
-	RateLevelCode      string   `xml:"RateLevelCode,attr,omitempty"`
-	RPH                string   `xml:"RPH,attr,omitempty"`
-	RateChangeInd      string   `xml:"RateChangeInd,attr,omitempty"`
-	RateConversionInd  string   `xml:"RateConversionInd,attr,omitempty"`
-	RoomLocationCode   string   `xml:"RoomLocationCode,attr,omitempty"`
-	SpecialOffer       string   `xml:"SpecialOffer,attr,omitempty"`
-	Rates              []Rate   `xml:"Rates>Rate,omitempty"`
+	ClientID           string   `xml:"ClientID,attr"`
+	DirectConnect      string   `xml:"DirectConnect,attr"`
+	GuaranteeSurcharge string   `xml:"GuaranteeSurchargeRequired,attr"`
+	GuaranteedRate     string   `xml:"GuaranteedRateProgram,attr"`
+	IATA_Character     string   `xml:"IATA_CharacteristicIdentification,attr"`
+	IATA_Product       string   `xml:"IATA_ProductIdentification,attr"`
+	LowInventory       string   `xml:"LowInventoryThreshold,attr"`
+	RateAccessCode     string   `xml:"RateAccessCode,attr"`
+	RateCategory       string   `xml:"RateCategory,attr"`
+	RateLevelCode      string   `xml:"RateLevelCode,attr"`
+	RPH                string   `xml:"RPH,attr"`
+	RateChangeInd      string   `xml:"RateChangeInd,attr"`
+	RateConversionInd  string   `xml:"RateConversionInd,attr"`
+	RoomLocationCode   string   `xml:"RoomLocationCode,attr"`
+	SpecialOffer       string   `xml:"SpecialOffer,attr"`
+	Rates              []Rate   `xml:"Rates>Rate"`
 	AdditionalInfo     AdditionalInfo
-	HotelRateCode      string `xml:"HotelRateCode,omitempty"`
+	HotelRateCode      string `xml:"HotelRateCode"`
 	B64RoomMetaData    string
 }
 
@@ -316,7 +318,7 @@ func (r *RoomRate) DecodeTrackedEncoding() ([]string, error) {
 	if err != nil {
 		return res, err
 	}
-	res = strings.Split(string(bytEnc), TrackEncDelimiter)
+	res = strings.Split(string(bytEnc), RoomMetaDelimiter)
 	return res, nil
 }
 
