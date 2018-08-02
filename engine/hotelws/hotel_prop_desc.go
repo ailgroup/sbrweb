@@ -3,8 +3,10 @@ package hotelws
 import (
 	"bytes"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/ailgroup/sbrweb/engine/sbrerr"
 	"github.com/ailgroup/sbrweb/engine/srvc"
@@ -132,6 +134,17 @@ type HotelPropDescResponse struct {
 	ErrorSabreXML     sbrerr.ErrorSabreXML
 }
 
+func (r *HotelPropDescResponse) SetTrackedEncode() {
+	for i, rate := range r.Body.HotelDesc.RoomStay.RoomRates {
+		strslc := []string{}
+		strslc = append(strslc, fmt.Sprintf("%s:%d", TrackEncIndex, i))
+		strslc = append(strslc, fmt.Sprintf("%s:%s", TrackEncRPH, rate.RPH))
+		strslc = append(strslc, fmt.Sprintf("%s:%s", TrackEncIATAChar, rate.IATA_Character))
+		strslc = append(strslc, fmt.Sprintf("%s:%s", TrackEncTotal, rate.Rates[0].HotelPricing.Amount))
+		r.Body.HotelDesc.RoomStay.RoomRates[i].B64RoomMetaData = B64Enc(strings.Join(strslc, TrackEncDelimiter))
+	}
+}
+
 // CallHotelPropDesc to sabre web services retrieve hotel rates using HotelPropertyDescriptionLLSRQ.
 func CallHotelPropDesc(serviceURL string, req HotelPropDescRequest) (HotelPropDescResponse, error) {
 	propResp := HotelPropDescResponse{}
@@ -161,5 +174,6 @@ func CallHotelPropDesc(serviceURL string, req HotelPropDescRequest) (HotelPropDe
 	if !propResp.Body.HotelDesc.Result.Ok() {
 		return propResp, propResp.Body.HotelDesc.Result.ErrFormat()
 	}
+	//propResp.SetTrackedEncode()
 	return propResp, nil
 }

@@ -198,6 +198,8 @@ func (s *Server) BookRoomHandler() http.HandlerFunc {
 			if err != nil {
 				return err
 			}
+
+			call.SetTrackedEncode()
 		*/
 	}
 }
@@ -257,6 +259,7 @@ func (s *Server) RatesHotelIDHandler() http.HandlerFunc {
 			return
 		}
 
+		call.SetTrackedEncode()
 		response.RoomStay = call.Body.HotelDesc.RoomStay
 
 		w.WriteHeader(http.StatusOK)

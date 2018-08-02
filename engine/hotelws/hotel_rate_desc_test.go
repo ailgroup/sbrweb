@@ -136,7 +136,7 @@ func TestRateDescCall(t *testing.T) {
 	}
 }
 
-var trackenc = []struct {
+var ratetrack = []struct {
 	b64str string
 	input  []string
 }{
@@ -144,7 +144,7 @@ var trackenc = []struct {
 	{"aWR4OjF8cnBoOjAwMnxpYXRhY2hhcjpGVzhNTlVUfHRvdGFsOjE3Mi45NQ==", []string{"idx:1", "rph:002", "iatachar:FW8MNUT", "total:172.95"}},
 }
 
-func TestSetTrackedEncode(t *testing.T) {
+func TestSetTrackedEncodeRateDesc(t *testing.T) {
 	// assume RPH is from previous hotel property description call
 	rpc := SetRateParams(
 		[]RatePlan{
@@ -158,24 +158,24 @@ func TestSetTrackedEncode(t *testing.T) {
 	resp, _ := CallHotelRateDesc(serverHotelRateDesc.URL, req)
 	resp.SetTrackedEncode()
 	for i, rate := range resp.Body.HotelDesc.RoomStay.RoomRates {
-		if rate.TrackedEncoding != trackenc[i].b64str {
-			t.Errorf("TrackedEncoding expect: '%s', got '%s'", trackenc[i].b64str, rate.TrackedEncoding)
+		if rate.B64RoomMetaData != ratetrack[i].b64str {
+			t.Errorf("TrackedEncoding expect: '%s', got '%s'", ratetrack[i].b64str, rate.B64RoomMetaData)
 		}
 		res, err := rate.DecodeTrackedEncoding()
 		if err != nil {
 			t.Errorf("Error on DecodeTrackedEncoding() %v", err)
 		}
-		if res[0] != trackenc[i].input[0] {
-			t.Errorf("epxected %s, got %s", trackenc[i].input[0], res[0])
+		if res[0] != ratetrack[i].input[0] {
+			t.Errorf("epxected %s, got %s", ratetrack[i].input[0], res[0])
 		}
-		if res[1] != trackenc[i].input[1] {
-			t.Errorf("epxected %s, got %s", trackenc[i].input[1], res[1])
+		if res[1] != ratetrack[i].input[1] {
+			t.Errorf("epxected %s, got %s", ratetrack[i].input[1], res[1])
 		}
-		if res[2] != trackenc[i].input[2] {
-			t.Errorf("epxected %s, got %s", trackenc[i].input[2], res[2])
+		if res[2] != ratetrack[i].input[2] {
+			t.Errorf("epxected %s, got %s", ratetrack[i].input[2], res[2])
 		}
-		if res[3] != trackenc[i].input[3] {
-			t.Errorf("epxected %s, got %s", trackenc[i].input[3], res[3])
+		if res[3] != ratetrack[i].input[3] {
+			t.Errorf("epxected %s, got %s", ratetrack[i].input[3], res[3])
 		}
 	}
 }
