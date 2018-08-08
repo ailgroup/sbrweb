@@ -203,12 +203,52 @@ func TestPropDescCall(t *testing.T) {
 	}
 }
 
+//[]string{"hc:HOD4/11MAY-12MAY2", "rph:002", "rmt:D1KRAC", "rtx:0-ttl:190.45-nxt:false"}
+
 var proptrack = []struct {
 	b64str string
-	input  []string
+	expect ParsedRoomMeta
 }{
-	{"cnBoOjAwMXxybXQ6UDFLUkFDfHJ0eDowLXR0bDozMzUuNDUtbnh0OmZhbHNl", []string{"rph:001", "rmt:P1KRAC", "rtx:0-ttl:335.45-nxt:false"}},
-	{"cnBoOjAwMnxybXQ6RDFLUkFDfHJ0eDowLXR0bDozMzUuNDUtbnh0OmZhbHNl", []string{"rph:002", "rmt:D1KRAC", "rtx:0-ttl:335.45-nxt:false"}},
+	{"YXJ2OjA0LTAyfGRwdDowNC0wNXxnc3Q6MnxoYzpIT0Q0LzExTUFZLTEyTUFZMnxoaWQ6MTB8cnBoOjAwMXxybXQ6UDFLUkFDfFtjdXI6U0dELXJxczpmYWxzZS1hbXQ6MzM1LjQ1O2N1cjpVU0QtcnFzOmZhbHNlLWFtdDo0MzUuNDVd", ParsedRoomMeta{
+		Arrive:         "04-02",
+		Depart:         "04-05",
+		Guest:          "2",
+		Hc:             "HOD4/11MAY-12MAY2",
+		HotelID:        "10",
+		Rmt:            "P1KRAC",
+		Rph:            "001",
+		StayRatesCache: []string{"cur:SGD-rqs:false-amt:335.45", "cur:USD-rqs:false-amt:435.45"},
+		ParsedStayRatesCache: []parsedStayRateCache{
+			parsedStayRateCache{
+				Amt: "335.45",
+				Cur: "SGD",
+				Rqs: false,
+			},
+			parsedStayRateCache{
+				Amt: "435.45",
+				Cur: "USD",
+				Rqs: false,
+			},
+		},
+	}},
+	{"YXJ2OjA0LTAyfGRwdDowNC0wNXxnc3Q6MnxoYzpIT0Q0LzExTUFZLTEyTUFZMnxoaWQ6MTB8cnBoOjAwMnxybXQ6RDFLUkFDfFtjdXI6U0dELXJxczpmYWxzZS1hbXQ6MTkwLjQ1XQ==",
+		ParsedRoomMeta{
+			Arrive:         "04-02",
+			Depart:         "04-05",
+			Guest:          "2",
+			Hc:             "HOD4/11MAY-12MAY2",
+			HotelID:        "10",
+			Rmt:            "D1KRAC",
+			Rph:            "002",
+			StayRatesCache: []string{"rtx:0-ttl:190.45-nxt:false"},
+			ParsedStayRatesCache: []parsedStayRateCache{
+				parsedStayRateCache{
+					Amt: "190.45",
+					Cur: "SGD",
+					Rqs: false,
+				},
+			},
+		}},
 }
 
 func TestSetRoomMetaDataPropDesc(t *testing.T) {
@@ -220,24 +260,50 @@ func TestSetRoomMetaDataPropDesc(t *testing.T) {
 	prop, _ := SetHotelPropDescBody(sampleGuestCount, q, sampleArrive, sampleDepart)
 	req := BuildHotelPropDescRequest(sconf, prop)
 	resp, _ := CallHotelPropDesc(serverHotelPropertyDesc.URL, req)
-	resp.SetRoomMetaData()
+	resp.SetRoomMetaData(sampleGuestCount, sampleArrive, sampleDepart, "10")
 	for i, rate := range resp.Body.HotelDesc.RoomStay.RoomRates {
 		//only test the first 2
 		if i > 1 {
 			break
 		}
 		if rate.B64RoomMetaData != proptrack[i].b64str {
-			t.Errorf("TrackedEncoding expect: '%s', got '%s'", proptrack[i].b64str, rate.B64RoomMetaData)
+			t.Errorf("B64RoomMetaData expect: '%s', got '%s'", proptrack[i].b64str, rate.B64RoomMetaData)
 		}
-		res, err := rate.DecodeTrackedEncoding()
+		prm, err := rate.NewParsedRoomMeta()
 		if err != nil {
 			t.Errorf("Error on DecodeTrackedEncoding() %v", err)
 		}
-		for ix, b64 := range res {
-			if b64 != proptrack[i].input[ix] {
-				t.Errorf("epxected %s, got %s", proptrack[i].input[ix], b64)
+		if prm.Arrive != proptrack[i].expect.Arrive {
+			t.Errorf("Arrive expect %s, got %s", proptrack[i].expect.Arrive, prm.Arrive)
+		}
+		if prm.Depart != proptrack[i].expect.Depart {
+			t.Errorf("Depart expect %s, got %s", proptrack[i].expect.Depart, prm.Depart)
+		}
+		if prm.Guest != proptrack[i].expect.Guest {
+			t.Errorf("Guest expect %s, got %s", proptrack[i].expect.Guest, prm.Guest)
+		}
+		if prm.Hc != proptrack[i].expect.Hc {
+			t.Errorf("Hc expect %s, got %s", proptrack[i].expect.Hc, prm.Hc)
+		}
+		if prm.HotelID != proptrack[i].expect.HotelID {
+			t.Errorf("HotelID expect %s, got %s", proptrack[i].expect.HotelID, prm.HotelID)
+		}
+
+		for idx, psrc := range prm.ParsedStayRatesCache {
+			amt := proptrack[i].expect.ParsedStayRatesCache[idx].Amt
+			cur := proptrack[i].expect.ParsedStayRatesCache[idx].Cur
+			rqs := proptrack[i].expect.ParsedStayRatesCache[idx].Rqs
+			if psrc.Amt != amt {
+				t.Errorf("Amt expect %s, got %s", amt, psrc.Amt)
+			}
+			if psrc.Cur != cur {
+				t.Errorf("Cur expect %s, got %s", cur, psrc.Cur)
+			}
+			if psrc.Rqs != rqs {
+				t.Errorf("Amt expect %v, got %v", rqs, psrc.Rqs)
 			}
 		}
+
 	}
 }
 

@@ -3,10 +3,8 @@ package hotelws
 import (
 	"bytes"
 	"encoding/xml"
-	"fmt"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/ailgroup/sbrweb/engine/sbrerr"
 	"github.com/ailgroup/sbrweb/engine/srvc"
@@ -107,18 +105,6 @@ type HotelRateDescResponse struct {
 	}
 	ErrorSabreService sbrerr.ErrorSabreService
 	ErrorSabreXML     sbrerr.ErrorSabreXML
-}
-
-func (r *HotelRateDescResponse) SetTrackedEncode() {
-	for i, rate := range r.Body.HotelDesc.RoomStay.RoomRates {
-		strslc := []string{}
-		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaRPHKey, rate.RPH))
-		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaIATACharKey, rate.IATA_Character))
-		for ri, rr := range rate.Rates {
-			strslc = append(strslc, fmt.Sprintf("%s:%d-%s:%s", RoomMetaRatesIdxKey, ri, RoomMetaTotalKey, rr.HotelPricing.Amount))
-		}
-		r.Body.HotelDesc.RoomStay.RoomRates[i].B64RoomMetaData = B64Enc(strings.Join(strslc, RoomMetaDelimiter))
-	}
 }
 
 // CallHotelRateDesc to sabre web services retrieve hotel rates using HotelRateDescriptionLLSRQ. This call only supports requests that contain an RPH from a previous hotel_property_desc call, see BuildHotelRateDescRequest.

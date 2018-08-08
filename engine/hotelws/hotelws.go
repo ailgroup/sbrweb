@@ -24,6 +24,7 @@ import (
 	b64 "encoding/base64"
 	"encoding/xml"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 	"unicode"
@@ -32,40 +33,45 @@ import (
 )
 
 const (
-	hotelRQVersion        = "2.3.0"
-	TimeFormatMD          = "01-02"
-	TimeFormatMDTHM       = "01-02T15:04"
-	TimeFormatMDHM        = "01-02 15:04"
+	hotelRQVersion  = "2.3.0"
+	TimeFormatMD    = "01-02"
+	TimeFormatMDTHM = "01-02T15:04"
+	TimeFormatMDHM  = "01-02 15:04"
+
 	StreetQueryField      = "street_qf"
 	CityQueryField        = "city_qf"
-	PostalQueryField      = "postal_qf"
 	CountryCodeQueryField = "countryCode_qf"
-	LatlngQueryField      = "latlng_qf"
 	HotelidQueryField     = "hotelID_qf"
-	RoomMetaDelimiter     = "|"
-	RoomMetaIdxKey        = "idx"
-	RoomMetaRPHKey        = "rph" //reference place holder
-	RoomMetaIATACharKey   = "rmt" //room type
-	RoomMetaRatesIdxKey   = "rtx" //rate index
-	RoomMetaTotalKey      = "ttl" //total
-	RoomMetaRateNextKey   = "nxt" //next
-	returnHostCommand     = true
-	ESA                   = "\u0087" //UNICODE: End of Selected Area
-	CrossLorraine         = "\u2628" //UNICODE Cross of Lorraine
+	LatlngQueryField      = "latlng_qf"
+	PostalQueryField      = "postal_qf"
+
+	ColDelim    = ":"
+	DashDelim   = "-"
+	LBrackDelim = "]"
+	PipeDelim   = "|"
+	RBrackDelim = "["
+	SColDelim   = ";"
+
+	RoomMetaArvKey  = "arv" //arrival
+	RoomMetaDptKey  = "dpt" //depart
+	RoomMetaGstKey  = "gst" //guest count
+	RoomMetaHcKey   = "hc"  //host command
+	RoomMetaHidKey  = "hid" //hotel id
+	RoomMetaRmtKey  = "rmt" //room type
+	RoomMetaRphKey  = "rph" //reference place holder
+	RrateMetaAmtKey = "amt" //total
+	RrateMetaCurKey = "cur" //total
+	RrateMetaRqsKey = "rqs" //next
+
+	returnHostCommand = true
+	ESA               = "\u0087" //UNICODE: End of Selected Area
+	CrossLorraine     = "\u2628" //UNICODE Cross of Lorraine
 )
 
-var hostCommandReplacer = strings.NewReplacer("\\", "", "/", "", ESA, "")
-
-// B64Enc  base64 encode a string
-func B64Enc(str string) string {
-	return b64.URLEncoding.EncodeToString([]byte(str))
-}
-
-// B64Dec decode a base64 string
-func B64Dec(b64str string) (string, error) {
-	uDec, err := b64.URLEncoding.DecodeString(b64str)
-	return string(uDec), err
-}
+var (
+	hostCommandReplacer = strings.NewReplacer("\\", "", "/", "", ESA, "")
+	ratesMetaMatch      = regexp.MustCompile(`^\[.*\]$`)
+)
 
 // TimeSpanFormatter parse string data value into time value.
 func TimeSpanFormatter(arrive, depart, formIn, formOut string) TimeSpan {
@@ -89,6 +95,7 @@ func sanatize(str string) string {
 	}, hostCommandReplacer.Replace(strings.ToLower(str)))
 }
 
+// Translate sabre SystemResults messages into human readable.
 func (s SystemResults) Translate() string {
 	clean := sanatize(s.Message)
 	switch {
@@ -99,6 +106,7 @@ func (s SystemResults) Translate() string {
 	}
 }
 
+// ErrFormat formatter on ApplicationResults for printing error string from sabre soap calls.
 /* OTHER ERRORS
 
 --see hotel_res_direct_connect.xml, credit card???
@@ -125,6 +133,7 @@ func (result ApplicationResults) ErrFormat() sbrerr.ErrorSabreResult {
 	}
 }
 
+// Ok for ApplicationResults returns boolean check for sbrerr on SOAP requests
 func (result ApplicationResults) Ok() bool {
 	switch result.Status {
 	case sbrerr.StatusNotProcess(): //queries
@@ -136,6 +145,99 @@ func (result ApplicationResults) Ok() bool {
 	default:
 		return true
 	}
+}
+
+// B64Enc  base64 encode a string
+func B64Enc(str string) string {
+	return b64.URLEncoding.EncodeToString([]byte(str))
+}
+
+// B64Dec decode a base64 string
+func B64Dec(b64str string) (string, error) {
+	uDec, err := b64.URLEncoding.DecodeString(b64str)
+	return string(uDec), err
+}
+
+// parseB64DecodeRates parses cached room stay rates
+func (p *ParsedRoomMeta) parseB64DecodeRates() {
+	for _, r := range p.StayRatesCache {
+		mr := parsedStayRateCache{}
+		dash := strings.Split(r, DashDelim)
+		for _, d := range dash {
+			rs := strings.Split(d, ColDelim)
+			if len(rs) < 2 {
+				continue
+			}
+			switch rs[0] {
+			case RrateMetaAmtKey:
+				mr.Amt = rs[1]
+			case RrateMetaCurKey:
+				mr.Cur = rs[1]
+			case RrateMetaRqsKey:
+				if rs[1] == "true" {
+					mr.Rqs = true
+				}
+			}
+		}
+		p.ParsedStayRatesCache = append(p.ParsedStayRatesCache, mr)
+	}
+}
+
+// NewParsedRoomMeta builds a strcut from parsing b64 encoded string cache of previous rate request. See SetRoomMetaData for how this data is constucted.
+func (r *RoomRate) NewParsedRoomMeta() (ParsedRoomMeta, error) {
+	rmp := ParsedRoomMeta{}
+	b64Str, err := B64Dec(r.B64RoomMetaData)
+	if err != nil {
+		return rmp, err
+	}
+	for _, p := range strings.Split(b64Str, PipeDelim) {
+		if ratesMetaMatch.MatchString(p) {
+			b := strings.TrimPrefix(p, RBrackDelim)
+			b = strings.TrimSuffix(b, LBrackDelim)
+			rmp.StayRatesCache = strings.Split(b, SColDelim)
+		} else {
+			c := strings.Split(p, ColDelim)
+			if len(c) < 2 {
+				continue
+			}
+			switch c[0] {
+			case RoomMetaArvKey:
+				rmp.Arrive = c[1]
+			case RoomMetaDptKey:
+				rmp.Depart = c[1]
+			case RoomMetaGstKey:
+				rmp.Guest = c[1]
+			case RoomMetaHcKey:
+				rmp.Hc = c[1]
+			case RoomMetaHidKey:
+				rmp.HotelID = c[1]
+			case RoomMetaRphKey:
+				rmp.Rph = c[1]
+			case RoomMetaRmtKey:
+				rmp.Rmt = c[1]
+			}
+		}
+	}
+	rmp.parseB64DecodeRates()
+	return rmp, nil
+}
+
+type parsedStayRateCache struct {
+	Amt string
+	Cur string
+	Rqs bool
+}
+
+type ParsedRoomMeta struct {
+	Arrive               string   // arrival
+	Depart               string   // departure
+	Guest                string   // guest count
+	Hc                   string   // host command
+	HotelID              string   // hotel id
+	Rmt                  string   // room type;;iata characteristic
+	Rph                  string   // reference place holder
+	StayRatesCache       []string // room_stay.room_rates
+	ParsedStayRatesCache []parsedStayRateCache
 }
 
 // HotelSearchCriteria top level element for criterion
@@ -310,16 +412,6 @@ type RoomRate struct {
 	AdditionalInfo     AdditionalInfo
 	HotelRateCode      string `xml:"HotelRateCode"`
 	B64RoomMetaData    string
-}
-
-func (r *RoomRate) DecodeTrackedEncoding() ([]string, error) {
-	res := []string{}
-	bytEnc, err := B64Dec(r.B64RoomMetaData)
-	if err != nil {
-		return res, err
-	}
-	res = strings.Split(string(bytEnc), RoomMetaDelimiter)
-	return res, nil
 }
 
 type AdditionalInfo struct {

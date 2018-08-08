@@ -134,15 +134,27 @@ type HotelPropDescResponse struct {
 	ErrorSabreXML     sbrerr.ErrorSabreXML
 }
 
-func (r *HotelPropDescResponse) SetRoomMetaData() {
+// SetRoomMetaData builds a b64 encoded string cache of rate request for later retrieval. See NewParsedRoomMeta for this data is parsed.
+func (r *HotelPropDescResponse) SetRoomMetaData(guest int, arrive, depart, hotelid string) {
 	for i, rate := range r.Body.HotelDesc.RoomStay.RoomRates {
 		strslc := []string{}
-		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaRPHKey, rate.RPH))
-		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaIATACharKey, rate.IATA_Character))
+		rrates := ""
+		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaArvKey, arrive))
+		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaDptKey, depart))
+		strslc = append(strslc, fmt.Sprintf("%s:%d", RoomMetaGstKey, guest))
+		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaHcKey, r.Body.HotelDesc.Result.Success.System.HostCommand.Cryptic))
+		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaHidKey, hotelid))
+		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaRphKey, rate.RPH))
+		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaRmtKey, rate.IATA_Character))
+
 		for ri, rr := range rate.Rates {
-			strslc = append(strslc, fmt.Sprintf("%s:%d-%s:%s-%s:%s", RoomMetaRatesIdxKey, ri, RoomMetaTotalKey, rr.HotelPricing.Amount, RoomMetaRateNextKey, rr.HRD_RequiredForSell))
+			rrates += fmt.Sprintf("%s:%s-%s:%s-%s:%s", RrateMetaCurKey, rr.CurrencyCode, RrateMetaRqsKey, rr.HRD_RequiredForSell, RrateMetaAmtKey, rr.HotelPricing.Amount)
+			if ((len(rate.Rates) - 1) - ri) != 0 {
+				rrates += SColDelim
+			}
 		}
-		r.Body.HotelDesc.RoomStay.RoomRates[i].B64RoomMetaData = B64Enc(strings.Join(strslc, RoomMetaDelimiter))
+		strslc = append(strslc, fmt.Sprintf("%s%s%s", RBrackDelim, rrates, LBrackDelim))
+		r.Body.HotelDesc.RoomStay.RoomRates[i].B64RoomMetaData = B64Enc(strings.Join(strslc, PipeDelim))
 	}
 }
 

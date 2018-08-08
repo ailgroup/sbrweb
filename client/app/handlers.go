@@ -37,12 +37,12 @@ type HotelParamsID struct {
 type BookRoomParams struct {
 	FirstName string `form:"first_name"`
 	LastName  string `form:"last_name"`
-	Phone     string `form:"phone"`
 	NumRooms  string `form:"num_rooms"`
-	RoomRPH   string `form:"room_rph"`
+	CCPhone   string `form:"cc_phone"`
 	CCCode    string `form:"cc_code"`
 	CCExpire  string `form:"cc_expire"`
 	CCNumber  string `form:"cc_number"`
+	RoomMeta  string `form:"room_meta"`
 }
 
 // AvailHotelIDSResponse for sabre hotel availability
@@ -146,7 +146,12 @@ func (b BookRoomParams) Validate() error {
 	return nil
 }
 
-// first,last,phone, number of units, rph, ccCode, ccExpire, ccNumber
+/*
+	BookRoomHandler creates a pnr, fetches rate, books room, ends transaction. It accepts room meta data generated from previous requests. Required params: last_name, num_rooms, rph, cc_phone, cc_code, cc_expire, cc_number
+
+	curl -H "Accept: application/json" -X GET 'http://localhost:8080/book/hotel/room?'
+*/
+
 func (s *Server) BookRoomHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -171,7 +176,7 @@ func (s *Server) BookRoomHandler() http.HandlerFunc {
 		//build person
 		person := itin.CreatePersonName(params.FirstName, params.LastName)
 		//build pnr
-		pnrBody := itin.SetPNRDetailBody(params.Phone, person)
+		pnrBody := itin.SetPNRDetailBody(params.CCPhone, person)
 		pnrReq := itin.BuildPNRDetailsRequest(s.SConfig, pnrBody)
 		//call pnr
 		pnrResp, err := itin.CallPNRDetail(s.SConfig.ServiceURL, pnrReq)
@@ -208,8 +213,8 @@ func (s *Server) BookRoomHandler() http.HandlerFunc {
 RatesHotelIDHandler wraps SOAP call to sabre property description service. This SOAP service is the primary service for returning room rates. It accepts one hotel ref criterion and returns one hotel with one room stay object containing 0..n room rates.
 
 	Example:
-		curl -H "Accept: application/json" -X GET 'http://localhost:8080/rates/hotel/id?guest_count=4&arrive=2018-07-17&depart=2018-07-18&hotel_id=10'
-		curl -H "Accept: application/json" -X GET 'http://localhost:8080/rates/hotel/id?guest_count=4&arrive=2018-07-17&depart=2018-07-18&hotel_ids=12'
+		curl -H "Accept: application/json" -X GET 'http://localhost:8080/rates/hotel/id?guest_count=2&arrive=2018-07-17&depart=2018-07-18&hotel_id=10'
+		curl -H "Accept: application/json" -X GET 'http://localhost:8080/rates/hotel/id?guest_count=4&arrive=2018-07-17&depart=2018-07-18&hotel_id=12'
 */
 func (s *Server) RatesHotelIDHandler() http.HandlerFunc {
 	//closure to execute
@@ -259,7 +264,7 @@ func (s *Server) RatesHotelIDHandler() http.HandlerFunc {
 			return
 		}
 
-		call.SetRoomMetaData()
+		call.SetRoomMetaData(params.GuestCount, params.OutArrive, params.OutDepart, params.HotelID)
 		response.RoomStay = call.Body.HotelDesc.RoomStay
 
 		w.WriteHeader(http.StatusOK)

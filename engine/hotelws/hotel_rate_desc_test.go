@@ -136,43 +136,6 @@ func TestRateDescCall(t *testing.T) {
 	}
 }
 
-var ratetrack = []struct {
-	b64str string
-	input  []string
-}{
-	{"cnBoOjAwMXxybXQ6SjFLQTE2fHJ0eDowLXR0bDozMDcuNTA=", []string{"rph:001", "rmt:J1KA16", "rtx:0-ttl:307.50"}},
-	{"cnBoOjAwMnxybXQ6Rlc4TU5VVHxydHg6MC10dGw6MTcyLjk1", []string{"rph:002", "rmt:FW8MNUT", "rtx:0-ttl:172.95"}},
-}
-
-func TestSetRoomMetaDataRateDesc(t *testing.T) {
-	// assume RPH is from previous hotel property description call
-	rpc := SetRateParams(
-		[]RatePlan{
-			RatePlan{
-				RPH: "12",
-			},
-		},
-	)
-	raterq, _ := SetHotelRateDescBody(rpc)
-	req := BuildHotelRateDescRequest(sconf, raterq)
-	resp, _ := CallHotelRateDesc(serverHotelRateDesc.URL, req)
-	resp.SetTrackedEncode()
-	for i, rate := range resp.Body.HotelDesc.RoomStay.RoomRates {
-		if rate.B64RoomMetaData != ratetrack[i].b64str {
-			t.Errorf("TrackedEncoding expect: '%s', got '%s'", ratetrack[i].b64str, rate.B64RoomMetaData)
-		}
-		res, err := rate.DecodeTrackedEncoding()
-		if err != nil {
-			t.Errorf("Error on DecodeTrackedEncoding() %v", err)
-		}
-		for ix, b64 := range res {
-			if b64 != ratetrack[i].input[ix] {
-				t.Errorf("epxected %s, got %s", ratetrack[i].input[ix], b64)
-			}
-		}
-	}
-}
-
 func TestHotelRateDesCallDown(t *testing.T) {
 	rpc := SetRateParams(
 		[]RatePlan{

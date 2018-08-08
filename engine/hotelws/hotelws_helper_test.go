@@ -848,6 +848,18 @@ var (
 				   <TotalTaxes Amount="21.95"/>
 				  </HotelTotalPricing>
 				 </Rate>
+				 <Rate Amount="385.00" ChangeIndicator="false" CurrencyCode="USD" HRD_RequiredForSell="false" PackageIndicator="false" RateConversionInd="false" ReturnOfRateInd="false" RoomOnRequest="false">
+				  <AdditionalGuestAmounts>
+				   <AdditionalGuestAmount MaxExtraPersonsAllowed="0" NumCribs="0">
+					<Charges Crib="0" ExtraPerson="80.00"/>
+				   </AdditionalGuestAmount>
+				  </AdditionalGuestAmounts>
+				  <HotelTotalPricing Amount="435.45">
+				   <Disclaimer>INCLUDES TAXES AND SURCHARGES</Disclaimer>
+				   <TotalSurcharges Amount="78.50"/>
+				   <TotalTaxes Amount="71.95"/>
+				  </HotelTotalPricing>
+				 </Rate>
 				</Rates>
 			   </RoomRate>
 			   <RoomRate DirectConnect="false" GuaranteeSurchargeRequired="G" GuaranteedRateProgram="false" IATA_CharacteristicIdentification="D1KRAC" IATA_ProductIdentification="FULLY FLEXIBLE-" LowInventoryThreshold="false" RPH="002" RateChangeInd="false" RateConversionInd="false" SpecialOffer="false">
@@ -858,13 +870,13 @@ var (
 				 <Text>PRIVATE BALCONY, FREE WIFI</Text>
 				</AdditionalInfo>
 				<Rates>
-				 <Rate Amount="285.00" ChangeIndicator="false" CurrencyCode="SGD" HRD_RequiredForSell="false" PackageIndicator="false" RateConversionInd="false" ReturnOfRateInd="false" RoomOnRequest="false">
+				 <Rate Amount="140.00" ChangeIndicator="false" CurrencyCode="SGD" HRD_RequiredForSell="false" PackageIndicator="false" RateConversionInd="false" ReturnOfRateInd="false" RoomOnRequest="false">
 				  <AdditionalGuestAmounts>
 				   <AdditionalGuestAmount MaxExtraPersonsAllowed="0" NumCribs="0">
 					<Charges Crib="0" ExtraPerson="80.00"/>
 				   </AdditionalGuestAmount>
 				  </AdditionalGuestAmounts>
-				  <HotelTotalPricing Amount="335.45">
+				  <HotelTotalPricing Amount="190.45">
 				   <Disclaimer>INCLUDES TAXES AND SURCHARGES</Disclaimer>
 				   <TotalSurcharges Amount="28.50"/>
 				   <TotalTaxes Amount="21.95"/>
