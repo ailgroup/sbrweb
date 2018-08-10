@@ -2,6 +2,7 @@ package hotelws
 
 import (
 	"encoding/xml"
+	"errors"
 	"testing"
 
 	"github.com/ailgroup/sbrweb/engine/sbrerr"
@@ -150,6 +151,15 @@ func TestPropDescCall(t *testing.T) {
 	if err != nil {
 		t.Error("Error making request CallHotelProperty", err)
 	}
+
+	if !resp.Body.HotelDesc.Result.Ok() {
+		t.Error("CallHotelPropDesc Ok should be true")
+	}
+	sabreErrFmt := resp.Body.HotelDesc.Result.ErrFormat()
+	if sabreErrFmt.Code.String() != "Complete" {
+		t.Errorf("CallHotelPropDesc code expected %s, got %s", "Complete", sabreErrFmt.Code.String())
+	}
+
 	if resp.Body.Fault.String != "" {
 		t.Errorf("Body.Fault.String expect empty: '%s', got: %s", "", resp.Body.Fault.String)
 	}
@@ -203,7 +213,19 @@ func TestPropDescCall(t *testing.T) {
 	}
 }
 
-//[]string{"hc:HOD4/11MAY-12MAY2", "rph:002", "rmt:D1KRAC", "rtx:0-ttl:190.45-nxt:false"}
+func TestNewParsedRoomMeta(t *testing.T) {
+	//NotUrlSafeString := "some data with \x00 and \ufeff"
+	//NotUrlSafeStringExpected := "some data with  and "
+	errExpect := errors.New("illegal base64 data at input byte 31")
+	b64NotUrlSafe := "c29tZSBkYXRhIHdpdGggACBhbmQg77u/"
+	_, err := NewParsedRoomMeta(b64NotUrlSafe)
+	if err == nil {
+		t.Errorf("NewParsedRoomMeta expected error")
+	}
+	if err.Error() != errExpect.Error() {
+		t.Errorf("NewParsedRoomMeta expected error %v, got %v", errExpect, err)
+	}
+}
 
 var proptrack = []struct {
 	b64str string
@@ -269,7 +291,7 @@ func TestSetRoomMetaDataPropDesc(t *testing.T) {
 		if rate.B64RoomMetaData != proptrack[i].b64str {
 			t.Errorf("B64RoomMetaData expect: '%s', got '%s'", proptrack[i].b64str, rate.B64RoomMetaData)
 		}
-		prm, err := rate.NewParsedRoomMeta()
+		prm, err := NewParsedRoomMeta(rate.B64RoomMetaData)
 		if err != nil {
 			t.Errorf("Error on DecodeTrackedEncoding() %v", err)
 		}
@@ -319,6 +341,14 @@ func TestHotelPropDescCallDown(t *testing.T) {
 	if err == nil {
 		t.Error("Expected error making request to serverHotelDown")
 	}
+	if !resp.Body.HotelDesc.Result.Ok() {
+		t.Error("CallHotelPropDesc Ok should be true")
+	}
+	sabreErrFmt := resp.Body.HotelDesc.Result.ErrFormat()
+	if sabreErrFmt.Code.String() != "Unknown" {
+		t.Errorf("CallHotelPropDesc code expected %s, got %s", "Unknown", sabreErrFmt.Code.String())
+	}
+
 	if err.Error() != resp.ErrorSabreService.ErrMessage {
 		t.Error("Error() message should match resp.ErrorSabreService.ErrMessage")
 	}
@@ -341,6 +371,13 @@ func TestHotelPropDescCallBadResponseBody(t *testing.T) {
 	resp, err := CallHotelPropDesc(serverBadBody.URL, req)
 	if err == nil {
 		t.Error("Expected error making request to sserverBadBody")
+	}
+	if !resp.Body.HotelDesc.Result.Ok() {
+		t.Error("CallHotelPropDesc Ok should be true")
+	}
+	sabreErrFmt := resp.Body.HotelDesc.Result.ErrFormat()
+	if sabreErrFmt.Code.String() != "Unknown" {
+		t.Errorf("CallHotelPropDesc code expected %s, got %s", "Unknown", sabreErrFmt.Code.String())
 	}
 	if err.Error() != resp.ErrorSabreXML.ErrMessage {
 		t.Error("Error() message should match resp.ErrorSabreService.ErrMessage")

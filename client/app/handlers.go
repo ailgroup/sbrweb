@@ -7,7 +7,6 @@ import (
 
 	"github.com/ailgroup/sbrweb/apperr"
 	"github.com/ailgroup/sbrweb/engine/hotelws"
-	"github.com/ailgroup/sbrweb/engine/itin"
 	"github.com/go-playground/form"
 )
 
@@ -35,14 +34,15 @@ type HotelParamsID struct {
 
 // BookRoomParams hold params for creating pnr and executing a reservation. CCCode is the credit card type code (MC, AMX, etc...); RoomRPH is the is the sabre reference place holder of the room. RPH is gotten from a previous request for room rates through RatesHotelIDHandler.
 type BookRoomParams struct {
-	FirstName string `form:"first_name"`
-	LastName  string `form:"last_name"`
-	NumRooms  string `form:"num_rooms"`
-	CCPhone   string `form:"cc_phone"`
-	CCCode    string `form:"cc_code"`
-	CCExpire  string `form:"cc_expire"`
-	CCNumber  string `form:"cc_number"`
-	RoomMeta  string `form:"room_meta"`
+	FirstName      string `form:"first_name"`
+	LastName       string `form:"last_name"`
+	NumRooms       string `form:"num_rooms"`
+	CCPhone        string `form:"cc_phone"`
+	CCCode         string `form:"cc_code"`
+	CCExpire       string `form:"cc_expire"`
+	CCNumber       string `form:"cc_number"`
+	RoomMeta       string `form:"room_meta"`
+	ParsedRoomMeta hotelws.ParsedRoomMeta
 }
 
 // AvailHotelIDSResponse for sabre hotel availability
@@ -57,6 +57,12 @@ type PropertyHotelIDResponse struct {
 	RequestParams     HotelParamsID
 	SabreEngineErrors interface{} `json:",omitempty"`
 	RoomStay          hotelws.RoomStay
+}
+
+// PropertyHotelIDResponse for sabre property description
+type BookHotelResResponse struct {
+	RequestParams     BookRoomParams
+	SabreEngineErrors interface{} `json:",omitempty"`
 }
 
 // Validate AvailParamsBase fields. Time date formats arrive/depart are using app timezone location aware validations and set the outgoing arrive/depart formats for sabre. Integer guest_count checks against min/max.
@@ -147,7 +153,7 @@ func (b BookRoomParams) Validate() error {
 }
 
 /*
-	BookRoomHandler creates a pnr, fetches rate, books room, ends transaction. It accepts room meta data generated from previous requests. Required params: last_name, num_rooms, rph, cc_phone, cc_code, cc_expire, cc_number
+	BookRoomHandler creates a pnr, fetches rate, books room, ends transaction. It accepts room meta data generated from previous requests. Required params: last_name, num_rooms, room_meta, cc_phone, cc_code, cc_expire, cc_number
 
 	curl -H "Accept: application/json" -X GET 'http://localhost:8080/book/hotel/room?'
 */
@@ -157,36 +163,44 @@ func (s *Server) BookRoomHandler() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		params := &BookRoomParams{}
 		decoder := form.NewDecoder()
-
+		response := BookHotelResResponse{}
 		// decode params, check errors
 		if err := decoder.Decode(&params, r.URL.Query()); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write(apperr.DecodeBadInput("BookRoomHandler", r.URL.Query(), err, http.StatusBadRequest))
 			return
 		}
-
 		// validate query params
 		if err := params.Validate(); err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			w.Write(apperr.DecodeInvalid("BookRoomHandler", err, http.StatusUnprocessableEntity))
 			return
 		}
-
-		//PNR
-		//build person
-		person := itin.CreatePersonName(params.FirstName, params.LastName)
-		//build pnr
-		pnrBody := itin.SetPNRDetailBody(params.CCPhone, person)
-		pnrReq := itin.BuildPNRDetailsRequest(s.SConfig, pnrBody)
-		//call pnr
-		pnrResp, err := itin.CallPNRDetail(s.SConfig.ServiceURL, pnrReq)
+		prm, err := hotelws.NewParsedRoomMeta(params.RoomMeta)
 		if err != nil {
-			w.WriteHeader(http.StatusFailedDependency)
-			w.Write(apperr.DecodeUnknown("CallPNRDetail::BookRoomHandler", r.URL.Query(), err, http.StatusFailedDependency))
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			w.Write(apperr.DecodeInvalid("BookRoomHandler::RoomMetaData", err, http.StatusUnprocessableEntity))
 			return
 		}
+		params.ParsedRoomMeta = prm
+		response.RequestParams = *params
+		/*
+			//PNR
+			//build person
+			person := itin.CreatePersonName(params.FirstName, params.LastName)
+			//build pnr
+			pnrBody := itin.SetPNRDetailBody(params.CCPhone, person)
+			pnrReq := itin.BuildPNRDetailsRequest(s.SConfig, pnrBody)
+			//call pnr
+			pnrResp, err := itin.CallPNRDetail(s.SConfig.ServiceURL, pnrReq)
+			if err != nil {
+				w.WriteHeader(http.StatusFailedDependency)
+				w.Write(apperr.DecodeUnknown("CallPNRDetail::BookRoomHandler", r.URL.Query(), err, http.StatusFailedDependency))
+				return
+			}
 
-		json.NewEncoder(w).Encode(pnrResp)
+			json.NewEncoder(w).Encode(pnrResp)
+		*/
 
 		//Hotel Reservation
 		/*
@@ -203,9 +217,9 @@ func (s *Server) BookRoomHandler() http.HandlerFunc {
 			if err != nil {
 				return err
 			}
-
-			call.SetTrackedEncode()
 		*/
+
+		json.NewEncoder(w).Encode(response)
 	}
 }
 
