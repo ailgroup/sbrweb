@@ -183,7 +183,7 @@ func (p *ParsedRoomMeta) parseB64DecodeRates() {
 	}
 }
 
-// NewParsedRoomMeta builds a strcut from parsing b64 encoded string cache of previous rate request. See SetRoomMetaData for how this data is constucted.
+// NewParsedRoomMeta builds a struct from parsing b64 encoded string cache of previous rate request. See SetRoomMetaData for how this data is constucted.
 func NewParsedRoomMeta(b64Str string) (ParsedRoomMeta, error) {
 	rmp := ParsedRoomMeta{}
 	b64Str, err := B64Dec(b64Str)

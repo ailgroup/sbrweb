@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-// registerRoutes is responsible for registering the server-side request handlers
+// RegisterRoutes is responsible for registering the server-side request handlers
 func (s *Server) RegisterRoutes() {
 	s.Mux.Get("/", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte(`{"ping":"p0ng"}`)) })
 	s.Mux.Handle("/hotel/ids", s.HotelIDsHandler())
