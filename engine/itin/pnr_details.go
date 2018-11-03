@@ -133,10 +133,7 @@ type Address struct {
 	CountryCode   string `xml:"CountryCode,omitempty"`
 	Postal        string `xml:"PostalCode,omitempty"`
 }
-type AgencyInfo struct {
-	Address     Address
-	VendorPrefs VendorPrefs
-}
+
 type CustomerInfo struct {
 	XMLName        xml.Name        `xml:"CustomerInfo"`
 	ContactNumbers []ContactNumber `xml:"ContactNumbers>ContactNumber"`
@@ -157,10 +154,14 @@ type TravelItineraryAddInfoRQ struct {
 	Agency   *AgencyInfo
 	Customer CustomerInfo
 }
+type AgencyInfo struct {
+	Address     Address
+	VendorPrefs VendorPrefs
+}
 
 // AddAgencyInfo required to complete booking. Helper function allows it to be more fleixible to build up travel itinerary PNR.
-func (p *PassengerDetailBody) AddAgencyInfo(addr Address, vendp VendorPrefs) {
-	p.PassengerDetailsRQ.TravelItinInfo.Agency = &AgencyInfo{
+func (itin *TravelItineraryAddInfoRQ) AddAgencyInfo(addr Address, vendp VendorPrefs) {
+	itin.Agency = &AgencyInfo{
 		Address:     addr,
 		VendorPrefs: vendp,
 	}
@@ -187,14 +188,26 @@ func CreatePersonName(firstName, lastName string) PersonName {
 	}
 }
 
-// SetHotelRateDescRqStruct hotel rate description request using input parameters
+/*
+SetHotelRateDescRqStruct hotel rate description request using input parameters
+	IgnoreOnError: false,
+	HaltOnError:   true,
+	PostProcess: PostProcessing{
+		IgnoreAfter:          false,
+		RedisplayReservation: true,
+		UnmaskCreditCard:     false,
+	},
+	PreProcess: PreProcessing{
+		IgnoreBefore: true,
+
+*/
 func SetPNRDetailBody(phone string, person PersonName) PassengerDetailBody {
 	return PassengerDetailBody{
 		PassengerDetailsRQ: PassengerDetailsRQ{
 			XMLNS:         "http://services.sabre.com/sp/pd/v3_3",
 			Version:       "3.3.0",
 			IgnoreOnError: false,
-			HaltOnError:   false,
+			HaltOnError:   true,
 			PostProcess: PostProcessing{
 				IgnoreAfter:          false,
 				RedisplayReservation: true,
@@ -202,7 +215,6 @@ func SetPNRDetailBody(phone string, person PersonName) PassengerDetailBody {
 			},
 			PreProcess: PreProcessing{
 				IgnoreBefore: true,
-				//UniqueID:     UniqueID{ID: lastName + srvc.GenerateSessionID()},
 			},
 			TravelItinInfo: TravelItineraryAddInfoRQ{
 				Customer: CustomerInfo{

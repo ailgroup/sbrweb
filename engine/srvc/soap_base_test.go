@@ -330,12 +330,14 @@ func BenchmarkGenerateConversationID(b *testing.B) {
 	}
 }
 
+/*
 func TestSabreTokenParse(t *testing.T) {
 	tok := SabreTokenParse(samplebinsectoken)
 	if tok != samplebintokensplit {
 		t.Errorf("BinaryTokenSplit epxect '%s', got '%s'", samplebintokensplit, tok)
 	}
 }
+*/
 func BenchmarkSabreTokenParse(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		SabreTokenParse(samplebinsectoken)

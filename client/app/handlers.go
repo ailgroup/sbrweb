@@ -270,6 +270,7 @@ func (s *Server) RatesHotelIDHandler() http.HandlerFunc {
 			params.HotelParamsBase.OutDepart,
 		)
 
+		//fmt.Printf("\n^^^^^^^^^^^^ session: %+v\n", s.SConfig)
 		req := hotelws.BuildHotelPropDescRequest(s.SConfig, body)
 		call, err := hotelws.CallHotelPropDesc(s.SConfig.ServiceURL, req)
 		if err != nil {

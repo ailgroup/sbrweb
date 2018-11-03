@@ -1,4 +1,8 @@
-#sbrweb
+# sbrweb
+
+## TODO
+ multiple currency
+
 Connects to Sabre Web services endpoints, both SOAP and REST. It is built around three offerings:
 
 1. BookingEngine (BEN): `engine`
