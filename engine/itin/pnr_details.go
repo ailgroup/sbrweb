@@ -127,11 +127,12 @@ type StateProvince struct {
 // Address PNR specific struct for addresses
 type Address struct {
 	AddressLine   string `xml:"AddressLine,omitempty"`
-	Street        string `xml:"StreetNumber,omitempty"`
 	City          string `xml:"CityName,omitempty"`
-	StateProvince StateProvince
 	CountryCode   string `xml:"CountryCode,omitempty"`
 	Postal        string `xml:"PostalCode,omitempty"`
+	StateProvince StateProvince
+	Street        string `xml:"StreetNmbr,omitempty"`
+	VendorPrefs   VendorPrefs
 }
 
 type CustomerInfo struct {
@@ -155,15 +156,14 @@ type TravelItineraryAddInfoRQ struct {
 	Customer CustomerInfo
 }
 type AgencyInfo struct {
-	Address     Address
-	VendorPrefs VendorPrefs
+	XMLName xml.Name `xml:"AgencyInfo"`
+	Address Address
 }
 
 // AddAgencyInfo required to complete booking. Helper function allows it to be more fleixible to build up travel itinerary PNR.
-func (itin *TravelItineraryAddInfoRQ) AddAgencyInfo(addr Address, vendp VendorPrefs) {
+func (itin *TravelItineraryAddInfoRQ) AddAgencyInfo(addr Address) {
 	itin.Agency = &AgencyInfo{
-		Address:     addr,
-		VendorPrefs: vendp,
+		Address: addr,
 	}
 }
 
@@ -180,11 +180,11 @@ func (p *PassengerDetailBody) AddUniqueID(id string) {
 // CreatePersonName standalone function for ease of use
 func CreatePersonName(firstName, lastName string) PersonName {
 	return PersonName{
-		//NameNumber:    "1.1",
-		//NameReference: "ABC123",
-		//PassengerType: "ADT",
-		First: &GivenName{Val: firstName},
-		Last:  Surname{Val: lastName},
+		NameNumber:    "1.1",    // sabre example
+		NameReference: "ABC123", // sabre example
+		PassengerType: "ADT",    // sabre example
+		First:         &GivenName{Val: firstName},
+		Last:          Surname{Val: lastName},
 	}
 }
 
@@ -363,6 +363,7 @@ type PNRDetailsResponse struct {
 func CallPNRDetail(serviceURL string, req PNRDetailsRequest) (PNRDetailsResponse, error) {
 	pnrResp := PNRDetailsResponse{}
 	byteReq, _ := xml.Marshal(req)
+	fmt.Printf("\n\n %s\n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
