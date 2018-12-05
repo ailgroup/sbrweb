@@ -23,6 +23,7 @@ package grndws
 
 import (
 	"encoding/xml"
+	"time"
 
 	"github.com/ailgroup/sbrweb/engine/srvc"
 )
@@ -38,7 +39,7 @@ type VehicleLocationBody struct {
 	VehLocationFinderRQ VehLocationFinderRQ
 }
 type VehLocationFinderRQ struct {
-	XMLName  xml.Name `xml:"VehLocationFinderRQ" json:"-"`
+	XMLName  xml.Name `xml:"VehLocationFinderRQ"`
 	Version  string   `xml:"Version,attr"`
 	XMLNS    string   `xml:"xmlns,attr"`     //srvc.BaseWebServicesNS
 	XMLNSXs  string   `xml:"xmlns:xs,attr"`  //srvc.BaseXSDNameSpace
@@ -47,14 +48,14 @@ type VehLocationFinderRQ struct {
 
 // VehAvailRQCore wrapper for location details and rental times
 type VehAvailRQCore struct {
-	XMLName xml.Name `xml:"VehAvailCore" json:"-"`
+	XMLName xml.Name `xml:"VehAvailCore"`
 	Pickup  string   `xml:"PickUpDateTime,attr"` //"12-22T09:00"
 	Return  string   `xml:"ReturnDateTime,attr"` //"12-29T11:00"
 }
 
 // LocationDetails generates different location params
 type LocationDetails struct {
-	XMLName xml.Name `xml:"LocationDetails" json:"-"`
+	XMLName xml.Name `xml:"LocationDetails"`
 	Dropoff bool     `xml:"DropOff,attr,omitempty"`
 	Address Address
 }
@@ -78,4 +79,29 @@ type Address struct {
 	LocationName    string `xml:"LocationName,attr,omitempty"`    //example: "DALLAS FORT WORTH"
 	LocationOwner   string `xml:"LocationOwner,attr,omitempty"`   //example: "C"
 	UnitOfMeasure   string `xml:"UnitOfMeasure,attr,omitempty"`   //example: "MI"
+}
+
+// CustomerID number
+type CustomerID struct {
+	XMLName xml.Name `xml:"ID"`
+	Number  string   `xml:"Number,omitempty"`
+}
+
+type Corporate struct {
+	XMLName xml.Name `xml:"Corporate"`
+	ID      string   `xml:"ID,omitempty"`
+}
+
+// Customer for corporate or typical sabre customer ids
+type RateQualifier struct {
+	XMLName xml.Name `xml:"RateQualifier,omitempty"`
+	//NameNumber string      `xml:"NameNumber,attr,omitempty"`
+	Corporate  *Corporate  //nil pointer ignored if empty
+	CustomerID *CustomerID //nil pointer ignored if empty
+}
+
+// TimeSpanFormatter parse string data value into time value.
+func pickupReturnFormatter(timestr, formIn, formOut string) string {
+	pd, _ := time.Parse(formIn, timestr)
+	return pd.Format(formOut)
 }

@@ -33,10 +33,10 @@ import (
 )
 
 const (
-	hotelRQVersion  = "2.3.0"
-	TimeFormatMD    = "01-02"
-	TimeFormatMDTHM = "01-02T15:04"
-	TimeFormatMDHM  = "01-02 15:04"
+	hotelRQVersion = "2.3.0"
+	//TimeFormatMD   = "01-02"
+	//TimeFormatMDTHM = "01-02T15:04"
+	//TimeFormatMDHM  = "01-02 15:04"
 
 	StreetQueryField      = "street_qf"
 	CityQueryField        = "city_qf"

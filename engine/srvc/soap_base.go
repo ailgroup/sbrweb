@@ -8,7 +8,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"os"
 	"regexp"
 	"time"
 
@@ -28,6 +27,9 @@ const (
 	SabreMustUnderstand   = "1"
 	SabreToBase           = "webservices.sabre.com"
 	StandardTimeFormatter = "2006-01-02T15:04:05Z"
+	TimeFormatMD          = "01-02"
+	TimeFormatMDHM        = "01-02 15:04"
+	TimeFormatMDTHM       = "01-02T15:04"
 	//StatusErrorRS is the string value error response when SOAP request->response had an error, typically found in the Header.MessageHeader.Action. Usually, any SOAP response with Action="ErrorRS" will also have a SOAPFault body with more informative error codes. This can be used as an easy way to identify and error.
 	StatusErrorRS = "ErrorRS"
 
@@ -46,6 +48,7 @@ var (
 	binaryTokenMatcher = regexp.MustCompile(`-\d.*$`)
 )
 
+/*
 func init() {
 	setUpLogging()
 }
@@ -63,6 +66,7 @@ func setUpLogging() {
 	logSoap = log.New(soapL, "[sabre-soap] ", (log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile))
 	logSession = log.New(sessL, "[sabre-sess] ", (log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile))
 }
+*/
 
 // Envelope is wrapper with namespace prefix definitions for payload
 type Envelope struct {
