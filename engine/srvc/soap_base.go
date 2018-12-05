@@ -318,10 +318,15 @@ func CreateManifest() Manifest {
 // Take this 'Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3174053563846592370!1390092!0'
 // Return this '-3174053563846592370!1390092!0'
 func SabreTokenParse(tok string) string {
-	if tok == "" {
-		return "none"
-	}
-	return binaryTokenMatcher.FindAllString(tok, -1)[0]
+	return tok
+	/*
+		fmt.Printf("\n\n******************** %s\n\n", tok)
+		if tok == "" || len(tok) < 1 {
+			return "none"
+		}
+		//TODO: FIXME: panic: runtime error: index out of range
+		return binaryTokenMatcher.FindAllString(tok, -1)[0]
+	*/
 }
 
 // SabreTimeNowFmt returns time.Now in format: '2017-11-27T09:58:31Z'
@@ -394,12 +399,14 @@ type SessionConf struct {
 }
 
 // SetTime updates the timestamp. Pass around SessionConf and update the timestamp for any new request
+// TODO: FIXME: shoudl not return a session if modifying existing pointer... update docs
 func (s *SessionConf) SetTime() *SessionConf {
 	s.Timestr = SabreTimeNowFmt()
 	return s
 }
 
 // SetBinSec updates the timestamp. Pass around SessionConf and update the timestamp for any new request
+// TODO: FIXME: shoudl not return a session if modifying existing pointer... update docs
 func (s *SessionConf) SetBinSec(session SessionCreateResponse) *SessionConf {
 	s.Binsectok = session.Header.Security.BinarySecurityToken.Value
 	return s

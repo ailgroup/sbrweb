@@ -127,16 +127,14 @@ type StateProvince struct {
 // Address PNR specific struct for addresses
 type Address struct {
 	AddressLine   string `xml:"AddressLine,omitempty"`
-	Street        string `xml:"StreetNumber,omitempty"`
 	City          string `xml:"CityName,omitempty"`
-	StateProvince StateProvince
 	CountryCode   string `xml:"CountryCode,omitempty"`
 	Postal        string `xml:"PostalCode,omitempty"`
+	StateProvince StateProvince
+	Street        string `xml:"StreetNmbr,omitempty"`
+	VendorPrefs   VendorPrefs
 }
-type AgencyInfo struct {
-	Address     Address
-	VendorPrefs VendorPrefs
-}
+
 type CustomerInfo struct {
 	XMLName        xml.Name        `xml:"CustomerInfo"`
 	ContactNumbers []ContactNumber `xml:"ContactNumbers>ContactNumber"`
@@ -157,12 +155,15 @@ type TravelItineraryAddInfoRQ struct {
 	Agency   *AgencyInfo
 	Customer CustomerInfo
 }
+type AgencyInfo struct {
+	XMLName xml.Name `xml:"AgencyInfo"`
+	Address Address
+}
 
 // AddAgencyInfo required to complete booking. Helper function allows it to be more fleixible to build up travel itinerary PNR.
-func (p *PassengerDetailBody) AddAgencyInfo(addr Address, vendp VendorPrefs) {
-	p.PassengerDetailsRQ.TravelItinInfo.Agency = &AgencyInfo{
-		Address:     addr,
-		VendorPrefs: vendp,
+func (ti *TravelItineraryAddInfoRQ) AddAgencyInfo(addr Address) {
+	ti.Agency = &AgencyInfo{
+		Address: addr,
 	}
 }
 
@@ -179,22 +180,34 @@ func (p *PassengerDetailBody) AddUniqueID(id string) {
 // CreatePersonName standalone function for ease of use
 func CreatePersonName(firstName, lastName string) PersonName {
 	return PersonName{
-		//NameNumber:    "1.1",
-		//NameReference: "ABC123",
-		//PassengerType: "ADT",
-		First: &GivenName{Val: firstName},
-		Last:  Surname{Val: lastName},
+		NameNumber:    "1.1",    // sabre example
+		NameReference: "ABC123", // sabre example
+		PassengerType: "ADT",    // sabre example
+		First:         &GivenName{Val: firstName},
+		Last:          Surname{Val: lastName},
 	}
 }
 
-// SetHotelRateDescRqStruct hotel rate description request using input parameters
+/*
+SetHotelRateDescRqStruct hotel rate description request using input parameters
+	IgnoreOnError: false,
+	HaltOnError:   true,
+	PostProcess: PostProcessing{
+		IgnoreAfter:          false,
+		RedisplayReservation: true,
+		UnmaskCreditCard:     false,
+	},
+	PreProcess: PreProcessing{
+		IgnoreBefore: true,
+
+*/
 func SetPNRDetailBody(phone string, person PersonName) PassengerDetailBody {
 	return PassengerDetailBody{
 		PassengerDetailsRQ: PassengerDetailsRQ{
 			XMLNS:         "http://services.sabre.com/sp/pd/v3_3",
 			Version:       "3.3.0",
 			IgnoreOnError: false,
-			HaltOnError:   false,
+			HaltOnError:   true,
 			PostProcess: PostProcessing{
 				IgnoreAfter:          false,
 				RedisplayReservation: true,
@@ -202,7 +215,6 @@ func SetPNRDetailBody(phone string, person PersonName) PassengerDetailBody {
 			},
 			PreProcess: PreProcessing{
 				IgnoreBefore: true,
-				//UniqueID:     UniqueID{ID: lastName + srvc.GenerateSessionID()},
 			},
 			TravelItinInfo: TravelItineraryAddInfoRQ{
 				Customer: CustomerInfo{
@@ -351,6 +363,7 @@ type PNRDetailsResponse struct {
 func CallPNRDetail(serviceURL string, req PNRDetailsRequest) (PNRDetailsResponse, error) {
 	pnrResp := PNRDetailsResponse{}
 	byteReq, _ := xml.Marshal(req)
+	fmt.Printf("\n\n %s\n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))

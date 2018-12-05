@@ -71,6 +71,7 @@ func PropertyTypeSearch(params PropertyTypeCriterion) func(q *HotelSearchCriteri
 }
 
 // AddressSearch parse incoming params, build Address, and put it on the serach criterion
+// search on small towns..
 func AddressSearch(params AddressCriterion) func(q *HotelSearchCriteria) error {
 	return func(q *HotelSearchCriteria) error {
 		a := &Address{}
