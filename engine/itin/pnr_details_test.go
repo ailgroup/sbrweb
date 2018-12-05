@@ -13,6 +13,11 @@ func TestPNRSet(t *testing.T) {
 	s := SetPNRDetailBody(samplePhoneReq, p)
 	s.AddSpecialDetails()
 	s.AddUniqueID("1234ABCD")
+	vp := VendorPrefs{
+		Airline: Airline{
+			Hosted: false,
+		},
+	}
 	addr := Address{
 		AddressLine:   "123 Agora",
 		Street:        "Sesame Street",
@@ -20,14 +25,10 @@ func TestPNRSet(t *testing.T) {
 		StateProvince: StateProvince{StateCode: "XT"},
 		CountryCode:   "LI",
 		Postal:        "pae098",
+		VendorPrefs:   vp,
 	}
-	vp := VendorPrefs{
-		Airline: Airline{
-			Hosted: false,
-		},
-	}
-	s.AddAgencyInfo(addr, vp)
 
+	s.PassengerDetailsRQ.TravelItinInfo.AddAgencyInfo(addr)
 	agencyAddr := s.PassengerDetailsRQ.TravelItinInfo.Agency.Address
 	if agencyAddr.Street != "Sesame Street" {
 		t.Error("Agency Info street address is wrong")
@@ -35,8 +36,7 @@ func TestPNRSet(t *testing.T) {
 	if agencyAddr.StateProvince.StateCode != "XT" {
 		t.Error("Agency Info StateProvince.StateCode address is wrong")
 	}
-	venPrefs := s.PassengerDetailsRQ.TravelItinInfo.Agency.VendorPrefs
-	if venPrefs.Airline.Hosted {
+	if addr.VendorPrefs.Airline.Hosted {
 		t.Error("Agency Info VendorPrefs Airline.Hosted is wrong")
 	}
 

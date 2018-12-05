@@ -161,8 +161,8 @@ type AgencyInfo struct {
 }
 
 // AddAgencyInfo required to complete booking. Helper function allows it to be more fleixible to build up travel itinerary PNR.
-func (itin *TravelItineraryAddInfoRQ) AddAgencyInfo(addr Address) {
-	itin.Agency = &AgencyInfo{
+func (ti *TravelItineraryAddInfoRQ) AddAgencyInfo(addr Address) {
+	ti.Agency = &AgencyInfo{
 		Address: addr,
 	}
 }
