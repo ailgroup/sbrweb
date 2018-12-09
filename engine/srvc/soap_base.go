@@ -9,7 +9,6 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"regexp"
 	"time"
 
 	"github.com/ailgroup/sbrweb/engine/sbrerr"
@@ -41,9 +40,9 @@ const (
 )
 
 var (
-	logSoap            = &log.Logger{}
-	logSession         = &log.Logger{}
-	binaryTokenMatcher = regexp.MustCompile(`-\d.*$`)
+	logSoap    = &log.Logger{}
+	logSession = &log.Logger{}
+	//binaryTokenMatcher = regexp.MustCompile(`-\d.*$`)
 )
 
 func init() {
