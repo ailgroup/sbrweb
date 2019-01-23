@@ -34,8 +34,10 @@ var (
 	ErrPropDescLatLng    = errors.New("Latitude or Longitude not allowed in HotelPropDesc")
 	ErrPropDescHotelRefs = errors.New("Criterion.HotelRef cannot be greater than 1, can only search using one criterion")
 
+	// sabreEngineStatuses strings to map to consts....
+	// TODO come back and refactor to something less fragile
 	sabreEngineStatuses = [...]string{
-		"0",
+		"0", //place holder so we can get index values starting 1 :)
 		"Unknown",
 		"BadService",
 		"BadParse",
@@ -46,21 +48,31 @@ var (
 	}
 )
 
+// TODO come back and refactor statuses to something less fragile
+// StatusNotProcess returns enum value for sabre string
 func StatusNotProcess() string {
 	return sabreEngineStatuses[NotProcessed]
 }
+
+// StatusApproved returns enum value for sabre string
 func StatusApproved() string {
 	return sabreEngineStatuses[Approved]
 }
+
+// StatusComplete returns enum value for sabre string
 func StatusComplete() string {
 	return sabreEngineStatuses[Complete]
 }
+
+// String reverse lookup for statuses, get string value for code
 func (code SabreStatus) String() string {
 	if code < Unknown || code > Complete {
 		return "Unknown"
 	}
 	return sabreEngineStatuses[code]
 }
+
+// SabreEngineStatusCode input is xml parsed string value from sabre that we match with String() function to get the error code.
 func SabreEngineStatusCode(input string) SabreStatus {
 	if input == "0" {
 		return Unknown
