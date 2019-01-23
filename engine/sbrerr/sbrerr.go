@@ -26,6 +26,7 @@ const (
 	ErrCallHotelRateDesc   = "Error CallHotelRateDesc::HotelRateDescriptionLLSRQ"
 	ErrCallHotelRes        = "Error CallHotelRes::OTA_HotelResLLSRQ"
 	ErrCallPNRDetails      = "Error CallPNRDetails::PassengerDetailsRQ"
+	ErrCallEndTransaction  = "Error CallEndTransaction::EndTransactionRQ"
 )
 
 var (
