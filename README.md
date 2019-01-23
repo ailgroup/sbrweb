@@ -22,34 +22,27 @@ See the respective projects' README for more details.
 
 ## Tests and Benchmarks
 Examples for running coverage reports as well as the tests themselves.
+We aspire to full test coverage. In some cases 100% test coverage is neither practical nor useful. Additionally, 100% test coverage is often misleading. In many cases you want to test one function multiple times. We seek to provide testing for all executable code _and_ multiple scenarios for the same entry points.
 
 ### Coverage
 Test coverage is important. Examples of basic coverage stats along with more detailed reporting using `coverprofile`, `test`, and `tool`.
 
 ```sh
-# Basic test coverage stats on main package and sub-packages
+#coverage stats for whole project
 [sbrweb] go test -cover ./...
-```
+#coverage stats for specific package
+go test -cover ./engine/hotelws
 
-```sh
-# generate new coverage file for project
+#generate new coverage file for project
 go test -coverprofile=coverage.out ./...
-# coverage for whole project broken down by function
-go tool cover -func coverage.out
-# generate new coverage file inside sbrweb/srvc directory
-[srvc] go test -coverprofile=test_data/coverage.out
-# coverage to be broken down by function
-[srvc] go tool cover -func test_data/coverage.out
+#generate new coverage file for specific package
+go test ./engine/srvc -coverprofile=engine/srvc/test_data/coverage.out
 
-# generate new coverage file inside sbrweb/hotelws directory
-[hotelws] go test -coverprofile=test_data/coverage.out
-# coverage to be broken down by function
-[hotelws] go tool cover -func test_data/coverage.out
+#cover tool shows coverage by function
+go tool cover -func coverage.out
 ```
 
 ### Tests
-We aspire to full test coverage. In some cases 100% test coverage is either not practical nor useful. Additionally, 100% test coverage is often misleading, for this reason we seek to provide testing around multiple scenarios for the same entry points.
-
 Run all from root of `sbrweb`, or internal to packages (e.g., `sbrweb/itin`).
 
 ```sh
