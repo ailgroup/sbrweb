@@ -1,34 +1,21 @@
 # sbrweb
+Connects to Sabre Web Services SOAP endpoints abd provides eaiser to use APIs. Project is built around three core projects:
 
-## TODO
- multiple currency
+1. BM Engine: `engine`
+  * core set of packages handling all low-level sabre services interaction.
+1. BM Transmission: `transmission`
+  * higher-level APIs to faciliate interacting with the engine packages.
+1. BM clients: `client`
+  * client specific integrations leveraging the transmission package.
 
-Connects to Sabre Web services endpoints, both SOAP and REST. It is built around three offerings:
+See the respective projects' README for more details.
 
-1. BookingEngine (BEN): `engine`
-1. BookingClient (bClient): `client`
-1. BookingCloud (bCloud): `cloud`
 
-## Engine
-This is a large project with organized subprojects. To get a sense of the number of lines of code, tests, and other files you can `wc -l 'find sbrweb/hotelws -type f'`. 
+## TODO and Currenlty
 
-1. `srvc` (service)
-  * Basic SOAP
-    * envelope
-    * message header
-    * security
-    * soap fault
-  * Sessions
-    * create, close, validate
-    * buffered queue as session pool
-1. `hotelws` (hotel web service)
-  * Availability, Property and Rate descriptions, Reservation services.
-  * common struct/xml building and parsing
-  * common logic for dealing with data formats like timestamps and cancellation policies
-1. `itin` (itinerary)
-  * passenger details
-  * cancel
-1. `hotelrest` (hotel rest)
+* multiple currency
+* pnr read
+* segment cancel
 
 
 ## Tests and Benchmarks
@@ -40,8 +27,6 @@ Test coverage is important. Examples of basic coverage stats along with more det
 ```sh
 # Basic test coverage stats on main package and sub-packages
 [sbrweb] go test -cover ./...
-ok  	github.com/ailgroup/sbrweb/srvc	        0.074s	coverage: 71.5% of statements
-ok  	github.com/ailgroup/sbrweb/hotelws	0.026s	coverage: 81.2% of statements
 ```
 
 ```sh
@@ -56,17 +41,26 @@ ok  	github.com/ailgroup/sbrweb/hotelws	0.026s	coverage: 81.2% of statements
 [hotelws] go tool cover -func test_data/coverage.out
 ```
 
-### Running
-Run all from root of `sbrweb`.
+### Tests
+We aspire to full test coverage. In some cases 100% test coverage is either not practical nor useful. Additionally, 100% test coverage is often misleading, for this reason we seek to provide testing around multiple scenarios for the same entry points.
+
+Run all from root of `sbrweb`, or internal to packages (e.g., `sbrweb/itin`).
 
 ```sh
+# run verbose tests for all packages at once
 go test -v ./...
+# run verbose tests for specific package
+go test -v ./engine/itin
+# run verbose test on specific test function
+go test -v ./engine/hotelws -run TestRateDescCall
 ```
 
-Run specific internal the package directory (e.g., `sbrweb/srvc`, `sbrweb/hotelws`, etc...):
+
+### Benchmarks
+For core functions that are heavily used we provide benchmarks.
 
 ```sh
-go test -run TestMessageHeaderBaseUnmarshal
-go test -bench=BenchmarkEnvelopeMarshal
-go test -bench=.
+# run all benchmarks
+go test ./... -bench=.
+go test ./engine/srvc -bench=BenchmarkMessageHeaderBaseMarshal
 ```
