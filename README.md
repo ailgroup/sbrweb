@@ -2,20 +2,22 @@
 Connects to Sabre Web Services SOAP endpoints abd provides eaiser to use APIs. Project is built around three core projects:
 
 1. BM Engine: `engine`
-  * core set of packages handling all low-level sabre services interaction.
+    * core set of packages handling all low-level sabre services interaction.
 1. BM Transmission: `transmission`
-  * higher-level APIs to faciliate interacting with the engine packages.
+    * higher-level APIs to faciliate interacting with the engine packages.
 1. BM clients: `client`
-  * client specific integrations leveraging the transmission package.
+    * client specific integrations leveraging the transmission package.
 
 See the respective projects' README for more details.
 
 
-## TODO and Currenlty
+## TODO and Currently
 
-* multiple currency
-* pnr read
-* segment cancel
+* Pnr read
+* Segment cancel
+* GeoServices (city and state lookups independent of hotel web services)
+* Multiple currency
+* Sabre rest endpoints for hotel content
 
 
 ## Tests and Benchmarks
@@ -30,6 +32,10 @@ Test coverage is important. Examples of basic coverage stats along with more det
 ```
 
 ```sh
+# generate new coverage file for project
+go test -coverprofile=coverage.out ./...
+# coverage for whole project broken down by function
+go tool cover -func coverage.out
 # generate new coverage file inside sbrweb/srvc directory
 [srvc] go test -coverprofile=test_data/coverage.out
 # coverage to be broken down by function
