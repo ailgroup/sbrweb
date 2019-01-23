@@ -8,6 +8,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/ailgroup/sbrweb/engine/sbrerr"
@@ -47,7 +48,6 @@ var (
 	//binaryTokenMatcher = regexp.MustCompile(`-\d.*$`)
 )
 
-/*
 func init() {
 	setUpLogging()
 }
@@ -65,7 +65,6 @@ func setUpLogging() {
 	logSoap = log.New(soapL, "[sabre-soap] ", (log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile))
 	logSession = log.New(sessL, "[sabre-sess] ", (log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile))
 }
-*/
 
 // Envelope is wrapper with namespace prefix definitions for payload
 type Envelope struct {

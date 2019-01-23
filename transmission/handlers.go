@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ailgroup/sbrweb/engine/hotelws"
+	"github.com/ailgroup/sbrweb/engine/srvc"
 	"github.com/go-playground/form"
 )
 
@@ -96,8 +97,8 @@ func (b *HotelParamsBase) ValidateAndFormat(loc *time.Location) error {
 	if DepartBeforeArrive(tDepart, tArrive) {
 		return ErrStayRange(ErrStayRangeMsg, tDepart.String(), tArrive.String())
 	}
-	b.OutArrive = tArrive.Format(hotelws.TimeFormatMD)
-	b.OutDepart = tDepart.Format(hotelws.TimeFormatMD)
+	b.OutArrive = tArrive.Format(srvc.TimeFormatMD)
+	b.OutDepart = tDepart.Format(srvc.TimeFormatMD)
 
 	if Gt(b.GuestCount, GuestMax) {
 		return ErrLtGt(ErrGuestMaxMsg, b.GuestCount, GuestMax)
