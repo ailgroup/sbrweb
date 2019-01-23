@@ -3,7 +3,6 @@ package itin
 import (
 	"bytes"
 	"encoding/xml"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -75,7 +74,7 @@ type SpecialServiceInfo struct {
 }
 type AdvancedPassenger struct {
 	XMLName       xml.Name `xml:"AdvancePassenger"`
-	SegmentNumber string   `xml:"SegmentNumber,attr"` //A
+	SegmentNumber string   `xml:"SegmentNumber,attr"`
 	Document      Document
 	PersonName    PersonName
 	VendorPrefs   VendorPrefs
@@ -127,16 +126,14 @@ type StateProvince struct {
 // Address PNR specific struct for addresses
 type Address struct {
 	AddressLine   string `xml:"AddressLine,omitempty"`
-	Street        string `xml:"StreetNumber,omitempty"`
 	City          string `xml:"CityName,omitempty"`
-	StateProvince StateProvince
 	CountryCode   string `xml:"CountryCode,omitempty"`
 	Postal        string `xml:"PostalCode,omitempty"`
+	StateProvince StateProvince
+	Street        string `xml:"StreetNmbr,omitempty"`
+	VendorPrefs   VendorPrefs
 }
-type AgencyInfo struct {
-	Address     Address
-	VendorPrefs VendorPrefs
-}
+
 type CustomerInfo struct {
 	XMLName        xml.Name        `xml:"CustomerInfo"`
 	ContactNumbers []ContactNumber `xml:"ContactNumbers>ContactNumber"`
@@ -157,12 +154,15 @@ type TravelItineraryAddInfoRQ struct {
 	Agency   *AgencyInfo
 	Customer CustomerInfo
 }
+type AgencyInfo struct {
+	XMLName xml.Name `xml:"AgencyInfo"`
+	Address Address
+}
 
 // AddAgencyInfo required to complete booking. Helper function allows it to be more fleixible to build up travel itinerary PNR.
-func (p *PassengerDetailBody) AddAgencyInfo(addr Address, vendp VendorPrefs) {
-	p.PassengerDetailsRQ.TravelItinInfo.Agency = &AgencyInfo{
-		Address:     addr,
-		VendorPrefs: vendp,
+func (ti *TravelItineraryAddInfoRQ) AddAgencyInfo(addr Address) {
+	ti.Agency = &AgencyInfo{
+		Address: addr,
 	}
 }
 
@@ -179,22 +179,34 @@ func (p *PassengerDetailBody) AddUniqueID(id string) {
 // CreatePersonName standalone function for ease of use
 func CreatePersonName(firstName, lastName string) PersonName {
 	return PersonName{
-		//NameNumber:    "1.1",
-		//NameReference: "ABC123",
-		//PassengerType: "ADT",
-		First: &GivenName{Val: firstName},
-		Last:  Surname{Val: lastName},
+		NameNumber:    "1.1",    // sabre example
+		NameReference: "ABC123", // sabre example
+		PassengerType: "ADT",    // sabre example
+		First:         &GivenName{Val: firstName},
+		Last:          Surname{Val: lastName},
 	}
 }
 
-// SetHotelRateDescRqStruct hotel rate description request using input parameters
+/*
+SetHotelRateDescRqStruct hotel rate description request using input parameters
+	IgnoreOnError: false,
+	HaltOnError:   true,
+	PostProcess: PostProcessing{
+		IgnoreAfter:          false,
+		RedisplayReservation: true,
+		UnmaskCreditCard:     false,
+	},
+	PreProcess: PreProcessing{
+		IgnoreBefore: true,
+
+*/
 func SetPNRDetailBody(phone string, person PersonName) PassengerDetailBody {
 	return PassengerDetailBody{
 		PassengerDetailsRQ: PassengerDetailsRQ{
 			XMLNS:         "http://services.sabre.com/sp/pd/v3_3",
 			Version:       "3.3.0",
 			IgnoreOnError: false,
-			HaltOnError:   false,
+			HaltOnError:   true,
 			PostProcess: PostProcessing{
 				IgnoreAfter:          false,
 				RedisplayReservation: true,
@@ -202,7 +214,6 @@ func SetPNRDetailBody(phone string, person PersonName) PassengerDetailBody {
 			},
 			PreProcess: PreProcessing{
 				IgnoreBefore: true,
-				//UniqueID:     UniqueID{ID: lastName + srvc.GenerateSessionID()},
 			},
 			TravelItinInfo: TravelItineraryAddInfoRQ{
 				Customer: CustomerInfo{
@@ -253,80 +264,6 @@ func BuildPNRDetailsRequest(c *srvc.SessionConf, body PassengerDetailBody) PNRDe
 	}
 }
 
-type Message struct {
-	Code string `xml:"code"`
-	Val  string `xml:",chardata"`
-}
-type SystemResult struct {
-	Messages []Message `xml:"Message"`
-}
-type Warning struct {
-	Type          string         `xml:"type,attr"`
-	Timestamp     string         `xml:"timeStamp,attr"`
-	SystemResults []SystemResult `xml:"SystemSpecificResults"`
-}
-type ApplicationResults struct {
-	XMLName xml.Name `xml:"ApplicationResults"`
-	Status  string   `xml:"status,attr"`
-	Success struct {
-		Timestamp string `xml:"timeStamp,attr"`
-	} `xml:"Success"`
-	Warnings []Warning `xml:"Warning"`
-}
-
-func (result ApplicationResults) Ok() bool {
-	switch result.Status {
-	case sbrerr.StatusNotProcess(): //queries
-		return false
-	case sbrerr.StatusComplete(): //queries, pnr
-		if len(result.Warnings) > 0 {
-			return false
-		}
-		return true
-	default:
-		return false
-	}
-}
-
-func (result ApplicationResults) ErrFormat() sbrerr.ErrorSabreResult {
-	var wmsg string
-	for i, w := range result.Warnings {
-		var msg string
-		for is, s := range w.SystemResults {
-			for ms, m := range s.Messages {
-				msg += fmt.Sprintf("SystemResult-%d:Message-%d:Code-%s %s. ", is, ms, m.Code, m.Val)
-			}
-		}
-		wmsg += fmt.Sprintf("Warning-%d:Type-%s Results: %s", i, w.Type, msg)
-	}
-	return sbrerr.ErrorSabreResult{
-		Code:       sbrerr.SabreEngineStatusCode(result.Status),
-		AppMessage: wmsg,
-	}
-}
-
-type ReservationItem struct {
-}
-type ItineraryInfo struct {
-	XMLName          xml.Name          `xml:"ItineraryInfo"`
-	ReservationItems []ReservationItem `xml:"ReservationItems"`
-}
-type ItineraryRef struct {
-	XMLName     xml.Name `xml:"ItineraryRef"`
-	AirExtras   bool     `xml:"AirExtras,attr"`
-	InhibitCode string   `xml:"InhibitCode,attr"`
-	PartitionID string   `xml:"PartitionID,attr"`
-	PrimeHostID string   `xml:"PrimeHostID,attr"`
-	Source      struct {
-		PseudoCityCode string `xml:"PseudoCityCode,attr"`
-	} `xml:"Source"`
-}
-type TravelItinerary struct {
-	XMLName       xml.Name `xml:"TravelItinerary"`
-	Customer      CustomerInfo
-	ItineraryInfo ItineraryInfo
-	ItineraryRef  ItineraryRef
-}
 type TravelItineraryReadRS struct {
 	XMLName         xml.Name `xml:"TravelItineraryReadRS"`
 	TravelItinerary TravelItinerary
@@ -351,6 +288,7 @@ type PNRDetailsResponse struct {
 func CallPNRDetail(serviceURL string, req PNRDetailsRequest) (PNRDetailsResponse, error) {
 	pnrResp := PNRDetailsResponse{}
 	byteReq, _ := xml.Marshal(req)
+	// fmt.Printf("\n\n %s\n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))

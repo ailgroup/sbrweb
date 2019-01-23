@@ -7,8 +7,8 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/ailgroup/sbrweb/client/app"
 	"github.com/ailgroup/sbrweb/engine/srvc"
+	trns "github.com/ailgroup/sbrweb/transmission"
 	"github.com/fsnotify/fsnotify"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -20,12 +20,12 @@ const (
 	ConfSabrePassword = "SABRE_PASSWORD"
 	ConfSabrePCC      = "SABRE_PCC"
 	ConfFile          = "config"
-	ConfTimeZone      = "app_timezone"
-	ConfExpireMin     = "sessions.expire.min"
-	ConfExpireMax     = "sessions.expire.max"
-	ConfPoolSize      = "sessions.client.pool_size"
-	ConfSabreURL      = "sessions.sabre_url"
-	ConfClientURL     = "sessions.client.url"
+	//ConfTimeZone      = "app_timezone"
+	ConfExpireMin = "sessions.expire.min"
+	ConfExpireMax = "sessions.expire.max"
+	ConfPoolSize  = "sessions.client.pool_size"
+	ConfSabreURL  = "sessions.sabre_url"
+	ConfClientURL = "sessions.client.url"
 )
 
 var (
@@ -114,7 +114,7 @@ func main() {
 	// Heartbeat Monitoring endpoint to check the servers pulse
 	m.Use(middleware.Heartbeat("/heartbeat"))
 
-	server := app.Server{
+	server := trns.Server{
 		VConfig:     vipConf,
 		SConfig:     sessConf,
 		Mux:         m,

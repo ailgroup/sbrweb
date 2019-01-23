@@ -1,4 +1,4 @@
-package apperr
+package transmission
 
 import (
 	"encoding/json"

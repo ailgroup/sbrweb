@@ -1,11 +1,10 @@
-package app
+package transmission
 
 import (
 	"encoding/json"
 	"net/http"
 	"time"
 
-	"github.com/ailgroup/sbrweb/apperr"
 	"github.com/ailgroup/sbrweb/engine/hotelws"
 	"github.com/go-playground/form"
 )
@@ -167,19 +166,19 @@ func (s *Server) BookRoomHandler() http.HandlerFunc {
 		// decode params, check errors
 		if err := decoder.Decode(&params, r.URL.Query()); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write(apperr.DecodeBadInput("BookRoomHandler", r.URL.Query(), err, http.StatusBadRequest))
+			w.Write(DecodeBadInput("BookRoomHandler", r.URL.Query(), err, http.StatusBadRequest))
 			return
 		}
 		// validate query params
 		if err := params.Validate(); err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
-			w.Write(apperr.DecodeInvalid("BookRoomHandler", err, http.StatusUnprocessableEntity))
+			w.Write(DecodeInvalid("BookRoomHandler", err, http.StatusUnprocessableEntity))
 			return
 		}
 		prm, err := hotelws.NewParsedRoomMeta(params.RoomMeta)
 		if err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
-			w.Write(apperr.DecodeInvalid("BookRoomHandler::RoomMetaData", err, http.StatusUnprocessableEntity))
+			w.Write(DecodeInvalid("BookRoomHandler::RoomMetaData", err, http.StatusUnprocessableEntity))
 			return
 		}
 		params.ParsedRoomMeta = prm
@@ -195,7 +194,7 @@ func (s *Server) BookRoomHandler() http.HandlerFunc {
 			pnrResp, err := itin.CallPNRDetail(s.SConfig.ServiceURL, pnrReq)
 			if err != nil {
 				w.WriteHeader(http.StatusFailedDependency)
-				w.Write(apperr.DecodeUnknown("CallPNRDetail::BookRoomHandler", r.URL.Query(), err, http.StatusFailedDependency))
+				w.Write(DecodeUnknown("CallPNRDetail::BookRoomHandler", r.URL.Query(), err, http.StatusFailedDependency))
 				return
 			}
 
@@ -240,13 +239,13 @@ func (s *Server) RatesHotelIDHandler() http.HandlerFunc {
 		// decode params, check errors
 		if err := decoder.Decode(&params, r.URL.Query()); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write(apperr.DecodeBadInput("RatesHotelIDHandler", r.URL.Query(), err, http.StatusBadRequest))
+			w.Write(DecodeBadInput("RatesHotelIDHandler", r.URL.Query(), err, http.StatusBadRequest))
 			return
 		}
 		// validate query params
 		if err := params.Validate(s.SConfig.AppTimeZone); err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
-			w.Write(apperr.DecodeInvalid("RatesHotelIDHandler", err, http.StatusUnprocessableEntity))
+			w.Write(DecodeInvalid("RatesHotelIDHandler", err, http.StatusUnprocessableEntity))
 			return
 		}
 		response.RequestParams = *params
@@ -270,11 +269,12 @@ func (s *Server) RatesHotelIDHandler() http.HandlerFunc {
 			params.HotelParamsBase.OutDepart,
 		)
 
+		//fmt.Printf("\n^^^^^^^^^^^^ session: %+v\n", s.SConfig)
 		req := hotelws.BuildHotelPropDescRequest(s.SConfig, body)
 		call, err := hotelws.CallHotelPropDesc(s.SConfig.ServiceURL, req)
 		if err != nil {
 			w.WriteHeader(http.StatusFailedDependency)
-			w.Write(apperr.DecodeUnknown("CallHotelPropDesc::RatesHotelIDHandler", r.URL.Query(), err, http.StatusFailedDependency))
+			w.Write(DecodeUnknown("CallHotelPropDesc::RatesHotelIDHandler", r.URL.Query(), err, http.StatusFailedDependency))
 			return
 		}
 
@@ -303,13 +303,13 @@ func (s *Server) HotelIDsHandler() http.HandlerFunc {
 		// decode params, check errors
 		if err := decoder.Decode(&params, r.URL.Query()); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write(apperr.DecodeBadInput("HotelIDsHandler", r.URL.Query(), err, http.StatusBadRequest))
+			w.Write(DecodeBadInput("HotelIDsHandler", r.URL.Query(), err, http.StatusBadRequest))
 			return
 		}
 		// validate query params
 		if err := params.Validate(s.SConfig.AppTimeZone); err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
-			w.Write(apperr.DecodeInvalid("HotelIDsHandler", err, http.StatusUnprocessableEntity))
+			w.Write(DecodeInvalid("HotelIDsHandler", err, http.StatusUnprocessableEntity))
 			return
 		}
 		response.RequestParams = *params
@@ -337,7 +337,7 @@ func (s *Server) HotelIDsHandler() http.HandlerFunc {
 		call, err := hotelws.CallHotelAvail(s.SConfig.ServiceURL, req)
 		if err != nil {
 			w.WriteHeader(http.StatusFailedDependency)
-			w.Write(apperr.DecodeUnknown("CallHotelAvail::HotelAvailIDsHandler", r.URL.Query(), err, http.StatusFailedDependency))
+			w.Write(DecodeUnknown("CallHotelAvail::HotelAvailIDsHandler", r.URL.Query(), err, http.StatusFailedDependency))
 			return
 		}
 

@@ -23,29 +23,16 @@
         </wsse:Security>
     </soap-env:Header>
     <soap-env:Body>
-        <PassengerDetailsRS xmlns="http://services.sabre.com/sp/pd/v3_3">
-            <ApplicationResults xmlns="http://services.sabre.com/STL_Payload/v02_01" status="Complete">
-                <Success timeStamp="2018-05-25T20:29:21.213-05:00"/>
+        <EndTransactionRS xmlns="http://webservices.sabre.com/sabreXML/2011/10" Version="2.0.9" 
+            xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+            xmlns:stl="http://services.sabre.com/STL/v01">
+            <ApplicationResults status="Complete">
+                <Success timeStamp="2018-04-12T10:45:00-06:00"/>
             </ApplicationResults>
-            <TravelItineraryReadRS>
-                <TravelItinerary>
-                    <CustomerInfo>
-                        <ContactNumbers>
-                            <ContactNumber LocationCode="SLC" Phone="123-456-7890-H.1.1" RPH="001"/>
-                        </ContactNumbers>
-                        <PersonName WithInfant="false" NameNumber="01.01" NameReference="ABC123" PassengerType="ADT" RPH="1">
-                            <GivenName>CHARLES</GivenName>
-                            <Surname>BABBAGE</Surname>
-                        </PersonName>
-                    </CustomerInfo>
-                    <ItineraryInfo>
-                        <ReservationItems/>
-                    </ItineraryInfo>
-                    <ItineraryRef AirExtras="false" InhibitCode="U" PartitionID="AA" PrimeHostID="1S">
-                        <Source PseudoCityCode="ABCD1"/>
-                    </ItineraryRef>
-                </TravelItinerary>
-            </TravelItineraryReadRS>
-        </PassengerDetailsRS>
+            <ItineraryRef ID="NMOXQF">
+                <Source CreateDateTime="2018-04-12T10:45:00"/>
+            </ItineraryRef>
+        </EndTransactionRS>
     </soap-env:Body>
 </soap-env:Envelope>

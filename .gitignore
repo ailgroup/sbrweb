@@ -2,3 +2,4 @@
 .sabre.toml
 *.log
 log/
+*.out
