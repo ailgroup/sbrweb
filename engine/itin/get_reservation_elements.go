@@ -1,339 +1,132 @@
 package itin
 
+import "encoding/xml"
+
 type BookingDetails struct {
-	//XMLName                 xml.Name `xml:"BookingDetails"`
-	RecordLocator           string `xml:"RecordLocator"`
-	CreationTimestamp       string `xml:"CreationTimestamp"`
-	SystemCreationTimestamp string `xml:"SystemCreationTimestamp"`
-	CreationAgentID         string `xml:"CreationAgentID"`
-	UpdateTimestamp         string `xml:"UpdateTimestamp"`
-	PNRSequence             string `xml:"PNRSequence"` //string easier w/ 0-th index
-	DivideSplitDetails      string `xml:"DivideSplitDetails"`
-	EstimatedPurgeTimestamp string `xml:"EstimatedPurgeTimestamp"`
-	UpdateToken             string `xml:"UpdateToken"`
+	XMLName                 xml.Name `xml:"BookingDetails"`
+	RecordLocator           string   `xml:"RecordLocator"`
+	CreationTimestamp       string   `xml:"CreationTimestamp"`
+	SystemCreationTimestamp string   `xml:"SystemCreationTimestamp"`
+	CreationAgentID         string   `xml:"CreationAgentID"`
+	UpdateTimestamp         string   `xml:"UpdateTimestamp"`
+	PNRSequence             string   `xml:"PNRSequence"` //string easier w/ 0-th index
+	DivideSplitDetails      string   `xml:"DivideSplitDetails"`
+	EstimatedPurgeTimestamp string   `xml:"EstimatedPurgeTimestamp"`
+	UpdateToken             string   `xml:"UpdateToken"`
 }
 type SourceReservationElem struct {
-	//XMLName        xml.Name `xml:"Source"`
-	BookingSource  string `xml:"BookingSource,attr"`
-	AgentSine      string `xml:"AgentSine,attr"`
-	PseudoCityCode string `xml:"PseudoCityCode,attr"`
-	ISOCountry     string `xml:"ISOCountry,attr"`
-	AgentDutyCode  string `xml:"AgentDutyCode,attr"`
+	XMLName        xml.Name `xml:"Source"`
+	BookingSource  string   `xml:"BookingSource,attr"`
+	AgentSine      string   `xml:"AgentSine,attr"`
+	PseudoCityCode string   `xml:"PseudoCityCode,attr"`
+	ISOCountry     string   `xml:"ISOCountry,attr"`
+	AgentDutyCode  string   `xml:"AgentDutyCode,attr"`
 	//AirlineVendorID   bool     `xml:"AirlineVendorID,attr"`
 	HomePseudoCityCode string `xml:"HomePseudoCityCode,attr"`
 }
 type POSReservationElem struct {
-	//XMLName     xml.Name `xml:"POS"`
-	AirExtras   bool   `xml:"AirExtras,attr"`
-	InhibitCode string `xml:"InhibitCode,attr"`
+	XMLName     xml.Name `xml:"POS"`
+	AirExtras   bool     `xml:"AirExtras,attr"`
+	InhibitCode string   `xml:"InhibitCode,attr"`
 	Source      SourceReservationElem
 }
-type PassengerReservation struct {
-	//XMLName xml.Name `xml:"PassengerReservation"`
-	Passengers       string `xml:"Passengers"` //`xml:"Passengers>Passenger"`
-	Segments         string `xml:"Segments"`   //`xml:"Segments>Segment"`
-	TicketingInfo    string `xml:"TicketingInfo"`
-	ItineraryPricing string `xml:"ItineraryPricing"`
-}
-type Reservation struct {
-	//XMLName         xml.Name `xml:"Reservation"`
-	NumberInParty        string `xml:"numberInParty,attr"`
-	NumberOfInfants      string `xml:"numberOfInfants,attr"`
-	NumberInSegment      string `xml:"numberInSegment,attr"`
-	BookingDetails       BookingDetails
-	POS                  POSReservationElem
-	PassengerReservation PassengerReservation
-	ReceivedFrom         string `xml:"ReceivedFrom"`
-	EmailAddresses       string `xml:"EmailAddresses"`
-}
-type HomeLocation struct {
-	//XMLName xml.Name `xml:"HomeLocation"`
-	Val string `xml:",chardata"`
-}
-type WorkLocation struct {
-	//XMLName xml.Name `xml:"WorkLocation"`
-	Val string `xml:",chardata"`
-}
-type AgentInfo struct {
-	//XMLName       xml.Name `xml:"AgentInfo"`
-	Duty         string `xml:"duty,attr"`
-	Sine         string `xml:"sine,attr"`
-	HomeLocation HomeLocation
-	WorkLocation WorkLocation
-}
-type CreateDateTime struct {
-	//XMLName xml.Name `xml:"CreateDateTime"`
-	Val string `xml:",chardata"`
-}
-type LocalCreateDateTime struct {
-	//XMLName xml.Name `xml:"LocalCreateDateTime"`
-	Val string `xml:",chardata"`
-}
-type ExpiryDateTime struct {
-	//XMLName xml.Name `xml:"ExpiryDateTime"`
-	Val string `xml:",chardata"`
-}
-type InputEntry struct {
-	//XMLName xml.Name `xml:"InputEntry"`
-	Val string `xml:",chardata"`
-}
-type TransactionInfo struct {
-	//XMLName       xml.Name `xml:"TransactionInfo"`
-	CreateDateTime      CreateDateTime //string `xml:"CreateDateTime"`
-	LocalCreateDateTime LocalCreateDateTime
-	ExpiryDateTime      ExpiryDateTime
-	InputEntry          InputEntry
-}
-type NameAssociationInfo struct {
-	//XMLName    xml.Name `xml:"NameAssociationInfo"`
-	FirstName  string `xml:"firstName,attr"`
-	LastName   string `xml:"lastName,attr"`
-	NameID     string `xml:"nameId,attr"`
-	NameNumber string `xml:"nameNumber,attr"`
-}
-type MarketingFlight struct {
-	//XMLName    xml.Name `xml:"MarketingFlight"`
-	Number string `xml:"number,attr"`
-	Val    string `xml:",chardata"`
-}
-type ClassOfService struct {
-	//XMLName    xml.Name `xml:"ClassOfService"`
-	Val string `xml:",chardata"`
-}
-type Flight struct {
-	//XMLName    xml.Name `xml:"Flight"`
-	ConnectionIndicator string `xml:"connectionIndicator,attr"`
-	MarketingFlight     MarketingFlight
-	ClassOfService      ClassOfService
-	Departure           Departure
-	Arrival             Arrival
-}
-type FareBasis struct {
-	//XMLName    xml.Name `xml:"FareBasis"`
-	Val string `xml:",chardata"`
-}
-type NotValidAfter struct {
-	//XMLName    xml.Name `xml:"NotValidAfter"`
-	Val string `xml:",chardata"`
-}
-type Baggage struct {
-	//XMLName    xml.Name `xml:"Baggage"`
-	Allowance string `xml:"allowance,attr"`
-	Btype     string `xml:"type,attr"`
-}
-type SegmentInfo struct {
-	//XMLName    xml.Name `xml:"SegmentInfo"`
-	Number        string `xml:"number,attr"` //string easier deal w/ response and 0-th
-	SegmentStatus string `xml:"segmentStatus,attr"`
-	Flight        Flight //this is needed even for hotel/car
-	FareBasis     FareBasis
-	NotValidAfter NotValidAfter
-	Baggage       Baggage
-}
-type FareIndicator struct {
-	//XMLName       xml.Name `xml:"FareIndicator"`
-}
-type BaseFare struct {
-	//XMLName       xml.Name `xml:"BaseFare"`
-	CurrencyCode string `xml:"currencyCode,attr"`
-	Val          string `xml:",chardata"`
-}
-type TotalTax struct {
-	//XMLName       xml.Name `xml:"TotalTax"`
-	CurrencyCode string `xml:"currencyCode,attr"`
-	Val          string `xml:",chardata"`
-}
-type TotalFare struct {
-	//XMLName       xml.Name `xml:"TotalFare"`
-	CurrencyCode string `xml:"currencyCode,attr"`
-	Val          string `xml:",chardata"`
-}
-type CombinedTax struct {
-	//XMLName       xml.Name `xml:"CombinedTax"`
-	Code   string `xml:"code,attr"`
-	Amount Amount
-}
-type Tax struct {
-	//XMLName       xml.Name `xml:"CombinedTax"`
-	Code   string `xml:"code,attr"`
-	Amount Amount
-}
-type TaxInfo struct {
-	//XMLName       xml.Name `xml:"TaxInfo"`
-	CombinedTaxes []CombinedTax `xml:"CombinedTax"`
-	Taxes         []Tax         `xml:"Tax"`
-}
-type FareCalculation struct {
-	//XMLName       xml.Name `xml:"FareCalculation"`
-	Val string `xml:",chardata"`
-}
-type SegmentNumber struct {
-	//XMLName xml.Name `xml:"SegmentNumber"`
-	Val string `xml:",chardata"`
-}
-type FlightSegmentNumbers struct {
-	//XMLName       xml.Name `xml:"FlightSegmentNumbers"`
-	SegmentNumbers []SegmentNumber `xml:"SegmentNumber"`
-}
-type FareDirectionality struct {
-	//XMLName       xml.Name `xml:"FareDirectionality"`
-	OneWay bool `xml:"oneWay,attr"`
-}
-type GoverningCarrier struct {
-	//XMLName       xml.Name `xml:"GoverningCarrier"`
-	Val string `xml:",chardata"`
-}
-type FareComponent struct {
-	//XMLName       xml.Name `xml:"FareComponent"`
-	FareBasisCode        string `xml:"fareBasisCode,attr"`
-	Number               string `xml:"number,attr"`
-	FlightSegmentNumbers FlightSegmentNumbers
-	FareDirectionality   FareDirectionality
-	Departure            Departure
-	Arrival              Arrival
-	Amount               Amount
-	GoverningCarrier     GoverningCarrier
-}
-type FareInfo struct {
-	//XMLName       xml.Name `xml:"FareInfo"`
-	FareIndicators  FareIndicator
-	BaseFare        BaseFare
-	TotalTax        TotalTax
-	TotalFare       TotalFare
-	TaxInfo         TaxInfo
-	FareCalculation FareCalculation
-	FareComponent   FareComponent
-}
-type OBFee struct {
-	//XMLName       xml.Name `xml:"OBFee"`
-	Code        string `xml:"code"`
-	OBFType     string `xml:"type"`
-	Amount      Amount
-	Description struct {
-		Val string `xml:",chardata"`
-	} `xml:"Description"`
-}
-type FeeInfo struct {
-	//XMLName       xml.Name `xml:"FeeInfo"`
-	OBFee OBFee
-}
-type MiscellaneousInfo struct {
-	//XMLName       xml.Name `xml:"MiscellaneousInfo"`
-	ValidatingCarrier ValidatingCarrier
-	ItineraryType     ItineraryType
-}
-type ReservationMessage struct {
-	//XMLName xml.Name `xml:"Message"`
-	//Code   string `xml:"code,attr"`
-	Number string `xml:"number,attr"`
-	Mtype  string `xml:"type,attr"`
-	Val    string `xml:",chardata"`
-}
-type MessageInfo struct {
-	//XMLName       xml.Name `xml:"MessageInfo"`
-	Messages []ReservationMessage `xml:"Message"`
-}
-type DetailsPriceQuoteElem struct {
-	//XMLName       xml.Name `xml:"Details"`
-	Number              string `xml:"number,attr"`
-	PassengerType       string `xml:"passengerType,attr"`
-	PricingType         string `xml:"pricingType,attr"`
-	Status              string `xml:"status,attr"`
-	Dtype               string `xml:"type,attr"`
-	AgentInfo           AgentInfo
-	TransactionInfo     TransactionInfo
-	NameAssociationInfo NameAssociationInfo
-	SegmentInfo         SegmentInfo
-	FareInfo            FareInfo
-	FeeInfo             FeeInfo
-	MiscellaneousInfo   MiscellaneousInfo
-	MessageInfo         MessageInfo
+type Passenger struct {
+	XMLName         xml.Name `xml:"Passenger"`
+	ID              string   `xml:"id,attr"`
+	NameType        string   `xml:"nameType,attr"`
+	PassengerType   string   `xml:"passengerType,attr"`
+	ReferenceNumber string   `xml:"referenceNumber,attr"`
+	NameID          string   `xml:"nameId,attr"`
+	NameAssocID     string   `xml:"nameAssocId,attr"`
+	ElementID       string   `xml:"elementId,attr"`
+	LastName        string   `xml:"LastName"`
+	FirstName       string   `xml:"FirstName"`
+	//Seats              string `xml:"Seats"`
 }
 
-type Indicators struct {
-	//XMLName    xml.Name `xml:"Indicators"`
-	ItineraryChange bool `xml:"itineraryChange,attr"`
+type PassengerReservation struct {
+	XMLName          xml.Name    `xml:"PassengerReservation"`
+	Passengers       []Passenger `xml:"Passengers>Passenger"`
+	Segments         Segment     `xml:"Segments>Segment"`
+	TicketingInfo    string      `xml:"TicketingInfo"`
+	ItineraryPricing string      `xml:"ItineraryPricing"`
 }
-type Passenger struct {
-	//XMLName    xml.Name `xml:"Passenger"`
-	PassengerTypeCount string `xml:"passengerTypeCount,attr"`
-	RequestedType      string `xml:"requestedType,attr"`
-	Ptype              string `xml:"type,attr"`
+type ReceivedFrom struct {
+	XMLName xml.Name `xml:"ReceivedFrom"`
+	Name    string   `xml:"Name"`
 }
-type ItineraryType struct {
-	//XMLName    xml.Name `xml:"ItineraryType"`
-	Val string `xml:",chardata"`
+type AddressLineResElem struct {
+	XMLName xml.Name `xml:"AddressLine"`
+	ID      string   `xml:"id,attr"`
+	Atype   string   `xml:"type,attr"`
+	Text    string   `xml:"Text"`
 }
-type Amount struct {
-	//XMLName    xml.Name `xml:"Amount"`
-	CurrencyCode string `xml:"currencyCode,attr"`
-	DecimalPlace string `xml:"decimalPlace,attr"`
-	Val          string `xml:",chardata"`
+type AddressReservationElem struct {
+	XMLName      xml.Name           `xml:"Address"`
+	AddressLines AddressLineResElem `xml:"AddressLines>AddressLine"`
 }
-type Waiver struct {
-	//XMLName    xml.Name `xml:"Waiver"`
-	Val string `xml:",chardata"`
+type PhoneNumberReservationElem struct {
+	XMLName   xml.Name `xml:"PhoneNumber"`
+	ID        string   `xml:"id,attr"`
+	Index     string   `xml:"index,attr"`
+	ElementID string   `xml:"elementId,attr"`
+	CityCode  string   `xml:"CityCode"`
+	Number    string   `xml:"Number"`
 }
-type Fee struct {
-	//XMLName    xml.Name `xml:"Fee"`
-	Code   string `xml:"code,attr"`
-	ItemID string `xml:"itemId,attr"`
-	Ftype  string `xml:"type,attr"`
-	Amount Amount
-	Waiver Waiver
+type EmailReservationElem struct {
+	XMLName   xml.Name `xml:"Email"`
+	ID        string   `xml:"id,attr"`
+	Index     string   `xml:"index,attr"`
+	ElementID string   `xml:"elementId,attr"`
+	Text      string   `xml:"Text"`
 }
-type ValidatingCarrier struct {
-	//XMLName    xml.Name `xml:"ValidatingCarrier"`
-	Val string `xml:",chardata"`
+type GenericSpecialRequests struct {
+	XMLName     xml.Name `xml:"GenericSpecialRequests"`
+	ID          string   `xml:"id,attr"`
+	GType       string   `xml:"type,attr"`
+	MsgType     string   `xml:"msgType,attr"`
+	FreeText    string   `xml:"FreeText"`
+	AirlineCode string   `xml:"AirlineCode"`
+	FullText    string   `xml:"FullText"`
 }
-type Total struct {
-	//XMLName    xml.Name `xml:"Total"`
-	CurrencyCode string `xml:"currencyCode,attr"`
-	Val          string `xml:",chardata"`
+type AssociationMatrix struct {
+	XMLName xml.Name `xml:"AssociationMatrix"`
+	Name    string   `xml:"Name"`
+	Parent  struct {
+		Ref string `xml:"ref,attr"`
+	} `xml:"Parent"`
+	Child struct {
+		Ref string `xml:"ref,attr"`
+	} `xml:"Child"`
 }
-type Amounts struct {
-	//XMLName    xml.Name `xml:"Amounts"`
-	Total Total
+type ServiceRequestOpenRes struct {
+	XMLName     xml.Name `xml:"ServiceRequest"`
+	AirlineCode string   `xml:"airlineCode,attr"`
+	ServiceType string   `xml:"serviceType,attr"`
+	SsrType     string   `xml:"ssrType,attr"`
+	FreeText    string   `xml:"FreeText"`
+	FullText    string   `xml:"FullText"`
 }
-type PriceQuoteNameAssocElem struct {
-	//XMLName    xml.Name `xml:"PriceQuote"`
-	Number              string `xml:"number,attr"`
-	PricingType         string `xml:"pricingType,attr"`
-	Status              string `xml:"status,attr"`
-	PQNAType            string `xml:"type,attr"`
-	Indicators          Indicators
-	Passenger           Passenger
-	ItineraryType       ItineraryType
-	Fee                 Fee
-	ValidatingCarrier   ValidatingCarrier
-	Amounts             Amounts
-	LocalCreateDateTime string `xml:"LocalCreateDateTime"`
+type OpenReservationElement struct {
+	XMLName        xml.Name              `xml:"OpenReservationElement"`
+	ID             string                `xml:"id,attr"`
+	SType          string                `xml:"type,attr"`
+	ElementID      string                `xml:"elementId,attr"`
+	ServiceRequest ServiceRequestOpenRes `xml:"ServiceRequest"`
 }
-type NameAssociation struct {
-	//XMLName    xml.Name `xml:"NameAssociation"`
-	FirstName  string                  `xml:"firstName,attr"`
-	LastName   string                  `xml:"lastName,attr"`
-	NameID     string                  `xml:"nameId,attr"`
-	NameNumber string                  `xml:"nameNumber,attr"`
-	PriceQuote PriceQuoteNameAssocElem `xml:"PriceQuote"`
-}
-type SummaryPriceQuoteElem struct {
-	//XMLName          xml.Name          `xml:"Summary"`
-	NameAssociations []NameAssociation `xml:"NameAssociation"`
-}
-type ReservationPriceQuoteElem struct {
-	//XMLName     xml.Name `xml:"Reservation"`
-	Val         string `xml:",chardata"`
-	UpdateToken string `xml:"updateToken,attr"`
-}
-type PriceQuoteInfo struct {
-	//XMLName     xml.Name `xml:"PriceQuoteInfo"`
-	XMLNS       string `xml:"xmlns,attr"` //"http://www.sabre.com/ns/Ticketing/pqs/1.0"
-	Reservation ReservationPriceQuoteElem
-	Summary     SummaryPriceQuoteElem
-	Details     []DetailsPriceQuoteElem
-}
-type PriceQuote struct {
-	//XMLName        xml.Name `xml:"PriceQuote"`
-	PriceQuoteInfo PriceQuoteInfo
+type Reservation struct {
+	XMLName                 xml.Name `xml:"Reservation"`
+	NumberInParty           string   `xml:"numberInParty,attr"`
+	NumberOfInfants         string   `xml:"numberOfInfants,attr"`
+	NumberInSegment         string   `xml:"numberInSegment,attr"`
+	BookingDetails          BookingDetails
+	POS                     POSReservationElem
+	PassengerReservation    PassengerReservation
+	ReceivedFrom            ReceivedFrom
+	Addresses               []AddressReservationElem     `xml:"Addresses>Address"`
+	PhoneNumbers            []PhoneNumberReservationElem `xml:"PhoneNumbers>PhoneNumber"`
+	EmailAddresses          []EmailReservationElem       `xml:"EmailAddresses>EmailAddress"`
+	GenericSpecialRequests  []GenericSpecialRequests
+	AssociationMatrices     []AssociationMatrix      `xml:"AssociationMatrices>AssociationMatrix"`
+	OpenReservationElements []OpenReservationElement `xml:"OpenReservationElements>OpenReservationElement"`
 }

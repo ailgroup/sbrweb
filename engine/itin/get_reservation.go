@@ -54,6 +54,8 @@ type ResponseFormat struct {
 	XMLName xml.Name `xml:"ResponseFormat"`
 	Val     string   `xml:",chardata"`
 }
+
+/*
 type ReturnOptions struct {
 	XMLName        xml.Name      `xml:"ReturnOptions"`
 	PQVersion      string        `xml:"PriceQuoteServiceVersion,attr"`
@@ -61,18 +63,19 @@ type ReturnOptions struct {
 	ViewName       ViewName
 	ResponseFormat ResponseFormat
 }
+*/
 
 // GetReservationRQ root element
 type GetReservationRQ struct {
-	XMLName       xml.Name `xml:"GetReservationRQ"`
-	XMLNS         string   `xml:"xmlns,attr"` //"http://webservices.sabre.com/pnrbuilder/v1_19"
-	Version       string   `xml:"Version,attr"`
-	Locator       Locator
-	RequestType   RequestType
-	ReturnOptions ReturnOptions
+	XMLName     xml.Name `xml:"GetReservationRQ"`
+	XMLNS       string   `xml:"xmlns,attr"` //"http://webservices.sabre.com/pnrbuilder/v1_19"
+	Version     string   `xml:"Version,attr"`
+	Locator     Locator
+	RequestType RequestType
+	//ReturnOptions ReturnOptions
 }
 
-func BuildGetReservationRequest(c *srvc.SessionConf, lctr, subject string) GetReservationRequest {
+func BuildGetReservationRequest(c *srvc.SessionConf, locator string) GetReservationRequest {
 	return GetReservationRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -105,17 +108,19 @@ func BuildGetReservationRequest(c *srvc.SessionConf, lctr, subject string) GetRe
 				XMLNS:   "http://webservices.sabre.com/pnrbuilder/v1_19",
 				Version: "1.19.0",
 				Locator: Locator{
-					Val: lctr,
+					Val: locator,
 				},
 				RequestType: RequestType{
-					Val: "Stateless",
+					Val: "Stateful",
+					//Val: "Stateless",
+					//Val: "Trip",
 				},
-				ReturnOptions: ReturnOptions{
-					PQVersion:      "3.2.0",
-					SubjectAreas:   []SubjectArea{SubjectArea{Val: subject}},
-					ViewName:       ViewName{Val: "Simple"},
-					ResponseFormat: ResponseFormat{Val: "STL"},
-				},
+				//ReturnOptions: ReturnOptions{
+				//PQVersion: "3.2.0",
+				//SubjectAreas:   []SubjectArea{SubjectArea{Val: subject}},
+				//ViewName: ViewName{Val: "Simple"},
+				//ResponseFormat: ResponseFormat{Val: "OTA"},
+				//},
 			},
 		},
 	}
@@ -140,9 +145,9 @@ type PNRErrors struct {
 type GetReservationRS struct {
 	XMLName xml.Name `xml:"GetReservationRS"`
 	Errors  PNRErrors
-	//AppResults  ApplicationResults
+	//AppResults  ApplicationResults //not sure service has this element
 	Reservation Reservation
-	PriceQuote  PriceQuote
+	PriceQuote  PriceQuote //need for response format request SubjectAreas=PRICE_QUOTE
 }
 type GetReservationResponse struct {
 	Envelope srvc.EnvelopeUnMarsh
@@ -182,7 +187,7 @@ func CallGetReservation(serviceURL string, req GetReservationRequest) (GetReserv
 	byteReq, _ := xml.Marshal(req)
 
 	//-----------------------------------
-	//fmt.Printf("\n\nCallGetReservation RAW REQUEST: %s\n\n", byteReq)
+	fmt.Printf("\n\nCallGetReservation RAW REQUEST: %s\n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
@@ -201,7 +206,7 @@ func CallGetReservation(serviceURL string, req GetReservationRequest) (GetReserv
 	resp.Body.Close()
 
 	//-----------------------------------
-	//fmt.Printf("\n\nCallGetReservation RAW RESPONSE: %s\n\n", bodyBuffer.Bytes())
+	fmt.Printf("\n\nCallGetReservation RAW RESPONSE: %s\n\n", bodyBuffer.Bytes())
 
 	//marshal bytes sabre response body into availResp response struct
 	err = xml.Unmarshal(bodyBuffer.Bytes(), &getRes)
