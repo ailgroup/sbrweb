@@ -26,7 +26,8 @@ const (
 	ErrCallHotelRateDesc   = "Error CallHotelRateDesc::HotelRateDescriptionLLSRQ"
 	ErrCallHotelRes        = "Error CallHotelRes::OTA_HotelResLLSRQ"
 	ErrCallPNRDetails      = "Error CallPNRDetails::PassengerDetailsRQ"
-	ErrCallEndTransaction  = "Error CallEndTransaction::EndTransactionRQ"
+	ErrCallEndTransaction  = "Error CallEndTransaction::EndTransactionLLSRQ"
+	ErrCallGetReservation  = "Error CallGetReservation::GetReservationRQ"
 )
 
 var (
@@ -110,6 +111,7 @@ func NewErrorSabreService(errIn, appIn string, code SabreStatus) ErrorSabreServi
 
 // Error for ErrorSabreService implements std lib error interface
 func (e ErrorSabreService) Error() string {
+	//return e.ErrMessage + " " + e.AppMessage
 	return e.ErrMessage
 }
 

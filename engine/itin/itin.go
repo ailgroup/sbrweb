@@ -7,6 +7,26 @@ import (
 	"github.com/ailgroup/sbrweb/engine/sbrerr"
 )
 
+type DateTime struct {
+	//XMLName xml.Name `xml:"DateTime"`
+	Val string `xml:",chardata"`
+}
+type CityCode struct {
+	//XMLName xml.Name `xml:"CityCode"`
+	Name string `xml:"name,attr"`
+	Val  string `xml:",chardata"`
+}
+type Departure struct {
+	//XMLName  xml.Name `xml:"Departure"`
+	DateTime DateTime
+	CityCode CityCode
+}
+type Arrival struct {
+	//XMLName  xml.Name `xml:"Arrival"`
+	DateTime DateTime
+	CityCode CityCode
+}
+
 type ReservationItem struct {
 }
 type ItineraryInfo struct {
@@ -32,12 +52,12 @@ type TravelItinerary struct {
 	ItineraryRef  ItineraryRef
 }
 
-type Message struct {
+type SystemMessage struct {
 	Code string `xml:"code"`
 	Val  string `xml:",chardata"`
 }
 type SystemResult struct {
-	Messages []Message `xml:"Message"`
+	Messages []SystemMessage `xml:"Message"`
 }
 type AppResWarning struct {
 	Type          string         `xml:"type,attr"`
@@ -77,7 +97,6 @@ func (result ApplicationResults) Ok() bool {
 	}
 }
 func (result ApplicationResults) ErrFormat() sbrerr.ErrorSabreResult {
-	//fmt.Printf("\n*******************ErrFormat(): %+v\n\n", result)
 	var wmsg string
 	for i, w := range result.Warnings {
 		var msg string
