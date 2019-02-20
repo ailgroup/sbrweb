@@ -7,8 +7,6 @@ import (
 	"github.com/ailgroup/sbrweb/engine/sbrerr"
 )
 
-var ()
-
 func TestEndTransactionXML(t *testing.T) {
 	et := BuildEndTransactionRequest(sampleConf)
 	b, err := xml.Marshal(et)

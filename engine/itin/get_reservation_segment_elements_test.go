@@ -19,7 +19,7 @@ func TestGetResSegmentRSUnmarshal(t *testing.T) {
 
 func TestGetResReservationRSBasic(t *testing.T) {
 	getRes := GetReservationResponse{}
-	xml.Unmarshal(sampleGetResSegmentRS, &getRes)
+	_ = xml.Unmarshal(sampleGetResSegmentRS, &getRes)
 	res := getRes.Body.GetReservationRS.Reservation
 
 	if res.ReceivedFrom.Name != "IBE" {
@@ -153,9 +153,8 @@ func genSampleHotelSegTest() HotelSegmentElem {
 
 func TestGetResSegmentHotelRSBasic(t *testing.T) {
 	getRes := GetReservationResponse{}
-	xml.Unmarshal(sampleGetResSegmentRS, &getRes)
+	_ = xml.Unmarshal(sampleGetResSegmentRS, &getRes)
 	hot := getRes.Body.GetReservationRS.Reservation.PassengerReservation.Segments.Hotel
-	//fmt.Printf("%+v\n", hot)
 	exp := genSampleHotelSegTest()
 	if hot.ID != exp.ID {
 		t.Errorf("Hotel.Id exp: %s, got: %s", exp.ID, hot.ID)
