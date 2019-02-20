@@ -13,6 +13,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/render"
 	"github.com/spf13/viper"
 )
 
@@ -124,22 +125,31 @@ func main() {
 	pool := srvc.NewPool(scheme, sessConf, vipConf.GetInt(confPoolSize))
 	runPool(pool)
 
-	// pass context through handlers??
-	m := chi.NewRouter()
+	router := chi.NewRouter()
+	//render.SetContentType Sets content-type as... application/json
 	//Logger Logs the start and end of each request with the elapsed processing time
-	m.Use(middleware.Logger)
-	// Heartbeat Monitoring endpoint to check the servers pulse
-	m.Use(middleware.Heartbeat("/heartbeat"))
+	//Heartbeat Monitoring endpoint to check the servers pulse
+	//Recoverer Recovers from panics without crashing
+	//DefaultCompress Compress results gzipping assets and json
+	//RedirectSlashes Redirect slashes to no slash URL versions
+	router.Use(
+		render.SetContentType(render.ContentTypeJSON),
+		middleware.Logger,
+		middleware.Heartbeat("/heartbeat"),
+		middleware.Recoverer,
+		middleware.DefaultCompress,
+		middleware.RedirectSlashes,
+	)
 
 	server := trns.Server{
 		VConfig:     vipConf,
 		SConfig:     sessConf,
-		Mux:         m,
+		Mux:         router,
 		SessionPool: pool,
 	}
 	server.RegisterRoutes()
 	fmt.Println("Begin on port:", port)
-	err := http.ListenAndServe(port, m)
+	err := http.ListenAndServe(port, router)
 	if err != nil {
 		panic(fmt.Errorf("FATAL HTTP ERROR: %s", err))
 	}
