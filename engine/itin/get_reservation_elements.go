@@ -45,11 +45,11 @@ type Passenger struct {
 }
 
 type PassengerReservation struct {
-	XMLName          xml.Name    `xml:"PassengerReservation"`
-	Passengers       []Passenger `xml:"Passengers>Passenger"`
-	Segments         Segment     `xml:"Segments>Segment"`
-	TicketingInfo    string      `xml:"TicketingInfo"`
-	ItineraryPricing string      `xml:"ItineraryPricing"`
+	XMLName          xml.Name           `xml:"PassengerReservation"`
+	Passengers       []Passenger        `xml:"Passengers>Passenger"`
+	Segments         SegmentReservation `xml:"Segments>Segment"`
+	TicketingInfo    string             `xml:"TicketingInfo"`
+	ItineraryPricing string             `xml:"ItineraryPricing"`
 }
 type ReceivedFrom struct {
 	XMLName xml.Name `xml:"ReceivedFrom"`

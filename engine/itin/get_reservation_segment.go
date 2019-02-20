@@ -145,7 +145,7 @@ type HotelSegmentElem struct {
 	RateDescription       RateDescriptionSegment //only on product
 	HotelPolicy           HotelPolicySegment     //only on product
 }
-type Segment struct {
+type SegmentReservation struct {
 	XMLName  xml.Name `xml:"Segment"`
 	Sequence string   `xml:"sequence,attr"`
 	ID       string   `xml:"id,attr"`

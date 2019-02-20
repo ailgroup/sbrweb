@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -16,16 +17,26 @@ import (
 )
 
 const (
-	ConfSabreUsername = "SABRE_USERNAME"
-	ConfSabrePassword = "SABRE_PASSWORD"
-	ConfSabrePCC      = "SABRE_PCC"
-	ConfFile          = "config"
-	//ConfTimeZone      = "app_timezone"
-	ConfExpireMin = "sessions.expire.min"
-	ConfExpireMax = "sessions.expire.max"
-	ConfPoolSize  = "sessions.client.pool_size"
-	ConfSabreURL  = "sessions.sabre_url"
-	ConfClientURL = "sessions.client.url"
+	//ConfSabreUsername sets env variable
+	confSabreUsername = "SABRE_USERNAME"
+	//ConfSabrePassword sets env variable
+	confSabrePassword = "SABRE_PASSWORD"
+	//ConfSabrePCC sets env variable
+	confSabrePCC = "SABRE_PCC"
+	//ConfFile name of file
+	confFile = "config"
+	//ConfTimeZone timezeone variable
+	confTimeZone = "app_timezone"
+	//ConfExpireMin key for toml file
+	confExpireMin = "sessions.expire.min"
+	//ConfExpireMax key for toml filee
+	confExpireMax = "sessions.expire.max"
+	//ConfPoolSize key for toml filee
+	confPoolSize = "sessions.client.pool_size"
+	//ConfSabreURL key for toml filee
+	confSabreURL = "sessions.sabre_url"
+	//ConfClientURL key for toml file
+	confClientURL = "sessions.client.url"
 )
 
 var (
@@ -33,41 +44,47 @@ var (
 	sessConf          = &srvc.SessionConf{}
 	vipConf           = &viper.Viper{}
 	port              = ":8080"
-	ClientAppTimeZone = &time.Location{}
+	clientAppTimeZone = &time.Location{}
 )
 
 func init() {
-	ClientAppTimeZone = time.UTC
+	clientAppTimeZone = time.UTC
 	vipConf = setConfig()
 	sessConf = &srvc.SessionConf{
-		ServiceURL:  vipConf.GetString(ConfSabreURL),
-		From:        vipConf.GetString(ConfClientURL),
-		PCC:         vipConf.GetString(ConfSabrePCC),
-		Convid:      srvc.GenerateConversationID(vipConf.GetString(ConfClientURL)),
+		ServiceURL:  vipConf.GetString(confSabreURL),
+		From:        vipConf.GetString(confClientURL),
+		PCC:         vipConf.GetString(confSabrePCC),
+		Convid:      srvc.GenerateConversationID(vipConf.GetString(confClientURL)),
 		Msgid:       srvc.GenerateMessageID(),
 		Timestr:     srvc.SabreTimeNowFmt(),
-		Username:    vipConf.GetString(ConfSabreUsername),
-		Password:    vipConf.GetString(ConfSabrePassword),
-		AppTimeZone: ClientAppTimeZone,
+		Username:    vipConf.GetString(confSabreUsername),
+		Password:    vipConf.GetString(confSabrePassword),
+		AppTimeZone: clientAppTimeZone,
 	}
 }
 
 func setConfig() *viper.Viper {
 	vip := viper.GetViper()
 
-	vip.SetConfigName(ConfFile)
+	vip.SetConfigName(confFile)
 	vip.AddConfigPath("$HOME")
 	vip.AddConfigPath(".")
-	vip.BindEnv(ConfSabreUsername)
-	vip.BindEnv(ConfSabrePassword)
-	vip.BindEnv(ConfSabrePCC)
-
-	//loc, _ := time.LoadLocation("Europe/Berlin")
-	vip.SetDefault("app_timezone", "UTC")
-
-	err := vip.ReadInConfig()
+	err := vip.BindEnv(confSabreUsername)
 	if err != nil {
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+		log.Printf("ERROR ConfSabreUsername not found %v", err)
+	}
+	err = vip.BindEnv(confSabrePassword)
+	if err != nil {
+		log.Printf("ERROR ConfSabrePassword not found %v", err)
+	}
+	err = vip.BindEnv(confSabrePCC)
+	if err != nil {
+		log.Printf("ERROR ConfSabrePCC not found: %v", err)
+	}
+	vip.SetDefault(confTimeZone, "UTC")
+	err = vip.ReadInConfig()
+	if err != nil {
+		panic(fmt.Errorf("FATAL ERROR CONFIG FILE: %s", err))
 	}
 	vip.WatchConfig()
 	vip.OnConfigChange(func(e fsnotify.Event) {
@@ -99,12 +116,12 @@ func runPool(p *srvc.SessionPool) {
 func main() {
 	// create scheme for session expirey
 	scheme := srvc.ExpireScheme{
-		Min: vipConf.GetInt(ConfExpireMin),
-		Max: vipConf.GetInt(ConfExpireMax),
+		Min: vipConf.GetInt(confExpireMin),
+		Max: vipConf.GetInt(confExpireMax),
 	}
 
 	// create and populate pool, start keepalive, watch for signal close down
-	pool := srvc.NewPool(scheme, sessConf, vipConf.GetInt(ConfPoolSize))
+	pool := srvc.NewPool(scheme, sessConf, vipConf.GetInt(confPoolSize))
 	runPool(pool)
 
 	// pass context through handlers??
@@ -122,5 +139,8 @@ func main() {
 	}
 	server.RegisterRoutes()
 	fmt.Println("Begin on port:", port)
-	http.ListenAndServe(port, m)
+	err := http.ListenAndServe(port, m)
+	if err != nil {
+		panic(fmt.Errorf("FATAL HTTP ERROR: %s", err))
+	}
 }

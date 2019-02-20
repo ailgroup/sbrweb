@@ -14,12 +14,20 @@ var (
 	serverBadBody = &httptest.Server{}
 	//serverPNRDetails responds with successful and valid post for passenger details
 	serverPNRDetails = &httptest.Server{}
-	//serverBizLogic mocks a server that returns warning business logic repsonse (due to missing first name)
+	//serverBizLogic mocks a server that returns warning business logic repsonse
 	serverBizLogic = &httptest.Server{}
 	//serverEndT mocks a server that returns results from end transaction call
 	serverEndT = &httptest.Server{}
 	//serverEndTBizLogic mocks a server that returns business logic error
 	serverEndTBizLogic = &httptest.Server{}
+
+	/*
+		TODO get these mock server tests done for CallGetReservation
+	*/
+	//serverGetRes mocks a server that returns results from get reservations call
+	//serverGetRes = &httptest.Server{}
+	//serverGetRestBad mocks a server that returns bad resposne for get reservations
+	//serverGetRestBad = &httptest.Server{}
 )
 
 //Initialize Mock Sabre Web Servers and test data
@@ -27,7 +35,7 @@ func init() {
 	serverDown = httptest.NewServer(
 		http.HandlerFunc(
 			func(rs http.ResponseWriter, rq *http.Request) {
-				rs.Write([]byte(`hello`))
+				_, _ = rs.Write([]byte(`hello`))
 			},
 		),
 	)
@@ -36,10 +44,7 @@ func init() {
 	serverBadBody = httptest.NewServer(
 		http.HandlerFunc(
 			func(rs http.ResponseWriter, rq *http.Request) {
-				//rs.Header()
-				//rs.WriteHeader(500)
-				//rs.Write(sampleBadBody)
-				rs.Write([]byte(`<!# SOME BAD--XML_/__.*__\\fhji(*&^%^%<Boo<HA/>/>$%^&Y*(J)OPKL:/>`))
+				_, _ = rs.Write([]byte(`<!# SOME BAD--XML_/__.*__\\fhji(*&^%^%<Boo<HA/>/>$%^&Y*(J)OPKL:/>`))
 			},
 		),
 	)
@@ -48,7 +53,7 @@ func init() {
 	serverPNRDetails = httptest.NewServer(
 		http.HandlerFunc(
 			func(rs http.ResponseWriter, rq *http.Request) {
-				rs.Write(samplePNRRes)
+				_, _ = rs.Write(samplePNRRes)
 			},
 		),
 	)
@@ -57,7 +62,7 @@ func init() {
 	serverBizLogic = httptest.NewServer(
 		http.HandlerFunc(
 			func(rs http.ResponseWriter, rq *http.Request) {
-				rs.Write(samplePNRResWarnBizLogic)
+				_, _ = rs.Write(samplePNRResWarnBizLogic)
 			},
 		),
 	)
@@ -66,7 +71,7 @@ func init() {
 	serverEndTBizLogic = httptest.NewServer(
 		http.HandlerFunc(
 			func(rs http.ResponseWriter, rq *http.Request) {
-				rs.Write(sampleEndTBizLogic)
+				_, _ = rs.Write(sampleEndTBizLogic)
 			},
 		),
 	)
@@ -74,7 +79,7 @@ func init() {
 	serverEndT = httptest.NewServer(
 		http.HandlerFunc(
 			func(rs http.ResponseWriter, rq *http.Request) {
-				rs.Write(sampleEndTRS)
+				_, _ = rs.Write(sampleEndTRS)
 			},
 		),
 	)

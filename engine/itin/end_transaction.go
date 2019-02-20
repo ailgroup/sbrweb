@@ -130,10 +130,20 @@ func CallEndTransaction(serviceURL string, req EndTransactionRequest) (EndTransa
 		return endT, endT.ErrorSabreService
 	}
 	// parse payload body into []byte buffer from net Response.ReadCloser
-	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
+	// note ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
-	io.Copy(bodyBuffer, resp.Body)
+	_, err = io.Copy(bodyBuffer, resp.Body)
+	//close body no defer
 	resp.Body.Close()
+	//handle and return error if bad body
+	if err != nil {
+		endT.ErrorSabreService = sbrerr.NewErrorSabreService(
+			err.Error(),
+			sbrerr.ErrCallGetReservation,
+			sbrerr.BadParse,
+		)
+		return endT, endT.ErrorSabreService
+	}
 
 	//marshal bytes sabre response body into availResp response struct
 	err = xml.Unmarshal(bodyBuffer.Bytes(), &endT)
