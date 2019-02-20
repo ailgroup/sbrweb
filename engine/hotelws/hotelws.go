@@ -1,7 +1,6 @@
-/* Package hotelws (Hotel Web Services) implements Sabre SOAP hotel booking through availability, property and rate descriptions, passenger details (PNR), reservation, and transaction Web Services. It handles exclusively the XML-based Simple Object Access Protocol endpoints the Sabre supports. Look elsewhere for support of Sabre rest services.
+/*
+Package hotelws (Hotel Web Services) implements Sabre SOAP hotel booking through availability, property and rate descriptions, passenger details (PNR), reservation, and transaction Web Services. It handles exclusively the XML-based Simple Object Access Protocol endpoints the Sabre supports. Look elsewhere for support of Sabre rest services.
 
-# Typical Workflow definition from Sabre Web Services
-	Book Hotel Reservation
 	The following workflow allows you to search and book a hotel room.
 	Steps
 
@@ -16,7 +15,18 @@
 	* Mandatory only if selected option in response of HotelPropertyDescriptionLLSRQ contains HRD_RequiredForSell="true".
 	** Ensure Agency address is added within call to PassengerDetails, so as the OTA_HotelResLLSRQ call is not rejected.
 
-One may implement Sabre hotel searching through building various criteria functions with proper criterion types. Many criterion exist that are not yet implemented: (Award, ContactNumbers, CommissionProgram, HotelAmenity, PointOfInterest, RefPoint, RoomAmenity, HotelFeaturesCriterion). To add more criterion create a criterion type (e.g, XCriterion) as well as its accompanying function to handle the data params (e.g., XSearch); see functions in hotel_search_criteria.go and for types look in this file (e.g., HotelSearchCriteria, Criterion, ...).
+One may implement Sabre hotel searching through building various criteria functions with proper criterion types.
+Many criterion exist that are not yet implemented:
+	* Award,
+	* ContactNumbers,
+	* CommissionProgram,
+	* HotelAmenity,
+	* PointOfInterest,
+	* RefPoint,
+	* RoomAmenity,
+	* HotelFeaturesCriterion
+
+To add more criterion create a criterion type and function to handle the data params; see HotelSearchCriteria, Criterion and others.
 */
 package hotelws
 
@@ -106,18 +116,18 @@ func (s SystemResults) Translate() string {
 	}
 }
 
-// ErrFormat formatter on ApplicationResults for printing error string from sabre soap calls.
-/* OTHER ERRORS
+/*
+ErrFormat formatter on ApplicationResults for printing error string from sabre soap calls.
 
---see hotel_res_direct_connect.xml, credit card???
-	<stl:Message>      ** - DIRECT CONNECT NOT PROCESSED - **</stl:Message>
+	OTHER ERRORS TO BE FORMATTED
+	--see hotel_res_direct_connect.xml, credit card???
+		<stl:Message>      ** - DIRECT CONNECT NOT PROCESSED - **</stl:Message>
 
---see hotel_res_rq_not_proc_format.xml, too many options??
-	<stl:Message code="0">FORMAT</stl:Message>
+	--see hotel_res_rq_not_proc_format.xml, too many options??
+		<stl:Message code="0">FORMAT</stl:Message>
 
---see...
-	<stl:Message>INVALID CARD NUMBER</stl:Message> card number/code no match, other invalid card number reasons
-
+	--see...
+		<stl:Message>INVALID CARD NUMBER</stl:Message> card number/code no match, other invalid card number reasons
 */
 func (result ApplicationResults) ErrFormat() sbrerr.ErrorSabreResult {
 	return sbrerr.ErrorSabreResult{

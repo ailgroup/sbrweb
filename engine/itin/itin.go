@@ -1,3 +1,4 @@
+// Package itin handles SOAP service interaction to Sabre PNR endpoints, including Transactions, Reservations, Cancellations, PNR Details, and Profiles.
 package itin
 
 import (

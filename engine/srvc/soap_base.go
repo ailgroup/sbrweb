@@ -1,3 +1,4 @@
+// Package srvc handles all basic SOAP, XML, logging, and Sessions (including a fault-tolerant, self-validating session pool) for interacting with Sabre Web Services.
 package srvc
 
 import (

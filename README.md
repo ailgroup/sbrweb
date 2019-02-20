@@ -10,6 +10,13 @@ Connects to Sabre Web Services SOAP endpoints abd provides eaiser to use APIs. P
 
 See the respective projects' README for more details.
 
+## Documentation
+
+```
+godoc -http=:6060
+```
+
+Go to `http://localhost:6060/pkg/CODE-HOST/COMPANY-NAME/sbrweb/`.
 
 ## TODO and Currently
 
