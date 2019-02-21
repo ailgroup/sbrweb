@@ -1,14 +1,19 @@
 # sbrweb
-Connects to Sabre Web Services SOAP endpoints abd provides eaiser to use APIs. Project is built around three core projects:
+Connects to Sabre Web Services SOAP endpoints abd provides eaiser to use APIs. Project orbits around the "engine".
 
-1. BM Engine: `engine`
-    * core set of packages handling all low-level sabre services interaction.
-1. BM Transmission: `transmission`
-    * higher-level APIs to faciliate interacting with the engine packages.
-1. BM clients: `client`
-    * client specific integrations leveraging the transmission package.
+## BM Engine
+Project is built around three core projects:
 
-See the respective projects' README for more details.
+1. srvc
+    * core set of functionality for common SOAP and session management.
+1. hotelws
+    * implements many SOAP endpoints for the hotel portion of Sabre Web Services
+1. itin
+    * deals with Itinerary, PNR, Reservation, Cancelations, and Profiles.
+
+There is also a `sbrerr` package that standardizes and formats common errors related to HTTP, SOAP, and XML issues with Sabre Web Services.
+
+See the engine README for more details.
 
 ## Documentation
 
@@ -16,12 +21,10 @@ See the respective projects' README for more details.
 godoc -http=:6060
 ```
 
-Go to `http://localhost:6060/pkg/CODE-HOST/COMPANY-NAME/sbrweb/`.
+Go to `http://localhost:6060/pkg/CODE-HOST/COMPANY-USER-NAME/sbrweb/`.
 
 ## TODO and Currently
 
-* Pnr read
-* Segment cancel
 * GeoServices (city and state lookups independent of hotel web services)
 * Multiple currency
 * Sabre rest endpoints for hotel content
