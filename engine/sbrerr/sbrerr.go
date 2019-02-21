@@ -1,3 +1,4 @@
+// Package sbrerr manages custom error handling for HTTP, SOAP, and XML related issues with Sabre.
 package sbrerr
 
 import (

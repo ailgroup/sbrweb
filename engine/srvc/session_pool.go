@@ -4,17 +4,18 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"os/signal"
 	"time"
 )
 
 // Session holds sabre session data and other fields for handling in the SessionPool
 type Session struct {
 	ID            string
-	Sabre         SessionCreateResponse
+	FaultError    error
 	TimeValidated time.Time
 	TimeStarted   time.Time
 	ExpireTime    time.Time
-	FaultError    error
+	Sabre         SessionCreateResponse
 }
 
 // ExpireScheme for when to expire sessions
@@ -23,41 +24,65 @@ type ExpireScheme struct {
 	Min int
 }
 
-// SessionPool holds sessions
+// SessionPool container for pool of sessions with specs on size, cycles, counters, errors, timers, configuration, etc...
 type SessionPool struct {
-	Cycles          int
+	NumberOfCycles  int
 	ConfigPoolSize  int
 	AllowPoolSize   int
-	Sessions        chan Session
-	InitializedTime time.Time
+	Expire          ExpireScheme
+	CycleEvery      time.Duration
 	ServiceURL      string
 	NetworkErrors   []error
 	FaultErrors     []error
-	Expire          ExpireScheme
+	InitializedTime time.Time
+	Sessions        chan Session
 	Conf            *SessionConf
 }
 
-// NewPool initializes a new pool with the given tasks and at the given
-// concurrency.
-func NewPool(expire ExpireScheme, cred *SessionConf, size int) *SessionPool {
+// NewPool initializes a new session pool of given size, for ServiceURL, with a buffered channel of
+// type Session, and with specification for cycled keepalive checks, expiration and
+// timer for an initialized time.
+func NewPool(expire ExpireScheme, cred *SessionConf, cycle time.Duration, size int) *SessionPool {
 	return &SessionPool{
 		ConfigPoolSize:  size,
 		Sessions:        make(chan Session, size), //buffered channel blocks!
 		InitializedTime: time.Now(),
 		ServiceURL:      cred.ServiceURL,
+		CycleEvery:      cycle,
 		Expire:          expire,
 		Conf:            cred,
 	}
 }
 
-// GenerateSessionID returns 'xca123'
+// Deamonize initializes and populates new session pool, accepts signal handler to
+// gracefully manage valid shutdown of Sabre sessions, session pool, and keepalive.
+// For example: pool.Deamonize(os.Interrupt)
+func (p *SessionPool) Deamonize(sig os.Signal) {
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, sig)
+	go func() {
+		err := p.Populate()
+		if err != nil {
+			fmt.Printf("Error popluating session pool %v\n", err)
+			os.Exit(1)
+		}
+		p.Keepalive(done)
+		fmt.Printf("\nGot '%s' SIGNAL. Shutting down keepalive and session pool; exiting program...\n", sig)
+		p.Close()
+		os.Exit(0)
+	}()
+}
+
+// GenerateSessionID for small easy to find ids in logs; returns format 'xca123'
 func GenerateSessionID() string {
 	randStr := randStringBytesMaskImprSrc(3)
 	nowtime := time.Now().Format(".999")
 	return randStr + nowtime
 }
 
-//RandomInt select random integer within range min/max
+// RandomInt select random integer within range min/max.
+// This is used to better randomize expiration times of sessions
+// fitting within a min and max time range.
 func RandomInt(min, max int) int {
 	//make random index, with Permute [0,n] for size min-max+1
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -69,10 +94,13 @@ func RandomInt(min, max int) int {
 	for i := range a {
 		a[i] = min + i
 	}
-	//use key select position value out of range [min...max]
+	//key to select position value out of range [min...max]
 	return a[key]
 }
 
+// newSession initializes a new valid Sabre session for AAA workspace. It checks new sessions
+// can be added to workspace, checks for any faults on creation, creates a new Session struct
+// with metadata, logs it, and retursn that Session for placement into the pool.
 func (p *SessionPool) newSession() (Session, error) {
 	createRQ := BuildSessionCreateRequest(p.Conf)
 	createRS, err := CallSessionCreate(p.ServiceURL, createRQ)
@@ -112,14 +140,22 @@ func (p *SessionPool) newSession() (Session, error) {
 	return sess, nil
 }
 
-// Populate writes to buffered channel the max pool size and returns the current pool, boolean value if current pool size matches max pool size, along with a slice of any overall network errors. Note that if the SOAP service fails that will be located in the SOAP Fault field, not as a general network error. We want to fill buffer/queue even if we get a fault from Sabre: there may scenarios where this is legit (sabre flushes all sessions weekly, sabre sessions service goes down, or we are over session limit.... Under these conditions we don't want to block the queue or reQUEUESIZEpeatedly attempt to fill it. Instead, accept a bad session and let the keepalive cleanup faulted sessions later.
+// Populate puts sessions into a buffered channel of SessionPool if the current
+// pool size will allow it; it logs and collects any errors (see newSession())
+// and attempts to fill during network errors but still honoring the pool size.
+// Note that if the SOAP service fails that will be located in the SOAP Fault field, not as
+// a general network error. We want to populate even if we get a fault from Sabre:
+// many scenarios where this is legit (sabre flushes all sessions weekly, sabre sessions
+// service goes down, or we are over session limit...).
+// Under these conditions we don't want to block or repeatedly attempt to populate;
+// instead, accept a bad session and let the keepalive cleanup bad sessions later.
 func (p *SessionPool) Populate() error {
 	var err error
 	ok := (p.AllowPoolSize == len(p.Sessions))
 	for i := 0; i < p.ConfigPoolSize; i++ {
 		sess, err := p.newSession()
 		if err != nil {
-			logSession.Printf("Network ERROR for attempt=%d, continue", i)
+			logSession.Printf("ERROR %v for attempt=%d, continuing...", err, i)
 			continue
 		}
 		p.Sessions <- sess
@@ -136,19 +172,17 @@ func (p *SessionPool) Populate() error {
 	return err
 }
 
-// Pick session from buffered queue
+// Pick session from buffered queue, returns the Session.
 func (p *SessionPool) Pick() Session {
 	sess := <-p.Sessions
 	p.logReport("Pick-" + sess.ID)
-	//logSession.Printf("PICK ID=%s, Alow=%d, Busy=%d, Queue=%d", sess.ID, p.AllowPoolSize, (p.AllowPoolSize - len(p.Sessions)), len(p.Sessions))
 	return sess
 }
 
-// Put session back onto the buffered queue, perhaps return error here for better signalling if ever deferring these
+// Put session back onto the buffered queue.
 func (p *SessionPool) Put(sess Session) {
 	p.Sessions <- sess
 	p.logReport("Put-" + sess.ID)
-	//logSession.Printf("PUT ID=%s, Alow=%d, Busy=%d, Queue=%d", sess.ID, p.AllowPoolSize, (p.AllowPoolSize - len(p.Sessions)), len(p.Sessions))
 }
 
 // logReport helper to log info about session pool
@@ -156,12 +190,13 @@ func (p *SessionPool) logReport(ctx string) {
 	open := len(p.Sessions)
 	allow := p.AllowPoolSize
 	busy := (allow - open)
-	logSession.Printf("[%s] ALLOW=%d, OPEN=%d, BUSY=%d, CYCLES=%d, OK=%v", ctx, allow, open, busy, p.Cycles, (allow == (open + busy)))
+	logSession.Printf("[%s] ALLOW=%d, OPEN=%d, BUSY=%d, CYCLES=%d, OK=%v", ctx, allow, open, busy, p.NumberOfCycles, (allow == (open + busy)))
 }
 
-//RangeKeepalive sessions to validate.
-// Range over sessions, if expire is over current time, valdiate, reset expire
-// and place back into the queue, otherwise place it back on the queue and move on.
+// RangeKeepalive pulls session out of the pool, checks if expire time is over current time,
+// and if so it validates the session against Sabre (which forces Sabre to extend the lifetime)
+// and we reset the expire time, placing session back into the pool. Otherwise
+// we place session back into the pool leaving the expire time untouched.
 func (p *SessionPool) RangeKeepalive(keepaliveID string) {
 	breaker := len(p.Sessions)
 	counter := 0
@@ -237,23 +272,26 @@ func (p *SessionPool) RangeKeepalive(keepaliveID string) {
 	}
 }
 
+// generateKeepAliveID is an ID an easy to find and parse in the logs,
+// attached to every new call on Keepalive; returns format 'kid:tXury|0220-17:12'
 func generateKeepAliveID() string {
 	randStr := randStringBytesMaskImprSrc(5)
 	nowtime := time.Now().Format("0102-15:04")
 	return "kid:" + randStr + "|" + nowtime
 }
 
-//Keepalive sessions by RangeKeepalive over all sessions in pool
-func Keepalive(p *SessionPool, repeatEvery time.Duration, doneChan chan os.Signal) {
-	//create done channel to close down on sigint
+// Keepalive cycles through the pool periodically, running RangeKeepalive.
+// This means they are guaranteed to be valid and the pool to be correct size.
+// It accepts channel of type os.Signal which waits to shutdown the process.
+func (p *SessionPool) Keepalive(doneChan chan os.Signal) {
 	started := time.Now()
 	keepAliveID := generateKeepAliveID()
 	logSession.Println("Starting KEEPALIVE...", keepAliveID)
 
 	for {
 		select {
-		case <-time.After(repeatEvery):
-			p.Cycles++
+		case <-time.After(p.CycleEvery):
+			p.NumberOfCycles++
 			p.RangeKeepalive(keepAliveID)
 			logSession.Printf("KEEPALIVE run(InMin=%.2f, InHour=%.2f)", time.Since(started).Minutes(), time.Since(started).Hours())
 			p.logReport(keepAliveID + "-KeepAlive")
@@ -264,7 +302,8 @@ func Keepalive(p *SessionPool, repeatEvery time.Duration, doneChan chan os.Signa
 	}
 }
 
-// Close down all sessions in a nice manner
+// Close down all sessions gracefull and valid on Sabre. It does this by iterating through all sessions in the pool and initializing a correct close session request to Sabre.
+// If sessions are not properly closed on Sabre side they remain open and invalidate the workspace for up to an hour, which means you cannot open new sessions.
 func (p *SessionPool) Close() {
 	networkErrors := []error{}
 	faultErrors := []error{}
@@ -293,76 +332,7 @@ func (p *SessionPool) Close() {
 	p.NetworkErrors = networkErrors
 	p.FaultErrors = faultErrors
 
-	logSession.Printf("Close report... AllowPoolSize=%d, Busy=%d, Queuesize=%d, NetworkErrors=%v,  FaultErrors=%v", p.AllowPoolSize, (p.AllowPoolSize - len(p.Sessions)), len(p.Sessions), networkErrors, faultErrors)
+	logSession.Printf("Closing report... AllowPoolSize=%d, Busy=%d, Queuesize=%d, NetworkErrors=%v,  FaultErrors=%v", p.AllowPoolSize, (p.AllowPoolSize - len(p.Sessions)), len(p.Sessions), networkErrors, faultErrors)
 
 	logSession.Println("Close SessionPool complete")
 }
-
-/*
-func HotelAvail(p *SessionPool) HotelData {
-	sess := p.Pick()
-	defer func(s *SessionPool) {
-		p.Put(sess)
-	}(sess)
-	HotelData := CallAvail(sess.DATA, other.DATA)
-	return HotelData
-}
-
-
-
- //TODO figure this one out
-//SessionTable print data about all sessions
-func (p *SessionPool) SessionTable() map[int][]string {
-	var sessionData map[int][]string
-	sessionData = make(map[int][]string)
-	for s := range p.Sessions {
-		sessionData[s.ID] = []string{fmt.Sprintf(
-			"Started: %s, Validated: %s, SabreToken: %s",
-			s.TimeStarted,
-			s.TimeValidated,
-			s.Sabre.Header.Security.BinarySecurityToken.Value),
-			s.Sabre.Body.SessionCreateRS.Status,
-		}
-	}
-	return sessionData
-}
-
-// Report on state of session pool
-func (p *SessionPool) Report() string {
-	return fmt.Sprintf(
-		"=> PoolReport => POOLSIZE: %d, BUFFERSIZE: %d, BUSY: %d, NOTBUSY: %d, CYCLES: %d",
-		p.CurrentPoolSize,
-		len(p.Sessions),
-		p.Busy,
-		p.NotBusy,
-		p.Cycles,
-	)
-}
-
-//ReportRun to see info about the session pool and validators
-func ReportRun(p *SessionPool, repeatEvery, endAfter, runReport time.Duration) {
-	doneChan := time.NewTimer(endAfter).C
-	started := time.Now()
-	log.Println("Starting report runner...")
-	//keep reporting until exhaust endAfter
-	for {
-		select {
-		case <-time.After(repeatEvery):
-			log.Println(p.Report())
-		case <-doneChan:
-			log.Println("ReportRun killed, total time:", time.Since(started))
-			return
-		}
-	}
-}
-
-// Run works
-func (p *SessionPool) Run() {
-	p.pickCounter()
-	sess := <-p.Sessions
-	log.Printf("PICK ID=%d, Busy=%d, NotBusy=%d, Queue=%d", sess.ID, p.Busy, p.NotBusy, len(p.Sessions))
-	defer func() {
-		p.Sessions <- sess
-	}()
-}
-*/
