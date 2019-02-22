@@ -5,6 +5,8 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
+	"sync"
+	"syscall"
 	"time"
 )
 
@@ -36,41 +38,23 @@ type SessionPool struct {
 	FaultErrors     []error
 	InitializedTime time.Time
 	Sessions        chan Session
+	ShutDown        chan os.Signal
 	Conf            *SessionConf
 }
 
 // NewPool initializes a new session pool of given size, for ServiceURL, with a buffered channel of
 // type Session, and with specification for cycled keepalive checks, expiration and
-// timer for an initialized time.
+// timer for an initialized time. Do not initialize sessions until ready to populate, this keeps it nil until the time we actually need it.
 func NewPool(expire ExpireScheme, cred *SessionConf, cycle time.Duration, size int) *SessionPool {
 	return &SessionPool{
-		ConfigPoolSize:  size,
-		Sessions:        make(chan Session, size), //buffered channel blocks!
+		ConfigPoolSize: size,
+		//Sessions:        make(chan Session, size), // doing this in Populate
 		InitializedTime: time.Now(),
 		ServiceURL:      cred.ServiceURL,
 		CycleEvery:      cycle,
 		Expire:          expire,
 		Conf:            cred,
 	}
-}
-
-// Deamonize initializes and populates new session pool, accepts signal handler to
-// gracefully manage valid shutdown of Sabre sessions, session pool, and keepalive.
-// For example: pool.Deamonize(os.Interrupt)
-func (p *SessionPool) Deamonize(sig os.Signal) {
-	done := make(chan os.Signal, 1)
-	signal.Notify(done, sig)
-	go func() {
-		err := p.Populate()
-		if err != nil {
-			fmt.Printf("Error popluating session pool %v\n", err)
-			os.Exit(1)
-		}
-		p.Keepalive(done)
-		fmt.Printf("\nGot '%s' SIGNAL. Shutting down keepalive and session pool; exiting program...\n", sig)
-		p.Close()
-		os.Exit(0)
-	}()
 }
 
 // GenerateSessionID for small easy to find ids in logs; returns format 'xca123'
@@ -151,6 +135,7 @@ func (p *SessionPool) newSession() (Session, error) {
 // instead, accept a bad session and let the keepalive cleanup bad sessions later.
 func (p *SessionPool) Populate() error {
 	var err error
+	p.Sessions = make(chan Session, p.ConfigPoolSize) //buffered channel blocks!
 	ok := (p.AllowPoolSize == len(p.Sessions))
 	for i := 0; i < p.ConfigPoolSize; i++ {
 		sess, err := p.newSession()
@@ -280,10 +265,76 @@ func generateKeepAliveID() string {
 	return "kid:" + randStr + "|" + nowtime
 }
 
+/*
+Deamonize initializes and populates new session pool, accepts signal handler to
+gracefully manage valid shutdown of Sabre sessions, session pool, and keepalive.
+	Example:
+		func runup(pool *srvc.SessionPool) {
+			var wg sync.WaitGroup
+			go pool.Signal()
+			wg.Add(1)
+			go pool.Dummyize(&wg)
+			wg.Wait()
+		}
+		s := &http.Server{
+			Addr:    port,
+			Handler: router,
+		}
+		// pool uses Signal to capture sigint/sigterm to shutdown sabre sessions
+		// because of this we need to shutdown server in background
+		go func() {
+			runup(pool)
+			_ = s.Shutdown(context.Background())
+		}()
+		if err := s.ListenAndServe(); err != http.ErrServerClosed {
+			panic(fmt.Errorf("FATAL HTTP ERROR: %s", err))
+		}
+*/
+func (p *SessionPool) Deamonize(wg *sync.WaitGroup) {
+	//initialize the shutdown signal channel and setup notify
+	p.ShutDown = make(chan os.Signal, 1)
+	signal.Notify(p.ShutDown, os.Interrupt, syscall.SIGTERM)
+
+	err := p.Populate()
+	if err != nil {
+		fmt.Printf("Error popluating session pool %v\n", err)
+		p.stop()
+	}
+	//begin keepalive
+	p.Keepalive()
+	for {
+		<-p.ShutDown
+		p.Close()
+		wg.Done()
+		return
+	}
+}
+
+func (p *SessionPool) Signal() {
+	sChan := make(chan os.Signal, 1)
+	signal.Notify(sChan, os.Interrupt, syscall.SIGTERM)
+	for {
+		s := <-sChan
+		switch s {
+		case os.Interrupt, syscall.SIGTERM:
+			fmt.Println("-> Listening -> Stop")
+			p.stop()
+			//close(sChan)
+			return
+		}
+	}
+}
+
+func (p *SessionPool) stop() {
+	fmt.Println("Stop -> close(Shutdown)")
+	//close the channel will signal to deamonize and trigger behavior
+	close(p.ShutDown)
+}
+
 // Keepalive cycles through the pool periodically, running RangeKeepalive.
 // This means they are guaranteed to be valid and the pool to be correct size.
-// It accepts channel of type os.Signal which waits to shutdown the process.
-func (p *SessionPool) Keepalive(doneChan chan os.Signal) {
+// It accepts channel of type os.Signal which waits to shutdown the process; this means the Shutdown the channel has been closed, triggered by signal from server (sigint, sigterm).
+func (p *SessionPool) Keepalive() {
 	started := time.Now()
 	keepAliveID := generateKeepAliveID()
 	logSession.Println("Starting KEEPALIVE...", keepAliveID)
@@ -295,7 +346,8 @@ func (p *SessionPool) Keepalive(doneChan chan os.Signal) {
 			p.RangeKeepalive(keepAliveID)
 			logSession.Printf("KEEPALIVE run(InMin=%.2f, InHour=%.2f)", time.Since(started).Minutes(), time.Since(started).Hours())
 			p.logReport(keepAliveID + "-KeepAlive")
-		case <-doneChan:
+		//p.Shutdown has been closed by Stop, which was called by Signal.
+		case <-p.ShutDown:
 			logSession.Println("KEEPALIVE done, total lifetime:", time.Since(started))
 			return
 		}
@@ -307,26 +359,29 @@ func (p *SessionPool) Keepalive(doneChan chan os.Signal) {
 func (p *SessionPool) Close() {
 	networkErrors := []error{}
 	faultErrors := []error{}
-	for createRS := range p.Sessions {
-		p.Conf.SetBinSec(createRS.Sabre)
-		closeRQ := BuildSessionCloseRequest(p.Conf)
-		closeRS, err := CallSessionClose(p.ServiceURL, closeRQ)
+	//only close down if we have sessions
+	if len(p.Sessions) > 0 {
+		for createRS := range p.Sessions {
+			p.Conf.SetBinSec(createRS.Sabre)
+			closeRQ := BuildSessionCloseRequest(p.Conf)
+			closeRS, err := CallSessionClose(p.ServiceURL, closeRQ)
 
-		if err != nil {
-			networkErrors = append(networkErrors, err)
-		}
+			if err != nil {
+				networkErrors = append(networkErrors, err)
+			}
 
-		fc := closeRS.Body.Fault.Code
-		if fc != "" {
-			st := closeRS.Body.Fault.Detail.StackTrace
-			fs := closeRS.Body.Fault.String
-			faultErrors = append(faultErrors, fmt.Errorf("%s-%s: %s", fs, fc, st))
-		}
-		p.AllowPoolSize--
-		logSession.Printf("Status='%s' closed session with token='%s'", closeRS.Body.SessionCloseRS.Status, SabreTokenParse(closeRS.Header.Security.BinarySecurityToken.Value))
+			fc := closeRS.Body.Fault.Code
+			if fc != "" {
+				st := closeRS.Body.Fault.Detail.StackTrace
+				fs := closeRS.Body.Fault.String
+				faultErrors = append(faultErrors, fmt.Errorf("%s-%s: %s", fs, fc, st))
+			}
+			p.AllowPoolSize--
+			logSession.Printf("Status='%s' closed session with token='%s'", closeRS.Body.SessionCloseRS.Status, SabreTokenParse(closeRS.Header.Security.BinarySecurityToken.Value))
 
-		if p.AllowPoolSize == 0 {
-			close(p.Sessions)
+			if p.AllowPoolSize == 0 {
+				close(p.Sessions)
+			}
 		}
 	}
 	p.NetworkErrors = networkErrors
