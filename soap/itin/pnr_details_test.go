@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ailgroup/sbrweb/engine/sbrerr"
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
 func TestPNRSet(t *testing.T) {

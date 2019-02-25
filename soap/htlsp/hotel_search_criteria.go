@@ -1,18 +1,17 @@
-package hotelws
+package htlsp
 
 /*
-This file contains functions related to hotel search criteria. See hotelws.go file for the struct and type definitions.
+This file contains functions related to hotel search criteria. See hotel.go file for the struct and type definitions.
 */
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/ailgroup/sbrweb/engine/sbrerr"
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
-// SetRateParams helper to create a slice of rate plans to append on a an Avail Segement
-// for search or description services
+// SetRateParams helper to create a slice of rate plans to append to an Avail Segement for search or description services
 func SetRateParams(ratePlans []RatePlan) *RatePlanCandidates {
 	rpc := &RatePlanCandidates{}
 	for _, plan := range ratePlans {

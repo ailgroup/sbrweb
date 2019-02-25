@@ -1,19 +1,56 @@
 # sbrweb
-Connects to Sabre Web Services SOAP endpoints abd provides eaiser to use APIs. Project orbits around the "engine".
+Connects to Sabre® SOAP APIs, formerly known as Sabre® Web Services, and REST endpoints. Sabre has over 100 APIs, a number of them implemented here. For counting lines of code I recommend [scc](https://github.com/boyter/scc), which can be run in the root of the project as `scc .`.
 
-## BM Engine
+## Structure
 Project is built around three core projects:
 
-1. srvc
-    * core set of functionality for common SOAP and session management.
-1. hotelws
-    * implements many SOAP endpoints for the hotel portion of Sabre Web Services
-1. itin
-    * deals with Itinerary, PNR, Reservation, Cancelations, and Profiles.
+1. `rest`
+    * hotel queries; sabre does not include REST endpoints for hotel reservations, must use `soap` package.
+1. `sbrerr`
+    * standard formatting for errors.
+1. `soap`
+    * hotel, itinerary, and sessions for all SOAP endpoints.
 
-There is also a `sbrerr` package that standardizes and formats common errors related to HTTP, SOAP, and XML issues with Sabre Web Services.
 
-See the engine README for more details.
+These packages provide the low level connections and functionality for Sabre. Everything here should be defined well enough to not require modification beyond what external custom API packages might need.
+
+Sabre Web Services provides both SOAP and REST endpoints for many endpoints. However, they do not provide REST endpoints for Itinerary services, which are required for making reservations and cancellations. Since reservations require using the AAA workspace one needs to load availability requests first; this necessitates providing those endpoints as SOAP even if they exist as REST (for more information see the `workflows.md` document).
+
+The API for this package should rarely change as Sabre endpoints are both versioned, stable, and have long term support.
+
+### rest
+
+### soap
+
+1. `hotel` (hotel web service) implements many SOAP endpoints for the hotel portion of Sabre SOAP.
+    * Availability, Property/Rate descriptions, various hotel search services.
+    * Common struct/xml building and parsing
+    * Common logic for dealing with data formats like timestamps and cancellation policies
+1. `itin` (itinerary) deals with Itinerary, PNR, Reservation, Cancelations, and Profiles.
+    * Passenger name record (PNR) details
+    * Read PNR
+    * Copy profile to PNR
+    * Cancel segment in PNR
+1. `srvc` (service) core set of functionality for common SOAP and session management.
+    * Basic SOAP
+      * envelope
+      * message header
+      * security
+      * soap fault
+    * Sessions
+      * create, close, validate
+      * buffered queue as session pool
+
+### sbrerr
+
+1. `sbrerr` (sabre errors)
+    * Set of primitives to extend specific sabre errors (e.g., itin package `ErrFormat()`)
+    * Custom handling of sabre web services errors
+    * Includes handling for:
+      * http network errors
+      * SOAP faults
+      * Sabre Web Service warnings, errors
+      * XML (de|en)coding errors
 
 ## Documentation
 

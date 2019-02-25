@@ -1,10 +1,10 @@
-package hotelws
+package htlsp
 
 import (
 	"encoding/xml"
 	"testing"
 
-	"github.com/ailgroup/sbrweb/engine/sbrerr"
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
 func TestHotelRateDescMarshal(t *testing.T) {

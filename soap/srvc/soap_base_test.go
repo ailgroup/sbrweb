@@ -18,7 +18,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/ailgroup/sbrweb/engine/sbrerr"
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
 var (

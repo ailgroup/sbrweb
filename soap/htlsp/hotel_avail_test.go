@@ -1,4 +1,4 @@
-package hotelws
+package htlsp
 
 import (
 	"encoding/xml"
@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ailgroup/sbrweb/engine/sbrerr"
-	"github.com/ailgroup/sbrweb/engine/srvc"
+	"github.com/ailgroup/sbrweb/sbrerr"
+	"github.com/ailgroup/sbrweb/soap/srvc"
 )
 
 func TestAddressSearchReturnError(t *testing.T) {

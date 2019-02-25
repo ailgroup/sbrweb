@@ -1,5 +1,5 @@
 /*
-Package hotelws (Hotel Web Services) implements Sabre SOAP hotel booking through availability, property and rate descriptions, passenger details (PNR), reservation, and transaction Web Services. It handles exclusively the XML-based Simple Object Access Protocol endpoints the Sabre supports. Look elsewhere for support of Sabre rest services.
+Package hotel (Hotel SOAP) implements Sabre SOAP hotel booking through availability, property and rate descriptions, passenger details (PNR), reservation, and transaction Web Services. It handles exclusively the XML-based Simple Object Access Protocol endpoints the Sabre supports. Look elsewhere for support of Sabre rest services.
 
 	The following workflow allows you to search and book a hotel room.
 	Steps
@@ -28,7 +28,7 @@ Many criterion exist that are not yet implemented:
 
 To add more criterion create a criterion type and function to handle the data params; see HotelSearchCriteria, Criterion and others.
 */
-package hotelws
+package htlsp
 
 import (
 	b64 "encoding/base64"
@@ -39,7 +39,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/ailgroup/sbrweb/engine/sbrerr"
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
 const (
@@ -451,7 +451,7 @@ type AdditionalInfo struct {
 // BasicPropertyInfo contains all info relevant to property. It is the root-level element after service element for hotel_avail; and is embedded in the RoomStay element.
 type BasicPropertyInfo struct {
 	XMLName         xml.Name `xml:"BasicPropertyInfo" json:"-"`
-	AreadID         string   `xml:"AreadID,attr"`
+	AreaID          string   `xml:"AreaID,attr"` //TODO: Area ID... this is wrong
 	ChainCode       string   `xml:"ChainCode,attr"`
 	Distance        string   `xml:"Distance,attr"`
 	GEO_ConfAvail   string   `xml:"GEO_ConfidenceLevel,attr"` //hotel avail

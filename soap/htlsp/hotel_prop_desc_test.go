@@ -1,11 +1,11 @@
-package hotelws
+package htlsp
 
 import (
 	"encoding/xml"
 	"errors"
 	"testing"
 
-	"github.com/ailgroup/sbrweb/engine/sbrerr"
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
 func TestPropDescValidReqCityCode(t *testing.T) {

@@ -1,4 +1,4 @@
-package hotelws
+package htlsp
 
 import (
 	"bytes"
@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ailgroup/sbrweb/engine/sbrerr"
-	"github.com/ailgroup/sbrweb/engine/srvc"
+	"github.com/ailgroup/sbrweb/sbrerr"
+	"github.com/ailgroup/sbrweb/soap/srvc"
 )
 
 // HotelPropDescRequest for soap package on HotelPropertyDescriptionRQ service

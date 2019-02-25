@@ -4,7 +4,7 @@ import (
 	"encoding/xml"
 	"testing"
 
-	"github.com/ailgroup/sbrweb/engine/sbrerr"
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
 func TestEndTransactionXML(t *testing.T) {
