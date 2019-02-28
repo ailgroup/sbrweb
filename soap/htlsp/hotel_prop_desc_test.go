@@ -231,7 +231,7 @@ var proptrack = []struct {
 	b64str string
 	expect ParsedRoomMeta
 }{
-	{"YXJ2OjA0LTAyfGRwdDowNC0wNXxnc3Q6MnxoYzpIT0Q0LzExTUFZLTEyTUFZMnxoaWQ6MTB8cnBoOjAwMXxybXQ6UDFLUkFDfFtjdXI6U0dELXJxczpmYWxzZS1hbXQ6MzM1LjQ1O2N1cjpVU0QtcnFzOmZhbHNlLWFtdDo0MzUuNDVd", ParsedRoomMeta{
+	{"YXJ2OjA0LTAyfGRwdDowNC0wNXxnc3Q6MnxoYzpIT0Q0LzExTUFZLTEyTUFZMnxoaWQ6MTB8cnBoOjAwMXxybXQ6UDFLUkFDfGd1YXI6R3xbY3VyOlNHRC1ycXM6ZmFsc2UtYW10OjMzNS40NTtjdXI6VVNELXJxczpmYWxzZS1hbXQ6NDM1LjQ1XQ==", ParsedRoomMeta{
 		Arrive:         "04-02",
 		Depart:         "04-05",
 		Guest:          "2",
@@ -253,7 +253,7 @@ var proptrack = []struct {
 			},
 		},
 	}},
-	{"YXJ2OjA0LTAyfGRwdDowNC0wNXxnc3Q6MnxoYzpIT0Q0LzExTUFZLTEyTUFZMnxoaWQ6MTB8cnBoOjAwMnxybXQ6RDFLUkFDfFtjdXI6U0dELXJxczpmYWxzZS1hbXQ6MTkwLjQ1XQ==",
+	{"YXJ2OjA0LTAyfGRwdDowNC0wNXxnc3Q6MnxoYzpIT0Q0LzExTUFZLTEyTUFZMnxoaWQ6MTB8cnBoOjAwMnxybXQ6RDFLUkFDfGd1YXI6R3xbY3VyOlNHRC1ycXM6ZmFsc2UtYW10OjE5MC40NV0=",
 		ParsedRoomMeta{
 			Arrive:         "04-02",
 			Depart:         "04-05",
@@ -288,10 +288,10 @@ func TestSetRoomMetaDataPropDesc(t *testing.T) {
 		if i > 1 {
 			break
 		}
-		if rate.B64RoomMetaData != proptrack[i].b64str {
-			t.Errorf("B64RoomMetaData expect: '%s', got '%s'", proptrack[i].b64str, rate.B64RoomMetaData)
+		if rate.RoomToBook.B64RoomMetaData != proptrack[i].b64str {
+			t.Errorf("B64RoomMetaData expect: '%s', got '%s'", proptrack[i].b64str, rate.RoomToBook.B64RoomMetaData)
 		}
-		prm, err := NewParsedRoomMeta(rate.B64RoomMetaData)
+		prm, err := NewParsedRoomMeta(rate.RoomToBook.B64RoomMetaData)
 		if err != nil {
 			t.Errorf("Error on DecodeTrackedEncoding() %v", err)
 		}

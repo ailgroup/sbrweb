@@ -78,12 +78,12 @@ Test coverage is important. Examples of basic coverage stats along with more det
 #coverage stats for whole project
 [sbrweb] go test -cover ./...
 #coverage stats for specific package
-go test -cover ./engine/hotelws
+go test -cover ./soap/htlsp
 
 #generate new coverage file for project
 go test -coverprofile=coverage.out ./...
 #generate new coverage file for specific package
-go test ./engine/srvc -coverprofile=engine/srvc/test_data/coverage.out
+go test ./soap/srvc -coverprofile=soap/srvc/test_data/coverage.out
 
 #cover tool shows coverage by function
 go tool cover -func coverage.out
@@ -96,9 +96,9 @@ Run all from root of `sbrweb`, or internal to packages (e.g., `sbrweb/itin`).
 # run verbose tests for all packages at once
 go test -v ./...
 # run verbose tests for specific package
-go test -v ./engine/itin
+go test -v ./soap/itin
 # run verbose test on specific test function
-go test -v ./engine/hotelws -run TestRateDescCall
+go test -v ./soap/htlsp -run TestRateDescCall
 ```
 
 
@@ -108,5 +108,5 @@ For core functions that are heavily used we provide benchmarks.
 ```sh
 # run all benchmarks
 go test ./... -bench=.
-go test ./engine/srvc -bench=BenchmarkMessageHeaderBaseMarshal
+go test ./soap/srvc -bench=BenchmarkMessageHeaderBaseMarshal
 ```

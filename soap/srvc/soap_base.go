@@ -240,6 +240,7 @@ type Manifest struct {
 // SourceElem for POS session create
 type SourceElem struct {
 	PseudoCityCode string `xml:"PseudoCityCode,attr"`
+	//RequestorID    string `xml:"RequestorID"` // update tests if added
 }
 
 // POSElem for session create
