@@ -1,4 +1,4 @@
-package hotelws
+package htlsp
 
 import (
 	"bytes"
@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ailgroup/sbrweb/engine/sbrerr"
-	"github.com/ailgroup/sbrweb/engine/srvc"
+	"github.com/ailgroup/sbrweb/sbrerr"
+	"github.com/ailgroup/sbrweb/soap/srvc"
 )
 
 // HotelPropDescRequest for soap package on HotelPropertyDescriptionRQ service
@@ -136,7 +136,7 @@ type HotelPropDescResponse struct {
 
 // SetRoomMetaData builds a b64 encoded string cache of rate request for later retrieval. See NewParsedRoomMeta for this data is parsed.
 func (r *HotelPropDescResponse) SetRoomMetaData(guest int, arrive, depart, hotelid string) {
-	for i, rate := range r.Body.HotelDesc.RoomStay.RoomRates {
+	for i, roomrate := range r.Body.HotelDesc.RoomStay.RoomRates {
 		strslc := []string{}
 		rrates := ""
 		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaArvKey, arrive))
@@ -144,17 +144,18 @@ func (r *HotelPropDescResponse) SetRoomMetaData(guest int, arrive, depart, hotel
 		strslc = append(strslc, fmt.Sprintf("%s:%d", RoomMetaGstKey, guest))
 		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaHcKey, r.Body.HotelDesc.Result.Success.System.HostCommand.Cryptic))
 		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaHidKey, hotelid))
-		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaRphKey, rate.RPH))
-		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaRmtKey, rate.IATA_Character))
+		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaRphKey, roomrate.RPH))
+		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaRmtKey, roomrate.IATA_Character))
+		strslc = append(strslc, fmt.Sprintf("%s:%s", RoomMetaGuarenteeKey, roomrate.GuaranteeSurcharge))
 
-		for ri, rr := range rate.Rates {
-			rrates += fmt.Sprintf("%s:%s-%s:%s-%s:%s", RrateMetaCurKey, rr.CurrencyCode, RrateMetaRqsKey, rr.HRD_RequiredForSell, RrateMetaAmtKey, rr.HotelPricing.Amount)
-			if ((len(rate.Rates) - 1) - ri) != 0 {
+		for ri, rate := range roomrate.Rates {
+			rrates += fmt.Sprintf("%s:%s-%s:%s-%s:%s", RrateMetaCurKey, rate.CurrencyCode, RrateMetaRqsKey, rate.HRD_RequiredForSell, RrateMetaAmtKey, rate.HotelPricing.Amount)
+			if ((len(roomrate.Rates) - 1) - ri) != 0 {
 				rrates += SColDelim
 			}
 		}
 		strslc = append(strslc, fmt.Sprintf("%s%s%s", RBrackDelim, rrates, LBrackDelim))
-		r.Body.HotelDesc.RoomStay.RoomRates[i].B64RoomMetaData = B64Enc(strings.Join(strslc, PipeDelim))
+		r.Body.HotelDesc.RoomStay.RoomRates[i].RoomToBook.B64RoomMetaData = B64Enc(strings.Join(strslc, PipeDelim))
 	}
 }
 

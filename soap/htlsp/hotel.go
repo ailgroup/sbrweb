@@ -1,5 +1,5 @@
 /*
-Package hotelws (Hotel Web Services) implements Sabre SOAP hotel booking through availability, property and rate descriptions, passenger details (PNR), reservation, and transaction Web Services. It handles exclusively the XML-based Simple Object Access Protocol endpoints the Sabre supports. Look elsewhere for support of Sabre rest services.
+Package hotel (Hotel SOAP) implements Sabre SOAP hotel booking through availability, property and rate descriptions, passenger details (PNR), reservation, and transaction Web Services. It handles exclusively the XML-based Simple Object Access Protocol endpoints the Sabre supports. Look elsewhere for support of Sabre rest services.
 
 	The following workflow allows you to search and book a hotel room.
 	Steps
@@ -28,7 +28,7 @@ Many criterion exist that are not yet implemented:
 
 To add more criterion create a criterion type and function to handle the data params; see HotelSearchCriteria, Criterion and others.
 */
-package hotelws
+package htlsp
 
 import (
 	b64 "encoding/base64"
@@ -39,7 +39,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/ailgroup/sbrweb/engine/sbrerr"
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
 const (
@@ -62,16 +62,17 @@ const (
 	RBrackDelim = "["
 	SColDelim   = ";"
 
-	RoomMetaArvKey  = "arv" //arrival
-	RoomMetaDptKey  = "dpt" //depart
-	RoomMetaGstKey  = "gst" //guest count
-	RoomMetaHcKey   = "hc"  //host command
-	RoomMetaHidKey  = "hid" //hotel id
-	RoomMetaRmtKey  = "rmt" //room type
-	RoomMetaRphKey  = "rph" //reference place holder
-	RrateMetaAmtKey = "amt" //total
-	RrateMetaCurKey = "cur" //total
-	RrateMetaRqsKey = "rqs" //next
+	RoomMetaArvKey       = "arv"  //arrival
+	RoomMetaDptKey       = "dpt"  //depart
+	RoomMetaGstKey       = "gst"  //guest count
+	RoomMetaHcKey        = "hc"   //host command
+	RoomMetaHidKey       = "hid"  //hotel id
+	RoomMetaRmtKey       = "rmt"  //room type
+	RoomMetaRphKey       = "rph"  //reference place holder
+	RoomMetaGuarenteeKey = "guar" //guarantee surchage
+	RrateMetaAmtKey      = "amt"  //total
+	RrateMetaCurKey      = "cur"  //total
+	RrateMetaRqsKey      = "rqs"  //next
 
 	returnHostCommand = true
 	ESA               = "\u0087" //UNICODE: End of Selected Area
@@ -225,6 +226,8 @@ func NewParsedRoomMeta(b64Str string) (ParsedRoomMeta, error) {
 				rmp.Rph = c[1]
 			case RoomMetaRmtKey:
 				rmp.Rmt = c[1]
+			case RoomMetaGuarenteeKey:
+				rmp.GuaranteeSurcharge = c[1]
 			}
 		}
 	}
@@ -246,6 +249,7 @@ type ParsedRoomMeta struct {
 	HotelID              string   // hotel id
 	Rmt                  string   // room type;;iata characteristic
 	Rph                  string   // reference place holder
+	GuaranteeSurcharge   string   //guarantee surcharge
 	StayRatesCache       []string // room_stay.room_rates
 	ParsedStayRatesCache []parsedStayRateCache
 }
@@ -401,6 +405,40 @@ type PaymentCard struct {
 	Number     string `xml:"Number,attr,omitempty"`
 }
 
+type RoomToBook struct {
+	FirstName string `form:"first_name"`
+	LastName  string `form:"last_name"`
+	NumRooms  string `form:"num_rooms"`
+	CCPhone   string `form:"cc_phone"`
+	CCCode    string `form:"cc_code"`
+	CCExpire  string `form:"cc_expire"`
+	CCNumber  string `form:"cc_number"`
+	RoomMeta  string `form:"room_meta"`
+
+	B64RoomMetaData string            //passing room meta in form
+	ParsedRoomMeta  ParsedRoomMeta    //parsing the room_meta from from
+	FormErrors      map[string]string //collecting errors on validate
+}
+
+//Validate BookRoomParams checks form fields for submitting booking
+func (b *RoomToBook) ValidateAndSetParsedRoomMeta() bool {
+	b.FormErrors = make(map[string]string)
+	meta, err := NewParsedRoomMeta(b.RoomMeta)
+	if err != nil {
+		b.FormErrors["RoomMeta"] = "Room Metadata is malformed"
+	} else {
+		b.ParsedRoomMeta = meta
+	}
+	if strings.TrimSpace(b.FirstName) == "" {
+		b.FormErrors["FirstName"] = "First Name cannot be empty"
+	}
+	if strings.TrimSpace(b.LastName) == "" {
+		b.FormErrors["LastName"] = "Last Name cannot be empty"
+	}
+	fmt.Printf("roomtobookvalidate: %+v \n", b)
+	return len(b.FormErrors) == 0
+}
+
 type RoomRate struct {
 	XMLName            xml.Name `xml:"RoomRate" json:"-"`
 	ClientID           string   `xml:"ClientID,attr"`
@@ -421,7 +459,8 @@ type RoomRate struct {
 	Rates              []Rate   `xml:"Rates>Rate"`
 	AdditionalInfo     AdditionalInfo
 	HotelRateCode      string `xml:"HotelRateCode"`
-	B64RoomMetaData    string
+	//B64RoomMetaData    string
+	RoomToBook RoomToBook
 }
 
 type AdditionalInfo struct {
@@ -450,16 +489,19 @@ type AdditionalInfo struct {
 
 // BasicPropertyInfo contains all info relevant to property. It is the root-level element after service element for hotel_avail; and is embedded in the RoomStay element.
 type BasicPropertyInfo struct {
-	XMLName         xml.Name `xml:"BasicPropertyInfo" json:"-"`
-	AreadID         string   `xml:"AreadID,attr"`
-	ChainCode       string   `xml:"ChainCode,attr"`
-	Distance        string   `xml:"Distance,attr"`
-	GEO_ConfAvail   string   `xml:"GEO_ConfidenceLevel,attr"` //hotel avail
-	GeoConfPropDesc string   `xml:"GeoConfidenceLevel,attr"`  //property description
-	HotelCityCode   string   `xml:"HotelCityCode,attr"`
-	HotelCode       string   `xml:"HotelCode,attr"`
-	HotelName       string   `xml:"HotelName,attr"`
-	CancelPenalty   struct {
+	XMLName            xml.Name `xml:"BasicPropertyInfo" json:"-"`
+	AreaID             string   `xml:"AreaID,attr"` //TODO: Area ID... this is wrong
+	ChainCode          string   `xml:"ChainCode,attr"`
+	Distance           string   `xml:"Distance,attr"`
+	GEO_ConfAvail      string   `xml:"GEO_ConfidenceLevel,attr"` //hotel avail
+	GeoConfPropDesc    string   `xml:"GeoConfidenceLevel,attr"`  //property description
+	HotelCityCode      string   `xml:"HotelCityCode,attr"`
+	HotelCode          string   `xml:"HotelCode,attr"`
+	HotelName          string   `xml:"HotelName,attr"`
+	ConfirmationNumber struct {
+		Val string `xml:",chardata"`
+	} `xml:"ConfirmationNumber"`
+	CancelPenalty struct {
 		PolicyCode string `xml:"PolicyCode"`
 	} `xml:"CancelPenalty"`
 	Latitude  string `xml:"Latitude,attr"`
