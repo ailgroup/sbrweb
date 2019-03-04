@@ -1,14 +1,14 @@
-package hotelws
+package htlsp
 
 import (
 	"encoding/xml"
 	"testing"
 
-	"github.com/ailgroup/sbrweb/engine/sbrerr"
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
 func TestHotelRateDescMarshal(t *testing.T) {
-	rpc := SetRateParams(
+	rpc := SetRatePlanCandidate(
 		[]RatePlan{
 			RatePlan{
 				RPH: "12",
@@ -45,7 +45,7 @@ var guaranteeCards = []struct {
 
 func TestRateDescCall(t *testing.T) {
 	// assume RPH is from previous hotel property description call
-	rpc := SetRateParams(
+	rpc := SetRatePlanCandidate(
 		[]RatePlan{
 			RatePlan{
 				RPH: "12",
@@ -137,7 +137,7 @@ func TestRateDescCall(t *testing.T) {
 }
 
 func TestHotelRateDesCallDown(t *testing.T) {
-	rpc := SetRateParams(
+	rpc := SetRatePlanCandidate(
 		[]RatePlan{
 			RatePlan{
 				RPH: "12",
@@ -162,7 +162,7 @@ func TestHotelRateDesCallDown(t *testing.T) {
 }
 
 func TestHotelRateDescCallBadResponseBody(t *testing.T) {
-	rpc := SetRateParams(
+	rpc := SetRatePlanCandidate(
 		[]RatePlan{
 			RatePlan{
 				RPH: "12",

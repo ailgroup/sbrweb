@@ -1,4 +1,4 @@
-package hotelws
+package htlsp
 
 import (
 	"bytes"
@@ -7,8 +7,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ailgroup/sbrweb/engine/sbrerr"
-	"github.com/ailgroup/sbrweb/engine/srvc"
+	"github.com/ailgroup/sbrweb/sbrerr"
+	"github.com/ailgroup/sbrweb/soap/srvc"
 )
 
 /*
@@ -96,6 +96,7 @@ type Surname struct {
 // Type can be "G", "GAGT", "GDPST", "GC", "GCR", "GH", "GDPSTH", "GT", or "GDPSTT", or "D"
 type GuaranteeReservation struct {
 	XMLName xml.Name `xml:"Guarantee"`
+	Val     string   `xml:",chardata"` //is this needed? ("VIXXXXXXXXXXXX4501EXP 10 20-BOOKING")
 	Type    string   `xml:"Type,attr"`
 	CCInfo  CCInfo
 }
@@ -261,6 +262,7 @@ type HotelResponse struct {
 	XMLName       xml.Name `xml:"Hotel"`
 	BasicProperty BasicPropertyInfo
 	Guarantee     GuaranteeReservation
+	POS           srvc.POSElem
 	RoomRates     []RoomRate `xml:"RoomRates>RoomRate"`
 	SpecialPrefs  SpecialPrefs
 	Text          []string `xml:"Text"`

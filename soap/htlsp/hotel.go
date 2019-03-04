@@ -1,5 +1,5 @@
 /*
-Package hotelws (Hotel Web Services) implements Sabre SOAP hotel booking through availability, property and rate descriptions, passenger details (PNR), reservation, and transaction Web Services. It handles exclusively the XML-based Simple Object Access Protocol endpoints the Sabre supports. Look elsewhere for support of Sabre rest services.
+Package hotel (Hotel SOAP) implements Sabre SOAP hotel booking through availability, property and rate descriptions, passenger details (PNR), reservation, and transaction Web Services. It handles exclusively the XML-based Simple Object Access Protocol endpoints the Sabre supports. Look elsewhere for support of Sabre rest services.
 
 	The following workflow allows you to search and book a hotel room.
 	Steps
@@ -28,7 +28,7 @@ Many criterion exist that are not yet implemented:
 
 To add more criterion create a criterion type and function to handle the data params; see HotelSearchCriteria, Criterion and others.
 */
-package hotelws
+package htlsp
 
 import (
 	b64 "encoding/base64"
@@ -39,7 +39,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/ailgroup/sbrweb/engine/sbrerr"
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
 const (
@@ -48,8 +48,9 @@ const (
 	TimeFormatMDTHM = "01-02T15:04"
 	TimeFormatMDHM  = "01-02 15:04"
 
-	StreetQueryField      = "street_qf"
-	CityQueryField        = "city_qf"
+	StreetQueryField = "street_qf"
+	CityQueryField   = "city_qf"
+	//SateCodeQueryField    = "statecode_qf" no endpoints allow this query
 	CountryCodeQueryField = "countryCode_qf"
 	HotelidQueryField     = "hotelID_qf"
 	LatlngQueryField      = "latlng_qf"
@@ -62,16 +63,17 @@ const (
 	RBrackDelim = "["
 	SColDelim   = ";"
 
-	RoomMetaArvKey  = "arv" //arrival
-	RoomMetaDptKey  = "dpt" //depart
-	RoomMetaGstKey  = "gst" //guest count
-	RoomMetaHcKey   = "hc"  //host command
-	RoomMetaHidKey  = "hid" //hotel id
-	RoomMetaRmtKey  = "rmt" //room type
-	RoomMetaRphKey  = "rph" //reference place holder
-	RrateMetaAmtKey = "amt" //total
-	RrateMetaCurKey = "cur" //total
-	RrateMetaRqsKey = "rqs" //next
+	RoomMetaArvKey       = "arv"  //arrival
+	RoomMetaDptKey       = "dpt"  //depart
+	RoomMetaGstKey       = "gst"  //guest count
+	RoomMetaHcKey        = "hc"   //host command
+	RoomMetaHidKey       = "hid"  //hotel id
+	RoomMetaRmtKey       = "rmt"  //room type
+	RoomMetaRphKey       = "rph"  //reference place holder
+	RoomMetaGuarenteeKey = "guar" //guarantee surchage
+	RrateMetaAmtKey      = "amt"  //total
+	RrateMetaCurKey      = "cur"  //total
+	RrateMetaRqsKey      = "rqs"  //next
 
 	returnHostCommand = true
 	ESA               = "\u0087" //UNICODE: End of Selected Area
@@ -111,6 +113,8 @@ func (s SystemResults) Translate() string {
 	switch {
 	case strings.Contains(clean, "ckdate"):
 		return fmt.Sprintf("%s=%s", "Check Date Parameters", s.Message)
+	case strings.Contains(clean, "noavail"):
+		return fmt.Sprintf("%s=%s", "No Hotel Availability", s.Message)
 	default:
 		return fmt.Sprintf("%s=%s", s.Message, "No Translation")
 	}
@@ -225,6 +229,8 @@ func NewParsedRoomMeta(b64Str string) (ParsedRoomMeta, error) {
 				rmp.Rph = c[1]
 			case RoomMetaRmtKey:
 				rmp.Rmt = c[1]
+			case RoomMetaGuarenteeKey:
+				rmp.GuaranteeSurcharge = c[1]
 			}
 		}
 	}
@@ -246,6 +252,7 @@ type ParsedRoomMeta struct {
 	HotelID              string   // hotel id
 	Rmt                  string   // room type;;iata characteristic
 	Rph                  string   // reference place holder
+	GuaranteeSurcharge   string   //guarantee surcharge
 	StayRatesCache       []string // room_stay.room_rates
 	ParsedStayRatesCache []parsedStayRateCache
 }
@@ -291,23 +298,32 @@ type Package struct {
 	Val string `xml:",chardata"`
 }
 
-// Address represents typical building addresses
+// Address represents typical building addresses; state province nil pointer ignored if empty.
 type Address struct {
 	AddressLine   string `xml:"AddressLine,omitempty"`
 	Street        string `xml:"StreetNumber,omitempty"`
 	City          string `xml:"CityName,omitempty"`
+	CountryCode   string `xml:"CountryCode,omitempty"`
+	Postal        string `xml:"PostalCode,omitempty"`
 	StateProvince struct {
 		StateCode string `xml:"StateCode,attr"`
-	} `xml:"StateCountyProv,omitempty"`
-	CountryCode string `xml:"CountryCode,omitempty"`
-	Postal      string `xml:"PostalCode,omitempty"`
+	} `xml:"StateCountyProv"`
+}
+
+// AddressSearchStruct speical container for Criterion searches with address.
+type AddressSearchStruct struct {
+	XMLName     xml.Name `xml:"Address"`
+	CityName    string   `xml:"CityName,omitempty"`
+	CountryCode string   `xml:"CountryCode,omitempty"`
+	PostalCode  string   `xml:"PostalCode,omitempty"`
+	StreetNmbr  string   `xml:"StreetNmbr,omitempty"`
 }
 
 // Criterion holds various serach criteria
 type Criterion struct {
 	XMLName       xml.Name `xml:"Criterion"`
 	HotelRefs     []*HotelRef
-	Address       *Address
+	AddressSearch *AddressSearchStruct
 	PropertyTypes []*PropertyType
 	Packages      []*Package
 }
@@ -347,18 +363,57 @@ type TimeSpan struct {
 }
 
 type RatePlan struct {
-	XMLName         xml.Name `xml:"RatePlanCandidate" json:"-"`
-	CurrencyCode    string   `xml:"CurrencyCode,attr,omitempty"`
-	DCA_ProductCode string   `xml:"DCA_ProductCode,attr,omitempty"`
-	DecodeAll       string   `xml:"DecodeAll,attr,omitempty"`
-	RateCode        string   `xml:"RateCode,attr,omitempty"`
-	RPH             string   `xml:"RPH,attr,omitempty"`
+	CurrencyCode     string `xml:"CurrencyCode,attr,omitempty"`
+	DCA_ProductCode  string `xml:"DCA_ProductCode,attr,omitempty"`
+	DecodeAll        string `xml:"DecodeAll,attr,omitempty"`
+	RateCode         string `xml:"RateCode,attr,omitempty"`
+	RPH              string `xml:"RPH,attr,omitempty"`
+	PromotionalSpot  string `xml:"PromotionalSpot,attr,omitempty"`
+	RateAssured      string `xml:"RateAssured,attr,omitempty"`      // true/false keep as string
+	SuppressRackRate string `xml:"SuppressRackRate,attr,omitempty"` // true/false keep as string
 }
 
-// RatePlanCandidates determines types of rates queried
+// ContractNegotiatedRateCode specify a contract or negotiated rate code (Client ID)
+// Combined amount of "ContractNegotiatedRateCode" and .../RatePlanCandidates/RateAccessCode" elements cannot exceed 8
+type ContractNegotiatedRateCode struct {
+	Val string `xml:",chardata"`
+}
+
+// RateAccessCode used to specify ID associated with RAC Code.
+// Equivalent Sabre host command: HOTFSG/21JUN-24JUN2/RC-X‡AAA,X‡AOM
+type RateAccessCode struct {
+	Code string `xml:"Code,attr"`
+	Val  string `xml:",chardata"`
+}
+
+// RatePlanCode specify a Rate Plan Code (rate category)
+// Acceptable values are: V, C, D, I, F, GOV, M, P, S, TVL, W, R, N, X, or ALL.
+type RatePlanCode struct {
+	Val string `xml:",chardata"`
+}
+
+// RateRange is used to specify minimum/maximum rates to be returned, as well as currency.
+type RateRange struct {
+	CurrencyCode string `xml:"CurrencyCode,attr"`
+	Max          string `xml:",omitempty"`
+	Min          string `xml:",omitempty"`
+}
+
+/* RatePlanCandidates determines types of rates.
+Example:
+	rpc := &htlsp.RatePlanCandidates{
+		ContractNegotiatedRateCode: &htlsp.ContractNegotiatedRateCode{
+			"TL7"},
+		RateRange: htlsp.RateRange{CurrencyCode: "US"},
+	}
+*/
 type RatePlanCandidates struct {
-	XMLName   xml.Name `xml:"RatePlanCandidates"`
-	RatePlans []*RatePlan
+	XMLName                    xml.Name                    `xml:"RatePlanCandidates"`
+	RatePlanCandidate          []*RatePlan                 `xml:"RatePlanCandidate"`
+	ContractNegotiatedRateCode *ContractNegotiatedRateCode `xml:"ContractNegotiatedRateCode"`
+	RateAccessCode             *RateAccessCode             `xml:"RateAccessCode"`
+	RatePlanCode               *RatePlanCode               `xml:"RatePlanCode"`
+	RateRange                  *RateRange                  `xml:"RateRange"`
 }
 
 // AvailAvailRequestSegment holds basic hotel availability params: customer ids, guest count, hotel search criteria and arrival departure. nil pointers ignored if empty
@@ -401,6 +456,40 @@ type PaymentCard struct {
 	Number     string `xml:"Number,attr,omitempty"`
 }
 
+type RoomToBook struct {
+	FirstName string `form:"first_name"`
+	LastName  string `form:"last_name"`
+	NumRooms  string `form:"num_rooms"`
+	CCPhone   string `form:"cc_phone"`
+	CCCode    string `form:"cc_code"`
+	CCExpire  string `form:"cc_expire"`
+	CCNumber  string `form:"cc_number"`
+	RoomMeta  string `form:"room_meta"`
+
+	B64RoomMetaData string            //passing room meta in form
+	ParsedRoomMeta  ParsedRoomMeta    //parsing the room_meta from from
+	FormErrors      map[string]string //collecting errors on validate
+}
+
+//Validate BookRoomParams checks form fields for submitting booking
+func (b *RoomToBook) ValidateAndSetParsedRoomMeta() bool {
+	b.FormErrors = make(map[string]string)
+	meta, err := NewParsedRoomMeta(b.RoomMeta)
+	if err != nil {
+		b.FormErrors["RoomMeta"] = "Room Metadata is malformed"
+	} else {
+		b.ParsedRoomMeta = meta
+	}
+	if strings.TrimSpace(b.FirstName) == "" {
+		b.FormErrors["FirstName"] = "First Name cannot be empty"
+	}
+	if strings.TrimSpace(b.LastName) == "" {
+		b.FormErrors["LastName"] = "Last Name cannot be empty"
+	}
+	fmt.Printf("roomtobookvalidate: %+v \n", b)
+	return len(b.FormErrors) == 0
+}
+
 type RoomRate struct {
 	XMLName            xml.Name `xml:"RoomRate" json:"-"`
 	ClientID           string   `xml:"ClientID,attr"`
@@ -421,7 +510,8 @@ type RoomRate struct {
 	Rates              []Rate   `xml:"Rates>Rate"`
 	AdditionalInfo     AdditionalInfo
 	HotelRateCode      string `xml:"HotelRateCode"`
-	B64RoomMetaData    string
+	//B64RoomMetaData    string
+	RoomToBook RoomToBook
 }
 
 type AdditionalInfo struct {
@@ -450,16 +540,19 @@ type AdditionalInfo struct {
 
 // BasicPropertyInfo contains all info relevant to property. It is the root-level element after service element for hotel_avail; and is embedded in the RoomStay element.
 type BasicPropertyInfo struct {
-	XMLName         xml.Name `xml:"BasicPropertyInfo" json:"-"`
-	AreadID         string   `xml:"AreadID,attr"`
-	ChainCode       string   `xml:"ChainCode,attr"`
-	Distance        string   `xml:"Distance,attr"`
-	GEO_ConfAvail   string   `xml:"GEO_ConfidenceLevel,attr"` //hotel avail
-	GeoConfPropDesc string   `xml:"GeoConfidenceLevel,attr"`  //property description
-	HotelCityCode   string   `xml:"HotelCityCode,attr"`
-	HotelCode       string   `xml:"HotelCode,attr"`
-	HotelName       string   `xml:"HotelName,attr"`
-	CancelPenalty   struct {
+	XMLName            xml.Name `xml:"BasicPropertyInfo" json:"-"`
+	AreaID             string   `xml:"AreaID,attr"` //TODO: Area ID... this is wrong
+	ChainCode          string   `xml:"ChainCode,attr"`
+	Distance           string   `xml:"Distance,attr"`
+	GEO_ConfAvail      string   `xml:"GEO_ConfidenceLevel,attr"` //hotel avail
+	GeoConfPropDesc    string   `xml:"GeoConfidenceLevel,attr"`  //property description
+	HotelCityCode      string   `xml:"HotelCityCode,attr"`
+	HotelCode          string   `xml:"HotelCode,attr"`
+	HotelName          string   `xml:"HotelName,attr"`
+	ConfirmationNumber struct {
+		Val string `xml:",chardata"`
+	} `xml:"ConfirmationNumber"`
+	CancelPenalty struct {
 		PolicyCode string `xml:"PolicyCode"`
 	} `xml:"CancelPenalty"`
 	Latitude  string `xml:"Latitude,attr"`

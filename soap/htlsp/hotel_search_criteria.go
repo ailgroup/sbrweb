@@ -1,22 +1,24 @@
-package hotelws
+package htlsp
 
 /*
-This file contains functions related to hotel search criteria. See hotelws.go file for the struct and type definitions.
+	This file contains functions related to hotel search criteria. See hotel.go file for the struct and type definitions.
+
+	See also hotel_avail.go and
+	https://developer.sabre.com/docs/read/soap_apis/hotel/search/hotel_availability
 */
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/ailgroup/sbrweb/engine/sbrerr"
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
-// SetRateParams helper to create a slice of rate plans to append on a an Avail Segement
-// for search or description services
-func SetRateParams(ratePlans []RatePlan) *RatePlanCandidates {
+// SetRateParams helper to create a slice of rate plans to append to an Avail Segement for search or description services
+func SetRatePlanCandidate(ratePlans []RatePlan) *RatePlanCandidates {
 	rpc := &RatePlanCandidates{}
 	for _, plan := range ratePlans {
-		rpc.RatePlans = append(rpc.RatePlans, &plan)
+		rpc.RatePlanCandidate = append(rpc.RatePlanCandidate, &plan)
 	}
 	return rpc
 }
@@ -70,33 +72,46 @@ func PropertyTypeSearch(params PropertyTypeCriterion) func(q *HotelSearchCriteri
 	}
 }
 
-// AddressSearch parse incoming params, build Address, and put it on the serach criterion
-// search on small towns..
+// validate for AddressSearchStruct based on what sabre allows
+func (a AddressSearchStruct) validate() bool {
+	// need postal or country
+	if (a.PostalCode == "") && (a.CountryCode == "") {
+		return false
+	}
+	// need city or postal or street
+	if (a.PostalCode == "") && (a.CityName == "") && (a.StreetNmbr == "") {
+		return false
+	}
+	return true
+}
+
+// AddressSearchStruct parse incoming params, build Address, and put it on the serach criterion.
+// NOTE: Must have country code and/or postal code state province not an acceptable criterion.
 func AddressSearch(params AddressCriterion) func(q *HotelSearchCriteria) error {
 	return func(q *HotelSearchCriteria) error {
-		a := &Address{}
+		a := &AddressSearchStruct{}
 		if len(params) < 1 {
 			return fmt.Errorf("AddressSearch params cannot be empty: %v", params)
 		}
 		for k, v := range params {
 			switch k {
 			case StreetQueryField:
-				a.Street = v
+				a.StreetNmbr = v
 			case CityQueryField:
-				a.City = v
+				a.CityName = v
 			case PostalQueryField:
-				a.Postal = v
+				a.PostalCode = v
 			case CountryCodeQueryField:
 				a.CountryCode = v
 			}
 		}
-		q.Criterion.Address = a
+		q.Criterion.AddressSearch = a
 		return nil
 	}
 }
 
 // HotelRefSearch accepts HotelRef criterion and returns a function for hotel search critera.
-// Supports CityCode, HotelCode, Latitude, and Longitude for now... later support for HotelName.
+// Supports CityCode, HotelCode, Latitude-Longitude for now... later support for HotelName.
 func HotelRefSearch(params HotelRefCriterion) func(q *HotelSearchCriteria) error {
 	return func(q *HotelSearchCriteria) error {
 		if len(params) < 1 {

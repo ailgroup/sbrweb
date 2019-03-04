@@ -12,7 +12,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/ailgroup/sbrweb/engine/sbrerr"
+	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
 const (
@@ -240,6 +240,7 @@ type Manifest struct {
 // SourceElem for POS session create
 type SourceElem struct {
 	PseudoCityCode string `xml:"PseudoCityCode,attr"`
+	//RequestorID    string `xml:"RequestorID"` // update tests if added
 }
 
 // POSElem for session create

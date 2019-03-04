@@ -1,4 +1,4 @@
-package hotelws
+package htlsp
 
 import (
 	"errors"

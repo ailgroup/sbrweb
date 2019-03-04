@@ -1,10 +1,10 @@
-package hotelws
+package htlsp
 
 import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/ailgroup/sbrweb/engine/srvc"
+	"github.com/ailgroup/sbrweb/soap/srvc"
 )
 
 /*
@@ -14,19 +14,6 @@ TESTING NOTES:
 	- Benchmarks come after tests using testable functionality
 	- Benchmarks have same name as test that is benchmarked (sans Test/Benchmark prefix)
 */
-
-var (
-	//serverHotelDown server mocks unavailable service
-	serverHotelDown = &httptest.Server{}
-	//serverBadBody mocks a server that returns malformed body
-	serverBadBody = &httptest.Server{}
-	//serverHotelAvailability server to retrieve hotel availability using OTA_HotelAvailLLSRQ.
-	serverHotelAvailability = &httptest.Server{}
-	//serverHotelPropertyDesc server to retrieve hotel rates using HotelPropertyDescriptionLLSRQ.
-	serverHotelPropertyDesc = &httptest.Server{}
-	//serverHotelRateDesc server to retrieve rules and policies using HotelRateDescriptionLLSRQ.
-	serverHotelRateDesc = &httptest.Server{}
-)
 
 //Initialize Mock Sabre Web Servers and test data
 func init() {
@@ -88,6 +75,19 @@ func init() {
 	)
 	//defer func() { serverHotelRateDesc.Close() }()
 }
+
+var (
+	//serverHotelDown server mocks unavailable service
+	serverHotelDown = &httptest.Server{}
+	//serverBadBody mocks a server that returns malformed body
+	serverBadBody = &httptest.Server{}
+	//serverHotelAvailability server to retrieve hotel availability using OTA_HotelAvailLLSRQ.
+	serverHotelAvailability = &httptest.Server{}
+	//serverHotelPropertyDesc server to retrieve hotel rates using HotelPropertyDescriptionLLSRQ.
+	serverHotelPropertyDesc = &httptest.Server{}
+	//serverHotelRateDesc server to retrieve rules and policies using HotelRateDescriptionLLSRQ.
+	serverHotelRateDesc = &httptest.Server{}
+)
 
 // data chunks for testing
 var (

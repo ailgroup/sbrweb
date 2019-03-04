@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ailgroup/sbrweb/engine/sbrerr"
-	"github.com/ailgroup/sbrweb/engine/srvc"
+	"github.com/ailgroup/sbrweb/sbrerr"
+	"github.com/ailgroup/sbrweb/soap/srvc"
 )
 
 /* PNRDetailsRequest root level struct for dealing with an PNR. Taken from Sabre docs:
