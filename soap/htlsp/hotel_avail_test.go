@@ -64,6 +64,24 @@ func TestPropertyTypeSearchCriteria(t *testing.T) {
 	}
 }
 
+func TestPointOfInterestSearch(t *testing.T) {
+	r, err := NewHotelSearchCriteria(
+		PointOfInterestSearch(pointOfInt),
+	)
+	if err != nil {
+		t.Errorf("NewHotelSearchCriteria with PointOfInterestSearch error %v", err)
+	}
+	if r.Criterion.PointOfInterest.NonUS {
+		t.Error("NonUS should be false")
+	}
+	if r.Criterion.PointOfInterest.CountryStateCode != sampleState {
+		t.Errorf("State expected: %s, got: %s", sampleState, r.Criterion.PointOfInterest.CountryStateCode)
+	}
+	if r.Criterion.PointOfInterest.Val != sampleCity {
+		t.Errorf("POI Val expected: %s, got: %s", sampleCity, r.Criterion.PointOfInterest.Val)
+	}
+}
+
 func TestHotelRefSearchReturnError(t *testing.T) {
 	_, err := NewHotelSearchCriteria(
 		HotelRefSearch(hqbad),

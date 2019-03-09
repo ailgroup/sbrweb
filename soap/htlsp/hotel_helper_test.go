@@ -27,6 +27,9 @@ func init() {
 	addr[PostalQueryField] = samplePostal
 	addr[CountryCodeQueryField] = sampleCountryCode
 
+	pointOfInt[StateCodeQueryField] = sampleState
+	pointOfInt[POIQueryField] = sampleCity
+
 	// init test servers...
 	serverHotelDown = httptest.NewServer(
 		http.HandlerFunc(
@@ -96,6 +99,7 @@ var (
 	hqids               = make(HotelRefCriterion)
 	hqltln              = make(HotelRefCriterion)
 	addr                = make(AddressCriterion)
+	pointOfInt          = make(PointOfInterestCriterion)
 	sampleCID           = "12345"
 	sampleLatLang       = []string{"32.78,-96.81", "54.87,-102.96"}
 	sampleHotelCode     = []string{"0012", "19876", "1109", "445098", "000034"}
@@ -105,6 +109,7 @@ var (
 	sampleGuestCount    = 2
 	sampleStreet        = "2031 N. 100 W"
 	sampleCity          = "Nowhere"
+	sampleState         = "TX"
 	samplePostal        = "999908"
 	sampleCountryCode   = "US"
 	sampleArrive        = "04-02"

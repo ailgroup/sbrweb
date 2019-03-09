@@ -3,6 +3,7 @@ package itin
 import (
 	"bytes"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -118,6 +119,7 @@ type EndTransactionResponse struct {
 func CallEndTransaction(serviceURL string, req EndTransactionRequest) (EndTransactionResponse, error) {
 	endT := EndTransactionResponse{}
 	byteReq, _ := xml.Marshal(req)
+	fmt.Printf("CallEndTransaction-REQUEST %s \n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
@@ -133,13 +135,14 @@ func CallEndTransaction(serviceURL string, req EndTransactionRequest) (EndTransa
 	// note ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
 	_, err = io.Copy(bodyBuffer, resp.Body)
+	fmt.Printf("CallEndTransaction-RESPONSE %s \n\n", bodyBuffer)
 	//close body no defer
 	resp.Body.Close()
 	//handle and return error if bad body
 	if err != nil {
 		endT.ErrorSabreService = sbrerr.NewErrorSabreService(
 			err.Error(),
-			sbrerr.ErrCallGetReservation,
+			sbrerr.ErrCallEndTransaction,
 			sbrerr.BadParse,
 		)
 		return endT, endT.ErrorSabreService

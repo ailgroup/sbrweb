@@ -154,8 +154,7 @@ func CallHotelAvail(serviceURL string, req HotelAvailRequest) (HotelAvailRespons
 	availResp := HotelAvailResponse{}
 	//construct payload
 	byteReq, _ := xml.Marshal(req)
-	//debug
-	fmt.Printf("\n\n\nREQ-FROM-CallHotelAvail: %s\n\n\n", byteReq)
+	fmt.Printf("CallHotelAvail-REQUEST: %s\n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
@@ -167,6 +166,7 @@ func CallHotelAvail(serviceURL string, req HotelAvailRequest) (HotelAvailRespons
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
 	_, _ = io.Copy(bodyBuffer, resp.Body)
+	fmt.Printf("CallHotelAvail-RESPONSE: %s\n\n", byteReq)
 	resp.Body.Close()
 
 	//marshal bytes sabre response body into availResp response struct

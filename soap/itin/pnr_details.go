@@ -3,6 +3,7 @@ package itin
 import (
 	"bytes"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -288,7 +289,7 @@ type PNRDetailsResponse struct {
 func CallPNRDetail(serviceURL string, req PNRDetailsRequest) (PNRDetailsResponse, error) {
 	pnrResp := PNRDetailsResponse{}
 	byteReq, _ := xml.Marshal(req)
-	// fmt.Printf("\n\n %s\n\n", byteReq)
+	fmt.Printf("CallPNRDetail-REQUEST\n\n %s\n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
@@ -303,7 +304,8 @@ func CallPNRDetail(serviceURL string, req PNRDetailsRequest) (PNRDetailsResponse
 	// parse payload body into []byte buffer from net Response.ReadCloser
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
-	io.Copy(bodyBuffer, resp.Body)
+	_, _ = io.Copy(bodyBuffer, resp.Body)
+	fmt.Printf("CallPNRDetail-RESPONSE\n\n %s\n\n", bodyBuffer)
 	resp.Body.Close()
 
 	//fmt.Printf("\n\n:CallPNRDetail Response: %s\n\n", bodyBuffer)

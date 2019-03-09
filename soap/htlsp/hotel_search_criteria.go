@@ -8,20 +8,12 @@ package htlsp
 */
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/ailgroup/sbrweb/sbrerr"
 )
-
-// SetRateParams helper to create a slice of rate plans to append to an Avail Segement for search or description services
-func SetRatePlanCandidate(ratePlans []RatePlan) *RatePlanCandidates {
-	rpc := &RatePlanCandidates{}
-	for _, plan := range ratePlans {
-		rpc.RatePlanCandidate = append(rpc.RatePlanCandidate, &plan)
-	}
-	return rpc
-}
 
 // NewHotelSearchCriteria accepts set of QueryParams functions, executes over hotel search criteria and returns modified criteria
 func NewHotelSearchCriteria(queryParams ...QuerySearchParams) (*HotelSearchCriteria, error) {
@@ -85,14 +77,18 @@ func (a AddressSearchStruct) validate() bool {
 	return true
 }
 
-// AddressSearchStruct parse incoming params, build Address, and put it on the serach criterion.
-// NOTE: Must have country code and/or postal code state province not an acceptable criterion.
+/*
+AddressSearch builds AddressSearch and put it on the serach criterion.
+NOTE: Must have country code and/or postal code state province not an acceptable criterion.
+AddressSearch requires other criteria such as city code, package, property type.
+This criteria is not recommended.
+*/
 func AddressSearch(params AddressCriterion) func(q *HotelSearchCriteria) error {
 	return func(q *HotelSearchCriteria) error {
-		a := &AddressSearchStruct{}
 		if len(params) < 1 {
 			return fmt.Errorf("AddressSearch params cannot be empty: %v", params)
 		}
+		a := &AddressSearchStruct{}
 		for k, v := range params {
 			switch k {
 			case StreetQueryField:
@@ -104,6 +100,9 @@ func AddressSearch(params AddressCriterion) func(q *HotelSearchCriteria) error {
 			case CountryCodeQueryField:
 				a.CountryCode = v
 			}
+		}
+		if !a.validate() {
+			return errors.New("ERROR AddressSearch: Missing postal or country; OR need city, postal, street")
 		}
 		q.Criterion.AddressSearch = a
 		return nil
@@ -134,6 +133,31 @@ func HotelRefSearch(params HotelRefCriterion) func(q *HotelSearchCriteria) error
 				}
 			}
 		}
+		return nil
+	}
+}
+
+// PointOfInterestSearch for hotel availability searches based on named points of interest.
+// Supports CountryStateCode (for country or state), Val for PointOfInterest (city or landmark).
+// NOTE: this may only include properties that are located in the city centre or surrounding areas.
+// Other fields sit on the PointOfInterest struct, but NonUS we want default(false), and RPH not needed but there for correctness.
+// Cryptic: HOTUT-ST GEORGE/21APR-24APR2 [HOT(StateCode)-(CityName)/(Arrive)-(Depart)GuestNumber]
+func PointOfInterestSearch(params PointOfInterestCriterion) func(q *HotelSearchCriteria) error {
+	return func(q *HotelSearchCriteria) error {
+		if len(params) < 1 {
+			return fmt.Errorf("PointOfInterestSearch params cannot be empty: %v", params)
+		}
+		p := &PointOfInterest{}
+		for k, v := range params {
+			switch k {
+			case StateCodeQueryField:
+				p.CountryStateCode = v
+			case POIQueryField:
+				p.Val = v
+			}
+		}
+
+		q.Criterion.PointOfInterest = p
 		return nil
 	}
 }
