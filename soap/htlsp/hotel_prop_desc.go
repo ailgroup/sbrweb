@@ -1,5 +1,11 @@
 package htlsp
 
+/*
+	https://developer.sabre.com/docs/read/soap_apis/hotel/search/hotel_property_description
+
+	The Hotel Property Description API (HOD) provides details on available room rates by room and rate type for a single property. Responses are based on real time requests to hotel suppliers with actual rates and rooms available at the time of request. The API allows the user to provide rate codes and qualifiers to shop for the applicable rates, and robust property descriptive content is provided with each rate.
+*/
+
 import (
 	"bytes"
 	"encoding/xml"

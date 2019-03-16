@@ -15,19 +15,6 @@ TESTING NOTES:
 	- Benchmarks have same name as test that is benchmarked (sans Test/Benchmark prefix)
 */
 
-var (
-	//serverHotelDown server mocks unavailable service
-	serverHotelDown = &httptest.Server{}
-	//serverBadBody mocks a server that returns malformed body
-	serverBadBody = &httptest.Server{}
-	//serverHotelAvailability server to retrieve hotel availability using OTA_HotelAvailLLSRQ.
-	serverHotelAvailability = &httptest.Server{}
-	//serverHotelPropertyDesc server to retrieve hotel rates using HotelPropertyDescriptionLLSRQ.
-	serverHotelPropertyDesc = &httptest.Server{}
-	//serverHotelRateDesc server to retrieve rules and policies using HotelRateDescriptionLLSRQ.
-	serverHotelRateDesc = &httptest.Server{}
-)
-
 //Initialize Mock Sabre Web Servers and test data
 func init() {
 	// init data chunks...
@@ -39,6 +26,9 @@ func init() {
 	addr[CityQueryField] = sampleCity
 	addr[PostalQueryField] = samplePostal
 	addr[CountryCodeQueryField] = sampleCountryCode
+
+	pointOfInt[StateCodeQueryField] = sampleState
+	pointOfInt[POIQueryField] = sampleCity
 
 	// init test servers...
 	serverHotelDown = httptest.NewServer(
@@ -89,6 +79,19 @@ func init() {
 	//defer func() { serverHotelRateDesc.Close() }()
 }
 
+var (
+	//serverHotelDown server mocks unavailable service
+	serverHotelDown = &httptest.Server{}
+	//serverBadBody mocks a server that returns malformed body
+	serverBadBody = &httptest.Server{}
+	//serverHotelAvailability server to retrieve hotel availability using OTA_HotelAvailLLSRQ.
+	serverHotelAvailability = &httptest.Server{}
+	//serverHotelPropertyDesc server to retrieve hotel rates using HotelPropertyDescriptionLLSRQ.
+	serverHotelPropertyDesc = &httptest.Server{}
+	//serverHotelRateDesc server to retrieve rules and policies using HotelRateDescriptionLLSRQ.
+	serverHotelRateDesc = &httptest.Server{}
+)
+
 // data chunks for testing
 var (
 	hqbad               = make(HotelRefCriterion)
@@ -96,6 +99,7 @@ var (
 	hqids               = make(HotelRefCriterion)
 	hqltln              = make(HotelRefCriterion)
 	addr                = make(AddressCriterion)
+	pointOfInt          = make(PointOfInterestCriterion)
 	sampleCID           = "12345"
 	sampleLatLang       = []string{"32.78,-96.81", "54.87,-102.96"}
 	sampleHotelCode     = []string{"0012", "19876", "1109", "445098", "000034"}
@@ -105,6 +109,7 @@ var (
 	sampleGuestCount    = 2
 	sampleStreet        = "2031 N. 100 W"
 	sampleCity          = "Nowhere"
+	sampleState         = "TX"
 	samplePostal        = "999908"
 	sampleCountryCode   = "US"
 	sampleArrive        = "04-02"

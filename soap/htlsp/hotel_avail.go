@@ -1,8 +1,15 @@
 package htlsp
 
+/*
+	https://developer.sabre.com/docs/read/soap_apis/hotel/search/hotel_availability
+
+	The Hotel Shop API (HOT) is typically the first step in the shopping process and provides you with rate ranges and real time availability across a broad set of properties using a basic airport code, city code, or city name search, with the optional addition of other search criteria. Requests can be made using specific negotiated rate codes, up to 331 days in advance, and for up to 9 guests and up to a 220 day maximum length of stay.
+*/
+
 import (
 	"bytes"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -147,6 +154,7 @@ func CallHotelAvail(serviceURL string, req HotelAvailRequest) (HotelAvailRespons
 	availResp := HotelAvailResponse{}
 	//construct payload
 	byteReq, _ := xml.Marshal(req)
+	fmt.Printf("CallHotelAvail-REQUEST: %s\n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
@@ -157,7 +165,8 @@ func CallHotelAvail(serviceURL string, req HotelAvailRequest) (HotelAvailRespons
 	// parse payload body into []byte buffer from net Response.ReadCloser
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
-	io.Copy(bodyBuffer, resp.Body)
+	_, _ = io.Copy(bodyBuffer, resp.Body)
+	fmt.Printf("CallHotelAvail-RESPONSE: %s\n\n", byteReq)
 	resp.Body.Close()
 
 	//marshal bytes sabre response body into availResp response struct

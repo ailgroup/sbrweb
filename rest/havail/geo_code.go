@@ -1,4 +1,4 @@
-package geors
+package havail
 
 /*
 TODO: https://developer.sabre.com/docs/read/rest_apis/utility/geo_code/

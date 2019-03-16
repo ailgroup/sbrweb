@@ -26,16 +26,16 @@ func TestAddressSearchCriteria(t *testing.T) {
 	if err != nil {
 		t.Errorf("NewHotelSearchCriteria with AddressSearch error %v", err)
 	}
-	if a.Criterion.Address.Street != sampleStreet {
+	if a.Criterion.AddressSearch.StreetNmbr != sampleStreet {
 		t.Error("buildAddress street not correct")
 	}
-	if a.Criterion.Address.City != sampleCity {
+	if a.Criterion.AddressSearch.CityName != sampleCity {
 		t.Error("buildAddress city not correct")
 	}
-	if a.Criterion.Address.Postal != samplePostal {
+	if a.Criterion.AddressSearch.PostalCode != samplePostal {
 		t.Error("buildAddress postal not correct")
 	}
-	if a.Criterion.Address.CountryCode != sampleCountryCode {
+	if a.Criterion.AddressSearch.CountryCode != sampleCountryCode {
 		t.Error("buildAddress country code not correct")
 	}
 }
@@ -61,6 +61,24 @@ func TestPropertyTypeSearchCriteria(t *testing.T) {
 	}
 	if len(p.Criterion.PropertyTypes) != len(samplePropertyTypes) {
 		t.Errorf("PackageSearch wrong number of results, expected %d got %d", len(samplePropertyTypes), len(p.Criterion.PropertyTypes))
+	}
+}
+
+func TestPointOfInterestSearch(t *testing.T) {
+	r, err := NewHotelSearchCriteria(
+		PointOfInterestSearch(pointOfInt),
+	)
+	if err != nil {
+		t.Errorf("NewHotelSearchCriteria with PointOfInterestSearch error %v", err)
+	}
+	if r.Criterion.PointOfInterest.NonUS {
+		t.Error("NonUS should be false")
+	}
+	if r.Criterion.PointOfInterest.CountryStateCode != sampleState {
+		t.Errorf("State expected: %s, got: %s", sampleState, r.Criterion.PointOfInterest.CountryStateCode)
+	}
+	if r.Criterion.PointOfInterest.Val != sampleCity {
+		t.Errorf("POI Val expected: %s, got: %s", sampleCity, r.Criterion.PointOfInterest.Val)
 	}
 }
 
@@ -145,16 +163,16 @@ func TestMultipleHotelCriteria(t *testing.T) {
 		}
 		counter++
 	}
-	if r.Criterion.Address.Street != sampleStreet {
+	if r.Criterion.AddressSearch.StreetNmbr != sampleStreet {
 		t.Error("buildAddress street not correct")
 	}
-	if r.Criterion.Address.City != sampleCity {
+	if r.Criterion.AddressSearch.CityName != sampleCity {
 		t.Error("buildAddress city not correct")
 	}
-	if r.Criterion.Address.Postal != samplePostal {
+	if r.Criterion.AddressSearch.PostalCode != samplePostal {
 		t.Error("buildAddress postal not correct")
 	}
-	if r.Criterion.Address.CountryCode != sampleCountryCode {
+	if r.Criterion.AddressSearch.CountryCode != sampleCountryCode {
 		t.Error("buildAddress country code not correct")
 	}
 
@@ -213,7 +231,7 @@ func TestAvailIdsMarshal(t *testing.T) {
 	availBody := SetHotelAvailBody(gcount, q, sampleArrive, sampleDepart)
 	avail := availBody.OTAHotelAvailRQ
 	avail.addCorporateID(sampleCID)
-	avail.Avail.RatePlanCandidates = SetRateParams([]RatePlan{RatePlan{CurrencyCode: "USD", DCA_ProductCode: "I7A"}})
+	avail.Avail.RatePlanCandidates = SetRatePlanCandidate([]RatePlan{RatePlan{CurrencyCode: "USD", DCA_ProductCode: "I7A"}})
 	if avail.Avail.GuestCounts.Count != gcount {
 		t.Errorf("SetHotelAvailRqStruct GuestCounts.Count expect: %d, got %d", gcount, avail.Avail.GuestCounts.Count)
 	}

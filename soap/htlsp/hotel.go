@@ -50,7 +50,9 @@ const (
 
 	StreetQueryField      = "street_qf"
 	CityQueryField        = "city_qf"
+	StateCodeQueryField   = "stateCode_qf"
 	CountryCodeQueryField = "countryCode_qf"
+	POIQueryField         = "pOInterest_qf"
 	HotelidQueryField     = "hotelID_qf"
 	LatlngQueryField      = "latlng_qf"
 	PostalQueryField      = "postal_qf"
@@ -112,6 +114,8 @@ func (s SystemResults) Translate() string {
 	switch {
 	case strings.Contains(clean, "ckdate"):
 		return fmt.Sprintf("%s=%s", "Check Date Parameters", s.Message)
+	case strings.Contains(clean, "noavail"):
+		return fmt.Sprintf("%s=%s", "No Hotel Availability", s.Message)
 	default:
 		return fmt.Sprintf("%s=%s", s.Message, "No Translation")
 	}
@@ -266,7 +270,11 @@ type QuerySearchParams func(*HotelSearchCriteria) error
 // HotelRefCriterion map of hotel ref criteria
 type HotelRefCriterion map[string][]string
 
-// AddressCriterion map of address search criteria
+// PointOfInterestCriterion map of geographical area search
+type PointOfInterestCriterion map[string]string
+
+// AddressCriterion map of address search criteria; must be used with other criterion
+// not recommended...
 type AddressCriterion map[string]string
 
 // PropertyTypeCriterion slice of property type strings (APTS, LUXRY)
@@ -285,6 +293,16 @@ type HotelRef struct {
 	Longitude     string   `xml:"Longitude,attr,omitempty"`
 }
 
+// PointOfInterest contains a number of specific search criteria for geographically named points.
+// It supports City names, tourist attractions, or other well known landmarks.
+type PointOfInterest struct {
+	XMLName          xml.Name `xml:"PointOfInterest"`
+	CountryStateCode string   `xml:"CountryStateCode,attr"`
+	NonUS            bool     `xml:"NonUS,attr"`
+	RPH              string   `xml:"RHP,attr,omitempty"`
+	Val              string   `xml:",chardata"`
+}
+
 // PropertyType container for searhing types of properties (APTS, LUXRY...)
 type PropertyType struct {
 	Val string `xml:",chardata"`
@@ -295,25 +313,35 @@ type Package struct {
 	Val string `xml:",chardata"`
 }
 
-// Address represents typical building addresses
+// Address represents typical building addresses; state province nil pointer ignored if empty.
 type Address struct {
 	AddressLine   string `xml:"AddressLine,omitempty"`
 	Street        string `xml:"StreetNumber,omitempty"`
 	City          string `xml:"CityName,omitempty"`
+	CountryCode   string `xml:"CountryCode,omitempty"`
+	Postal        string `xml:"PostalCode,omitempty"`
 	StateProvince struct {
 		StateCode string `xml:"StateCode,attr"`
-	} `xml:"StateCountyProv,omitempty"`
-	CountryCode string `xml:"CountryCode,omitempty"`
-	Postal      string `xml:"PostalCode,omitempty"`
+	} `xml:"StateCountyProv"`
+}
+
+// AddressSearchStruct speical container for Criterion searches with address.
+type AddressSearchStruct struct {
+	XMLName     xml.Name `xml:"Address"`
+	CityName    string   `xml:"CityName,omitempty"`
+	CountryCode string   `xml:"CountryCode,omitempty"`
+	PostalCode  string   `xml:"PostalCode,omitempty"`
+	StreetNmbr  string   `xml:"StreetNmbr,omitempty"`
 }
 
 // Criterion holds various serach criteria
 type Criterion struct {
-	XMLName       xml.Name `xml:"Criterion"`
-	HotelRefs     []*HotelRef
-	Address       *Address
-	PropertyTypes []*PropertyType
-	Packages      []*Package
+	XMLName         xml.Name `xml:"Criterion"`
+	HotelRefs       []*HotelRef
+	PointOfInterest *PointOfInterest
+	AddressSearch   *AddressSearchStruct
+	PropertyTypes   []*PropertyType
+	Packages        []*Package
 }
 
 // GuestCounts how many guests per night-room. TODO: check on Sabre validation limits (think it is 4)
@@ -350,19 +378,79 @@ type TimeSpan struct {
 	Arrive   string   `xml:"Start,attr,omitempty"`
 }
 
+// RatePlan container for attriubtes on rates
 type RatePlan struct {
-	XMLName         xml.Name `xml:"RatePlanCandidate" json:"-"`
-	CurrencyCode    string   `xml:"CurrencyCode,attr,omitempty"`
-	DCA_ProductCode string   `xml:"DCA_ProductCode,attr,omitempty"`
-	DecodeAll       string   `xml:"DecodeAll,attr,omitempty"`
-	RateCode        string   `xml:"RateCode,attr,omitempty"`
-	RPH             string   `xml:"RPH,attr,omitempty"`
+	CurrencyCode    string `xml:"CurrencyCode,attr,omitempty"`
+	DCA_ProductCode string `xml:"DCA_ProductCode,attr,omitempty"`
+	DecodeAll       string `xml:"DecodeAll,attr,omitempty"`
+	RateCode        string `xml:"RateCode,attr,omitempty"`
+	RPH             string `xml:"RPH,attr,omitempty"`
 }
 
-// RatePlanCandidates determines types of rates queried
+// ContractNegotiatedRateCode specify a contract or negotiated rate code (Client ID)
+// Combined amount of "ContractNegotiatedRateCode" and .../RatePlanCandidates/RateAccessCode" elements cannot exceed 8
+type ContractNegotiatedRateCode struct {
+	Val string `xml:",chardata"`
+}
+
+// RateAccessCode used to specify ID associated with RAC Code.
+// Equivalent Sabre host command: HOTFSG/21JUN-24JUN2/RC-X‡AAA,X‡AOM
+type RateAccessCode struct {
+	Code string `xml:"Code,attr"`
+	Val  string `xml:",chardata"`
+}
+
+// RatePlanCode specify a Rate Plan Code (rate category)
+// Acceptable values are: V, C, D, I, F, GOV, M, P, S, TVL, W, R, N, X, or ALL.
+type RatePlanCode struct {
+	Val string `xml:",chardata"`
+}
+
+// RateRange is used to specify minimum/maximum rates to be returned, as well as currency.
+type RateRange struct {
+	CurrencyCode string `xml:"CurrencyCode,attr"`
+	Max          string `xml:",omitempty"`
+	Min          string `xml:",omitempty"`
+}
+
+// RatePlanCandidates determines types of rates.
 type RatePlanCandidates struct {
-	XMLName   xml.Name `xml:"RatePlanCandidates"`
-	RatePlans []*RatePlan
+	XMLName                     xml.Name                      `xml:"RatePlanCandidates"`
+	PromotionalSpot             string                        `xml:"PromotionalSpot,attr,omitempty"`
+	RateAssured                 bool                          `xml:"RateAssured,attr,omitempty"`
+	SuppressRackRate            bool                          `xml:"SuppressRackRate,attr,omitempty"`
+	RatePlans                   []*RatePlan                   `xml:"RatePlanCandidate"`
+	ContractNegotiatedRateCodes []*ContractNegotiatedRateCode `xml:"ContractNegotiatedRateCode"`
+	RateAccessCodes             []*RateAccessCode             `xml:"RateAccessCode"`
+	RatePlanCodes               []*RatePlanCode               `xml:"RatePlanCode"`
+	RateRange                   *RateRange                    `xml:"RateRange"`
+}
+
+// SetRatePlans helper to create a slice of rate plans to append to an Avail Segement for search or description services.
+func SetRatePlans(ratePlans []RatePlan) *RatePlanCandidates {
+	rpc := &RatePlanCandidates{}
+	for _, plan := range ratePlans {
+		rpc.RatePlans = append(rpc.RatePlans, &plan)
+	}
+	return rpc
+}
+
+// SetContractNegotiatedRates helper for setting the negotiated rates on availability requests.
+func (a *AvailRequestSegment) SetContractNegotiatedRates(rateCodes []string) {
+	rpc := &RatePlanCandidates{}
+	for _, code := range rateCodes {
+		rpc.ContractNegotiatedRateCodes = append(rpc.ContractNegotiatedRateCodes, &ContractNegotiatedRateCode{code})
+	}
+	a.RatePlanCandidates = rpc
+}
+
+// SetRatePlanCodes convencience for setting the negotiated rates on availability requests.
+func (a *AvailRequestSegment) SetRatePlanCodes(rateCodes []string) {
+	rpc := &RatePlanCandidates{}
+	for _, code := range rateCodes {
+		rpc.RatePlanCodes = append(rpc.RatePlanCodes, &RatePlanCode{code})
+	}
+	a.RatePlanCandidates = rpc
 }
 
 // AvailAvailRequestSegment holds basic hotel availability params: customer ids, guest count, hotel search criteria and arrival departure. nil pointers ignored if empty
@@ -421,6 +509,7 @@ type RoomToBook struct {
 }
 
 //Validate BookRoomParams checks form fields for submitting booking
+//TODO add more validations...
 func (b *RoomToBook) ValidateAndSetParsedRoomMeta() bool {
 	b.FormErrors = make(map[string]string)
 	meta, err := NewParsedRoomMeta(b.RoomMeta)
@@ -435,7 +524,6 @@ func (b *RoomToBook) ValidateAndSetParsedRoomMeta() bool {
 	if strings.TrimSpace(b.LastName) == "" {
 		b.FormErrors["LastName"] = "Last Name cannot be empty"
 	}
-	fmt.Printf("roomtobookvalidate: %+v \n", b)
 	return len(b.FormErrors) == 0
 }
 
