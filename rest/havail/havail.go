@@ -8,7 +8,7 @@ import (
 
 var (
 	apiVersion       = "v1.0.0"
-	baseDevHavailURL = "https://api-crt.cert.havail.sabre.com"
+	baseDevHavailURL = "https://api.havail.sabre.com"
 )
 
 type EndpointFunc func() *url.URL

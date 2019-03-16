@@ -231,19 +231,20 @@ func TestAvailIdsMarshal(t *testing.T) {
 	availBody := SetHotelAvailBody(gcount, q, sampleArrive, sampleDepart)
 	avail := availBody.OTAHotelAvailRQ
 	avail.addCorporateID(sampleCID)
-	avail.Avail.RatePlanCandidates = SetRatePlanCandidate([]RatePlan{RatePlan{CurrencyCode: "USD", DCA_ProductCode: "I7A"}})
+	//avail.Avail.RatePlanCandidates = SetRatePlanCandidate([]RatePlan{RatePlan{CurrencyCode: "USD", DCA_ProductCode: "I7A"}})
+	avail.Avail.SetRatePlanCodes([]string{"I7A"})
 	if avail.Avail.GuestCounts.Count != gcount {
 		t.Errorf("SetHotelAvailRqStruct GuestCounts.Count expect: %d, got %d", gcount, avail.Avail.GuestCounts.Count)
 	}
 	if len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs) != len(hqids[HotelidQueryField]) {
-		t.Error("HotelRefs shoudl be same length as params", len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs), len(hqids[HotelidQueryField]))
+		t.Error("HotelRefs should be same length as params", len(avail.Avail.HotelSearchCriteria.Criterion.HotelRefs), len(hqids[HotelidQueryField]))
 	}
 	b, err := xml.Marshal(avail)
 	if err != nil {
 		t.Error("Error marshaling get hotel content", err)
 	}
 	if string(b) != string(sampleAvailRQHotelIDSCoprIDRatePlans) {
-		t.Errorf("Expected marshal hotel avail for hotel ids \n sample: %s \n result: %s", string(sampleAvailRQHotelIDSCoprIDRatePlans), string(b))
+		t.Errorf("Expected marshal hotel avail for hotel ids \n expect: %s \n return: %s", string(sampleAvailRQHotelIDSCoprIDRatePlans), string(b))
 	}
 }
 

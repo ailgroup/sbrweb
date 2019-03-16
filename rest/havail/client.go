@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	v2DevAuthTokenURL       = "https://api-crt.cert.havail.sabre.com/v2/auth/token"
+	v2DevAuthTokenURL       = "https://api.havail.sabre.com/v2/auth/token"
 	authTokenBasicPrefix    = "Basic"
 	tickerTimeDefaultSecond = time.Duration(1200 * time.Second)
 )
