@@ -7,14 +7,15 @@ import (
 )
 
 var (
-	apiVersion       = "v1.0.0"
-	baseDevHavailURL = "https://api.havail.sabre.com"
+	apiVersion = "v1.0.0"
+	//baseDevHavailURL = "https://api.havail.sabre.com"
+	baseDevHavailURL = "https://api-crt.cert.havail.sabre.com"
 )
 
 type EndpointFunc func() *url.URL
 type UOMT string
 type CategoryT string
-type RadiusT int32
+type RadiusT float32
 type OffsetT int32
 type MaxSearchResultsT int32
 type LatitudeT float64

@@ -12,14 +12,10 @@ import (
 )
 
 /*
-https://developer.sabre.com/docs/read/rest_apis/utility/geo_search
+https://beta.developer.sabre.com/docs/rest_apis/utility/geo_search/versions/v1
 
 In detail: the API has three different types of location resolution: airport or multi-airport city (MAC) code, geo code (latitude and longitude) and place name, e.g., town or city name, with optional date and country code. Included in the request is also a parameter for defining the required radius search of up to 200 miles or kilometers along with the defined unit of measurement (miles or kilometers). The response will be the identified hotels (Sabre Property ID only) and the straight line distance between the resolved location and the designated Hotel.
 
-
-Method/Endpoint
-	POST /v1.0.0/lists/utilities/geosearch/locations?mode=geosearch HTTP/1.1 HTTP/1.1
-	POST https://api.havail.sabre.com/v1.0.0/lists/utilities/geosearch/locations?mode=geosearch
 */
 
 var (
@@ -139,6 +135,54 @@ func geoURL() *url.URL {
 	u.Path = path.Join(u.Path, geoURLPart)
 	return u
 }
+
+/*
+EXAMPLE:
+func fetch() {
+	client, err := havail.NewClient()
+	if err != nil {
+		fmt.Printf("********************ERROR: %v \n", err)
+		fmt.Printf("CLIENT: %+v \n", client)
+		return
+	}
+	fmt.Println("Started...", time.Now())
+
+	//time.Sleep(10 * time.Minute)
+
+	georef := havail.GeoRef{
+		Category:   "HOTEL",
+		UOM:        "MI",
+		MaxResults: 100,
+		OffSet:     1,
+		Radius:     10.0,
+		HTTPVerb:   "POST",
+		Endpoint:   havail.GeoLocations,
+		AddressRef: havail.AddressRef{
+			//Street:      "Hidden Ridge",
+			City: "Richmond",
+			//County:      "Dallas",
+			//PostalCode:  "75038",
+			StateProv:   "TX",
+			CountryCode: "US",
+		},
+	}
+	geo := havail.GeoSearchRequest{
+		GeoSearchRQ: havail.GeoSearchRQ{
+			Version: "1",
+			GeoRef:  georef,
+		},
+	}
+	result, err := client.GeoSearchFor(geo)
+	if err != nil {
+		fmt.Printf("\nERROR: %v\n\n", err)
+		return
+	}
+	fmt.Printf("\nNUMBER OF RESULTS: %+v\n\n", len(result.GeoSearchRS.GeoSearchResults.GeoSearchResult))
+	fmt.Printf("\nRESULT: %+v\n\n", result)
+
+	// time.Sleep(20 * time.Hour)
+}
+*/
 
 /*
 
