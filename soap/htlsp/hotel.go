@@ -40,6 +40,7 @@ import (
 	"unicode"
 
 	"github.com/ailgroup/sbrweb/sbrerr"
+	"github.com/ailgroup/sbrweb/soap/srvc"
 )
 
 const (
@@ -77,12 +78,10 @@ const (
 	RrateMetaRqsKey      = "rqs"  //next
 
 	returnHostCommand = true
-	ESA               = "\u0087" //UNICODE: End of Selected Area
-	CrossLorraine     = "\u2628" //UNICODE Cross of Lorraine
 )
 
 var (
-	hostCommandReplacer = strings.NewReplacer("\\", "", "/", "", ESA, "")
+	hostCommandReplacer = strings.NewReplacer("\\", "", "/", "", srvc.ESA, "")
 	ratesMetaMatch      = regexp.MustCompile(`^\[.*\]$`)
 )
 
@@ -427,12 +426,10 @@ type RatePlanCandidates struct {
 }
 
 // SetRatePlans helper to create a slice of rate plans to append to an Avail Segement for search or description services.
-func SetRatePlans(ratePlans []RatePlan) *RatePlanCandidates {
-	rpc := &RatePlanCandidates{}
+func (rpc *RatePlanCandidates) SetRatePlans(ratePlans []RatePlan) {
 	for _, plan := range ratePlans {
 		rpc.RatePlans = append(rpc.RatePlans, &plan)
 	}
-	return rpc
 }
 
 // SetContractNegotiatedRates helper for setting the negotiated rates on availability requests.
@@ -444,13 +441,19 @@ func (a *AvailRequestSegment) SetContractNegotiatedRates(rateCodes []string) {
 	a.RatePlanCandidates = rpc
 }
 
+// SetContractNegotiatedRates helper for setting the negotiated rates on availability requests.
+// RC-G,S,C "\u2628" ALL
+func (rpc *RatePlanCandidates) SetContractNegotiatedRates(rateCodes []string) {
+	for _, code := range rateCodes {
+		rpc.ContractNegotiatedRateCodes = append(rpc.ContractNegotiatedRateCodes, &ContractNegotiatedRateCode{code})
+	}
+}
+
 // SetRatePlanCodes convencience for setting the negotiated rates on availability requests.
-func (a *AvailRequestSegment) SetRatePlanCodes(rateCodes []string) {
-	rpc := &RatePlanCandidates{}
+func (rpc *RatePlanCandidates) SetRatePlanCodes(rateCodes []string) {
 	for _, code := range rateCodes {
 		rpc.RatePlanCodes = append(rpc.RatePlanCodes, &RatePlanCode{code})
 	}
-	a.RatePlanCandidates = rpc
 }
 
 // AvailAvailRequestSegment holds basic hotel availability params: customer ids, guest count, hotel search criteria and arrival departure. nil pointers ignored if empty

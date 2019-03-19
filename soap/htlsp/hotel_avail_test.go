@@ -232,7 +232,7 @@ func TestAvailIdsMarshal(t *testing.T) {
 	avail := availBody.OTAHotelAvailRQ
 	avail.addCorporateID(sampleCID)
 	//avail.Avail.RatePlanCandidates = SetRatePlanCandidate([]RatePlan{RatePlan{CurrencyCode: "USD", DCA_ProductCode: "I7A"}})
-	avail.Avail.SetRatePlanCodes([]string{"I7A"})
+	//avail.Avail.SetRatePlanCodes([]string{"I7A"})
 	if avail.Avail.GuestCounts.Count != gcount {
 		t.Errorf("SetHotelAvailRqStruct GuestCounts.Count expect: %d, got %d", gcount, avail.Avail.GuestCounts.Count)
 	}
