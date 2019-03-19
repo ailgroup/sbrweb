@@ -6,7 +6,7 @@ import (
 )
 
 func TestHotelResSet(t *testing.T) {
-	body := SetHotelResBody(1, sconf.Timestr)
+	body := SetHotelResBody(1)
 	body.NewPropertyResByRPH("12")
 	body.NewGuaranteeRes("Testlast", "G", "MC", "2012-12", "1234567890")
 
@@ -46,7 +46,7 @@ func TestHotelResSet(t *testing.T) {
 }
 
 func TestHotelResByHotel(t *testing.T) {
-	body := SetHotelResBody(1, sconf.Timestr)
+	body := SetHotelResBody(1)
 	body.NewPropertyResByHotel("SL", "00004")
 	b := body.OTAHotelResRQ
 	if b.Hotel.BasicPropertyRes.ChainCode != "SL" {
@@ -58,7 +58,7 @@ func TestHotelResByHotel(t *testing.T) {
 }
 
 func TestHotelResBuild(t *testing.T) {
-	body := SetHotelResBody(1, sconf.Timestr)
+	body := SetHotelResBody(1)
 	body.NewPropertyResByRPH("007")
 	body.NewGuaranteeRes("Booking", "G", "MC", "2019-12", "5105105105105100")
 	req := BuildHotelResRequest(sconf, body)

@@ -169,6 +169,7 @@ func (r *HotelPropDescResponse) SetRoomMetaData(guest int, arrive, depart, hotel
 func CallHotelPropDesc(serviceURL string, req HotelPropDescRequest) (HotelPropDescResponse, error) {
 	propResp := HotelPropDescResponse{}
 	byteReq, _ := xml.Marshal(req)
+	srvc.LogSoap.Printf("CallHotelPropDesc-REQUEST %s\n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
@@ -179,7 +180,8 @@ func CallHotelPropDesc(serviceURL string, req HotelPropDescRequest) (HotelPropDe
 	// parse payload body into []byte buffer from net Response.ReadCloser
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
-	io.Copy(bodyBuffer, resp.Body)
+	_, _ = io.Copy(bodyBuffer, resp.Body)
+	srvc.LogSoap.Printf("CallHotelPropDesc-RESPONSE %s\n\n", bodyBuffer)
 	resp.Body.Close()
 
 	//marshal bytes sabre response body into availResp response struct

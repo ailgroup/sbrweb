@@ -40,6 +40,7 @@ import (
 	"unicode"
 
 	"github.com/ailgroup/sbrweb/sbrerr"
+	"github.com/ailgroup/sbrweb/soap/srvc"
 )
 
 const (
@@ -77,12 +78,10 @@ const (
 	RrateMetaRqsKey      = "rqs"  //next
 
 	returnHostCommand = true
-	ESA               = "\u0087" //UNICODE: End of Selected Area
-	CrossLorraine     = "\u2628" //UNICODE Cross of Lorraine
 )
 
 var (
-	hostCommandReplacer = strings.NewReplacer("\\", "", "/", "", ESA, "")
+	hostCommandReplacer = strings.NewReplacer("\\", "", "/", "", srvc.ESA, "")
 	ratesMetaMatch      = regexp.MustCompile(`^\[.*\]$`)
 )
 

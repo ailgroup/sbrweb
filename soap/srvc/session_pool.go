@@ -268,6 +268,7 @@ func generateKeepAliveID() string {
 /*
 Deamonize initializes and populates new session pool, accepts signal handler to
 gracefully manage valid shutdown of Sabre sessions, session pool, and keepalive.
+
 	Example:
 		func runup(pool *srvc.SessionPool) {
 			var wg sync.WaitGroup
@@ -304,7 +305,6 @@ func (p *SessionPool) Deamonize(wg *sync.WaitGroup) {
 	p.Keepalive()
 	for {
 		<-p.ShutDown
-		p.Close()
 		wg.Done()
 		return
 	}
@@ -318,16 +318,16 @@ func (p *SessionPool) Signal() {
 		switch s {
 		case os.Interrupt, syscall.SIGTERM:
 			fmt.Println("-> Listening -> Stop")
-			p.stop()
-			//close(sChan)
+			p.Close() //close sabre sessions
+			p.stop()  //stop closes p.Shutdown channel
 			return
 		}
 	}
 }
 
+// stop closes the session pool shutdown channel
 func (p *SessionPool) stop() {
 	fmt.Println("Stop -> close(Shutdown)")
-	//close the channel will signal to deamonize and trigger behavior
 	close(p.ShutDown)
 }
 
@@ -338,7 +338,6 @@ func (p *SessionPool) Keepalive() {
 	started := time.Now()
 	keepAliveID := generateKeepAliveID()
 	logSession.Println("Starting KEEPALIVE...", keepAliveID)
-
 	for {
 		select {
 		case <-time.After(p.CycleEvery):
@@ -346,7 +345,6 @@ func (p *SessionPool) Keepalive() {
 			p.RangeKeepalive(keepAliveID)
 			logSession.Printf("KEEPALIVE run(InMin=%.2f, InHour=%.2f)", time.Since(started).Minutes(), time.Since(started).Hours())
 			p.logReport(keepAliveID + "-KeepAlive")
-		//p.Shutdown has been closed by Stop, which was called by Signal.
 		case <-p.ShutDown:
 			logSession.Println("KEEPALIVE done, total lifetime:", time.Since(started))
 			return
