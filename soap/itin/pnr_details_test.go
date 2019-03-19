@@ -11,7 +11,8 @@ import (
 func TestPNRSet(t *testing.T) {
 	p := CreatePersonName(sampleFirstName, sampleLastName)
 	s := SetPNRDetailBody(samplePhoneReq, p)
-	s.AddSpecialDetails()
+	spd := &SpecialReqDetails{}
+	s.AddSpecialDetails(spd)
 	s.AddUniqueID("1234ABCD")
 	vp := VendorPrefs{
 		Airline: Airline{
@@ -28,7 +29,7 @@ func TestPNRSet(t *testing.T) {
 		VendorPrefs:   vp,
 	}
 
-	s.PassengerDetailsRQ.TravelItinInfo.AddAgencyInfo(addr)
+	s.PassengerDetailsRQ.TravelItinInfo.AddAgencyInfoAddress(addr)
 	agencyAddr := s.PassengerDetailsRQ.TravelItinInfo.Agency.Address
 	if agencyAddr.Street != "Sesame Street" {
 		t.Error("Agency Info street address is wrong")
@@ -43,8 +44,6 @@ func TestPNRSet(t *testing.T) {
 	if s.PassengerDetailsRQ.PreProcess.UniqueID.ID != "1234ABCD" {
 		t.Errorf("s.PassengerDetailsRQ.PreProcess.UniqueID.ID given %v, built %v", "1234ABCD", s.PassengerDetailsRQ.PreProcess.UniqueID.ID)
 	}
-
-	spd := &SpecialReqDetails{}
 	if s.PassengerDetailsRQ.SpecialReq.SpecialServiceRQ.SpecialServiceInfo.AdvancedPassenger.VendorPrefs.Airline.Hosted != spd.SpecialServiceRQ.SpecialServiceInfo.AdvancedPassenger.VendorPrefs.Airline.Hosted {
 		t.Errorf("AddSpecialDetails \ngiven: %v \nbuilt: %v", spd, s.PassengerDetailsRQ.SpecialReq)
 	}

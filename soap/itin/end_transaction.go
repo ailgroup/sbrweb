@@ -3,7 +3,6 @@ package itin
 import (
 	"bytes"
 	"encoding/xml"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -91,7 +90,8 @@ func BuildEndTransactionRequest(c *srvc.SessionConf) EndTransactionRequest {
 					Ind: true,
 				},
 				Source: Source{
-					ReceivedFrom: "IBE", //c.From,
+					//ReceivedFrom: "IBE",
+					ReceivedFrom: c.From,
 				},
 			},
 		},
@@ -119,7 +119,7 @@ type EndTransactionResponse struct {
 func CallEndTransaction(serviceURL string, req EndTransactionRequest) (EndTransactionResponse, error) {
 	endT := EndTransactionResponse{}
 	byteReq, _ := xml.Marshal(req)
-	fmt.Printf("CallEndTransaction-REQUEST %s \n\n", byteReq)
+	srvc.LogSoap.Printf("CallEndTransaction-REQUEST %s \n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
@@ -135,7 +135,7 @@ func CallEndTransaction(serviceURL string, req EndTransactionRequest) (EndTransa
 	// note ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
 	_, err = io.Copy(bodyBuffer, resp.Body)
-	fmt.Printf("CallEndTransaction-RESPONSE %s \n\n", bodyBuffer)
+	srvc.LogSoap.Printf("CallEndTransaction-RESPONSE %s \n\n", bodyBuffer)
 	//close body no defer
 	resp.Body.Close()
 	//handle and return error if bad body

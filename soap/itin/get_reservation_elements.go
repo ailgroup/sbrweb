@@ -125,7 +125,7 @@ type Reservation struct {
 	ReceivedFrom            ReceivedFrom
 	Addresses               []AddressReservationElem     `xml:"Addresses>Address"`
 	PhoneNumbers            []PhoneNumberReservationElem `xml:"PhoneNumbers>PhoneNumber"`
-	EmailAddresses          []EmailReservationElem       `xml:"EmailAddresses>EmailAddress"`
+	EmailAddresses          []EmailReservationElem       `xml:"EmailAddresses>Email"`
 	GenericSpecialRequests  []GenericSpecialRequests
 	AssociationMatrices     []AssociationMatrix      `xml:"AssociationMatrices>AssociationMatrix"`
 	OpenReservationElements []OpenReservationElement `xml:"OpenReservationElements>OpenReservationElement"`
