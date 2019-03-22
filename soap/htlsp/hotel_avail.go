@@ -165,7 +165,7 @@ func CallHotelAvail(serviceURL string, req HotelAvailRequest) (HotelAvailRespons
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
 	_, _ = io.Copy(bodyBuffer, resp.Body)
-	srvc.LogSoap.Printf("CallHotelAvail-RESPONSE: %s\n\n", byteReq)
+	srvc.LogSoap.Printf("CallHotelAvail-RESPONSE: %s\n\n", bodyBuffer)
 	resp.Body.Close()
 
 	//marshal bytes sabre response body into availResp response struct
