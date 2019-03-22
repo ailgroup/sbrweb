@@ -268,7 +268,6 @@ func generateKeepAliveID() string {
 Deamonize initializes and populates new session pool.
 Accepts a waitgroup and variadic args signal handler for
 graceful shutdown sessions in a valid Sabre transaction.
-
 	Example:
 		func up(pool *srvc.SessionPool) {
 			var wg sync.WaitGroup
