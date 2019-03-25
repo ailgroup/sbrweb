@@ -115,6 +115,8 @@ func (s SystemResults) Translate() string {
 		return fmt.Sprintf("%s=%s", "Check Date Parameters", s.Message)
 	case strings.Contains(clean, "noavail"):
 		return fmt.Sprintf("%s=%s", "No Hotel Availability", s.Message)
+	case strings.Contains(clean, "nomoredata"):
+		return fmt.Sprintf("%s=%s", "No More Hotel Availability Data", s.Message)
 	default:
 		return fmt.Sprintf("%s=%s", s.Message, "No Translation")
 	}
@@ -259,8 +261,13 @@ type ParsedRoomMeta struct {
 
 // HotelSearchCriteria top level element for criterion
 type HotelSearchCriteria struct {
-	XMLName   xml.Name `xml:"HotelSearchCriteria"`
-	Criterion Criterion
+	XMLName       xml.Name `xml:"HotelSearchCriteria"`
+	NumProperties int      `xml:"NumProperties,attr,omitempty"`
+	Criterion     Criterion
+}
+
+func (h *HotelSearchCriteria) SetNumberOfHotels(n int) {
+	h.NumProperties = n
 }
 
 // QuerySearchParams is a typed function to support optional query params on creation of new search criterion
@@ -456,9 +463,15 @@ func (rpc *RatePlanCandidates) SetRatePlanCodes(rateCodes []string) {
 	}
 }
 
+type AdditionalAvail struct {
+	XMLName xml.Name `xml:"AdditionalAvail"`
+	Ind     bool     `xml:"Ind,attr"`
+}
+
 // AvailAvailRequestSegment holds basic hotel availability params: customer ids, guest count, hotel search criteria and arrival departure. nil pointers ignored if empty
 type AvailRequestSegment struct {
 	XMLName             xml.Name `xml:"AvailRequestSegment"`
+	AdditionalAvail     *AdditionalAvail
 	Customer            *Customer
 	GuestCounts         *GuestCounts
 	HotelSearchCriteria *HotelSearchCriteria
@@ -634,9 +647,9 @@ type BasicPropertyInfo struct {
 	RoomRateAvail RoomRate //hotel avail
 }
 type Charge struct {
-	//XMLName     xml.Name `xml:"Charges"`
-	Crib        string `xml:"Crib,attr"`
-	ExtraPerson string `xml:"ExtraPerson,attr"`
+	XMLName     xml.Name `xml:"Charges"`
+	Crib        string   `xml:"Crib,attr"`
+	ExtraPerson string   `xml:"ExtraPerson,attr"`
 }
 
 type AdditionalGuestAmount struct {

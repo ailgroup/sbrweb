@@ -419,10 +419,8 @@ func (s *SessionConf) SetTime() *SessionConf {
 }
 
 // SetBinSec updates the timestamp. Pass around SessionConf and update the timestamp for any new request
-// TODO: FIXME: shoudl not return a session if modifying existing pointer... update docs
-func (s *SessionConf) SetBinSec(session SessionCreateResponse) *SessionConf {
+func (s *SessionConf) SetBinSec(session SessionCreateResponse) {
 	s.Binsectok = session.Header.Security.BinarySecurityToken.Value
-	return s
 }
 
 // BuildSessionCreateRequest build session create envelope for request

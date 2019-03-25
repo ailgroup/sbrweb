@@ -11,12 +11,15 @@ import (
 
 // Session holds sabre session data and other fields for handling in the SessionPool
 type Session struct {
-	ID            string
-	FaultError    error
-	TimeValidated time.Time
-	TimeStarted   time.Time
-	ExpireTime    time.Time
-	Sabre         SessionCreateResponse
+	ID               string
+	FaultError       error
+	PromisePutAfter  time.Duration  //time elapsed put back in to poo
+	PromisePut       chan bool      //put back in pool
+	PromiseSigListen chan os.Signal //end promise on signal
+	TimeValidated    time.Time
+	TimeStarted      time.Time
+	ExpireTime       time.Time
+	Sabre            SessionCreateResponse
 }
 
 // ExpireScheme for when to expire sessions
@@ -38,13 +41,14 @@ type SessionPool struct {
 	InitializedTime time.Time
 	Sessions        chan Session
 	ShutDown        chan os.Signal
+	Signals         []os.Signal
 	Conf            *SessionConf
 }
 
 // NewPool initializes a new session pool of given size, for ServiceURL, with a buffered channel of
 // type Session, and with specification for cycled keepalive checks, expiration and
 // timer for an initialized time. Do not initialize sessions until ready to populate, this keeps it nil until the time we actually need it.
-func NewPool(expire ExpireScheme, cred *SessionConf, cycle time.Duration, size int) *SessionPool {
+func NewPool(expire ExpireScheme, cred *SessionConf, cycle time.Duration, size int, sig ...os.Signal) *SessionPool {
 	return &SessionPool{
 		ConfigPoolSize: size,
 		//Sessions:        make(chan Session, size), // doing this in Populate
@@ -53,10 +57,11 @@ func NewPool(expire ExpireScheme, cred *SessionConf, cycle time.Duration, size i
 		CycleEvery:      cycle,
 		Expire:          expire,
 		Conf:            cred,
+		Signals:         sig,
 	}
 }
 
-// GenerateSessionID for small easy to find ids in logs; returns format 'xca123'
+// GenerateSessionID for small easy to find ids in logs; returns format 'PGC.346'
 func GenerateSessionID() string {
 	randStr := randStringBytesMaskImprSrc(3)
 	nowtime := time.Now().Format(".999")
@@ -101,19 +106,24 @@ func (p *SessionPool) newSession() (Session, error) {
 		faultErr = fmt.Errorf("%s-%s: %s", fs, fc, st)
 		p.FaultErrors = append(p.FaultErrors, faultErr)
 	}
-	//still want to fill buffer even if we get a fault from Sabre
+	// still want to fill buffer even if we get a fault from Sabre
 	// there may sceanrios where this is legit (sabre flushes all sessions weekly,
 	// or we are over threshold... don't want to block the queue or try to keep
 	// filling it with bad sessions. Instead, accept bad sessions, and let the
-	// vleanup will clear out faulted sessions later).
+	// cleanup will clear out faulted sessions later).
 	sess := Session{
-		ID:            GenerateSessionID(),
-		Sabre:         createRS,
-		TimeStarted:   now,
-		TimeValidated: now,
-		ExpireTime:    now.Add(time.Minute * time.Duration(RandomInt(p.Expire.Min, p.Expire.Max))),
-		FaultError:    faultErr,
+		ID:              GenerateSessionID(),
+		Sabre:           createRS,
+		TimeStarted:     now,
+		TimeValidated:   now,
+		ExpireTime:      now.Add(time.Minute * time.Duration(RandomInt(p.Expire.Min, p.Expire.Max))),
+		FaultError:      faultErr,
+		PromisePutAfter: time.Duration(5 * time.Minute),
+		PromisePut:      make(chan bool),
+		// PromiseEnd:       make(chan bool),
+		PromiseSigListen: make(chan os.Signal, 1),
 	}
+	signal.Notify(sess.PromiseSigListen, p.Signals...)
 	logSession.Printf(
 		"Status='%s' created session ID=%s with Expirey='%s' for token=%s", sess.Sabre.Body.SessionCreateRS.Status,
 		sess.ID,
@@ -265,7 +275,7 @@ func generateKeepAliveID() string {
 }
 
 /*
-Deamonize initializes and populates new session pool.
+Daemonize initializes and populates new session pool.
 Accepts a waitgroup and variadic args signal handler for
 graceful shutdown sessions in a valid Sabre transaction.
 	Example:
@@ -289,10 +299,11 @@ graceful shutdown sessions in a valid Sabre transaction.
 			panic(fmt.Errorf("FATAL HTTP ERROR: %s", err))
 		}
 */
-func (p *SessionPool) Deamonize(wg *sync.WaitGroup, sig ...os.Signal) {
+func (p *SessionPool) Daemonize(wg *sync.WaitGroup) {
 	//initialize the shutdown channel and notify for signals we care about
 	p.ShutDown = make(chan os.Signal, 1)
-	signal.Notify(p.ShutDown, sig...)
+	signal.Notify(p.ShutDown, p.Signals...)
+	//	signal.Notify(p.ShutDown, os.Interrupt, syscall.SIGTERM)
 
 	err := p.Populate()
 	if err != nil {
@@ -309,34 +320,42 @@ func (p *SessionPool) Deamonize(wg *sync.WaitGroup, sig ...os.Signal) {
 }
 
 /*
-DEPRECATED
+Promise allows us to puts a session into a number of channels that guarantee it will be closed. This is used in cases where its better to keep making subsequent requests to Sabre using the same session but accross different handlers, api endpoints, or html pages. There are three promise struct fields that allow us manage the Promise: PromisePut is boolean and allows put the session back into the pool; the other two are automated with one acting as a timeout (e.g., user leaves browser window open, no more requests coming in on the api), while the other listens for shutdown signals on the pool and makes sure the channel is put back into the pool before Close() on the pool is called.; the last two are run in a goroutine; see supervisor
+These are set on new session creation:
+	sess.PromisePutAfter = time.Duration(5 * time.Minute)
+	sess.PromisePut = make(chan bool)
+	sess.PromiseSigListen = chan os.Signal
+*/
+func (sess *Session) Promise(p *SessionPool) {
+	msg := fmt.Sprintf(
+		"Promise-%s in (%.2f minutes) at '%s'",
+		sess.ID,
+		sess.PromisePutAfter.Minutes(),
+		time.Now().Add(sess.PromisePutAfter),
+	)
+	p.logReport(msg)
+	go p.supervisor(sess)
 
-func (p *SessionPool) Signal(wg *sync.WaitGroup) <-chan bool {
-	sChan := make(chan os.Signal, 1)
-	done := make(chan bool)
-	signal.Notify(sChan, os.Interrupt, syscall.SIGTERM)
-	for {
-		s := <-sChan
-		switch s {
-		case os.Interrupt, syscall.SIGTERM:
-			fmt.Println("-> Listening -> Stop")
-			//p.Close() //close sabre sessions
-			//fmt.Printf("shutdown nil? %v\n", p.ShutDown == nil)
-			//fmt.Printf("s nil? %v\n", s == nil)
-			//fmt.Printf("sChan nil? %v\n", sChan == nil)
-			//stop(p) //stop closes p.Shutdown channel
-			wg.Done()
-			<-done
-		}
+	if <-sess.PromisePut {
+		p.Sessions <- *sess
+		p.logReport("PromisePut-" + sess.ID)
 	}
 }
 
-// stop closes the session pool shutdown channel
-func stop(p *SessionPool) {
-	fmt.Println("Stop -> close(Shutdown)")
-	close(p.ShutDown)
+// supervisor is for system-level handling of a session promise.
+func (p *SessionPool) supervisor(sess *Session) {
+	select {
+	//shutdown signal means session goes back for Close()
+	case <-sess.PromiseSigListen:
+		p.Sessions <- *sess
+		p.logReport("PromisePutSignal-" + sess.ID)
+		return
+	//time elapsed put back in to pool
+	case <-time.After(sess.PromisePutAfter):
+		p.Sessions <- *sess
+		p.logReport("PromisePutAfter-" + sess.ID)
+	}
 }
-*/
 
 // Keepalive cycles through the pool periodically, running RangeKeepalive.
 // This means they are guaranteed to be valid and the pool to be correct size.
@@ -348,29 +367,40 @@ func (p *SessionPool) Keepalive() {
 	for {
 		select {
 		case <-time.After(p.CycleEvery):
-			p.NumberOfCycles++
+			//p.NumberOfCycles++ //TODO DATA-RACE
 			p.RangeKeepalive(keepAliveID)
 			logSession.Printf("KEEPALIVE run(InMin=%.2f, InHour=%.2f)", time.Since(started).Minutes(), time.Since(started).Hours())
 			p.logReport(keepAliveID + "-KeepAlive")
 		case <-p.ShutDown:
 			fmt.Println("\n-> Deamonize -> Close")
-			logSession.Println("KEEPALIVE done, total lifetime:", time.Since(started))
 			p.Close() //close sabre sessions
 			fmt.Println("Close -> close(Shutdown)")
 			close(p.ShutDown) //shutdown session pool
+			logSession.Println("KEEPALIVE done, total lifetime:", time.Since(started))
 			return
 		}
 	}
 }
 
-// Close down all sessions gracefull and valid on Sabre. It does this by iterating through all sessions in the pool and initializing a correct close session request to Sabre.
-// If sessions are not properly closed on Sabre side they remain open and invalidate the workspace for up to an hour, which means you cannot open new sessions.
+// Close down all sessions gracefull and valid on Sabre.
+
 func (p *SessionPool) Close() {
-	networkErrors := []error{}
-	faultErrors := []error{}
+	// fmt.Printf("AllowPoolSize: %v\n", p.AllowPoolSize)
+	p.NetworkErrors, p.FaultErrors = p.loopHole([]error{}, []error{})
+
+	logSession.Printf("Closing report... AllowPoolSize=%d, Busy=%d, Queuesize=%d, NetworkErrors=%v,  FaultErrors=%v", p.AllowPoolSize, (p.AllowPoolSize - len(p.Sessions)), len(p.Sessions), p.NetworkErrors, p.FaultErrors)
+
+	logSession.Println("Close SessionPool complete")
+}
+
+//loopHole iterates through all sessions in the pool and initializing a correct close session request to Sabre. If sessions are not properly closed on Sabre side they remain open and invalidate the workspace for up to an hour, which means you cannot open new sessions.
+func (p *SessionPool) loopHole(networkErrors, faultErrors []error) ([]error, []error) {
+	fmt.Printf("BEGINlen(p.Sessions): %v\n", len(p.Sessions))
 	//only close down if we have sessions
 	if len(p.Sessions) > 0 {
 		for createRS := range p.Sessions {
+			//jsut make sure noting is holding on to a promise
+			fmt.Printf("SESSION-CLOSE: %v\n", createRS.ID)
 			p.Conf.SetBinSec(createRS.Sabre)
 			closeRQ := BuildSessionCloseRequest(p.Conf)
 			closeRS, err := CallSessionClose(p.ServiceURL, closeRQ)
@@ -386,18 +416,16 @@ func (p *SessionPool) Close() {
 				faultErrors = append(faultErrors, fmt.Errorf("%s-%s: %s", fs, fc, st))
 			}
 			p.AllowPoolSize--
+			fmt.Printf("AllowPoolSize: %v\n", p.AllowPoolSize)
 			logSession.Printf("Status='%s' closed session with token='%s'", closeRS.Body.SessionCloseRS.Status, SabreTokenParse(closeRS.Header.Security.BinarySecurityToken.Value))
 
 			//only after we close the actual number of sessions allocated
 			if p.AllowPoolSize == 0 {
 				close(p.Sessions)
+			} else {
+				logSession.Println("You have problems... not all channels in the pool have been put back. You may have to kill -9 the program.")
 			}
 		}
 	}
-	p.NetworkErrors = networkErrors
-	p.FaultErrors = faultErrors
-
-	logSession.Printf("Closing report... AllowPoolSize=%d, Busy=%d, Queuesize=%d, NetworkErrors=%v,  FaultErrors=%v", p.AllowPoolSize, (p.AllowPoolSize - len(p.Sessions)), len(p.Sessions), networkErrors, faultErrors)
-
-	logSession.Println("Close SessionPool complete")
+	return networkErrors, faultErrors
 }
