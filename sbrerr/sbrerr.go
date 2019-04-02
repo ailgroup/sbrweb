@@ -16,7 +16,7 @@ const (
 	NotProcessed                        //5
 	Approved                            //6
 	Complete                            //7
-	Success                             //7
+	Success                             //8
 )
 
 const (
@@ -72,7 +72,7 @@ func StatusComplete() string {
 
 // String reverse lookup for statuses, get string value for code
 func (code SabreStatus) String() string {
-	if code < Unknown || code > Complete {
+	if code < Unknown || code > Success {
 		return "Unknown"
 	}
 	return sabreEngineStatuses[code]

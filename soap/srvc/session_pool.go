@@ -9,17 +9,24 @@ import (
 	"time"
 )
 
+var (
+	//these counts separate from session pool to prevent data races
+	NumberSessionPoolCycles = 0
+	NumberOfBadSessions     = 0
+)
+
 // Session holds sabre session data and other fields for handling in the SessionPool
 type Session struct {
 	ID               string
 	FaultError       error
+	OK               bool
 	PromisePutAfter  time.Duration  //time elapsed put back in to poo
 	PromisePut       chan bool      //put back in pool
 	PromiseSigListen chan os.Signal //end promise on signal
 	TimeValidated    time.Time
 	TimeStarted      time.Time
 	ExpireTime       time.Time
-	Sabre            SessionCreateResponse
+	BinSecTokCached  string
 }
 
 // ExpireScheme for when to expire sessions
@@ -30,9 +37,9 @@ type ExpireScheme struct {
 
 // SessionPool container for pool of sessions with specs on size, cycles, counters, errors, timers, configuration, etc...
 type SessionPool struct {
-	NumberOfCycles  int
 	ConfigPoolSize  int
-	AllowPoolSize   int
+	PoolSizeCounter int
+	refreshMod      int
 	Expire          ExpireScheme
 	CycleEvery      time.Duration
 	ServiceURL      string
@@ -45,13 +52,25 @@ type SessionPool struct {
 	Conf            *SessionConf
 }
 
+func findMod(total int) int {
+	if total <= 3 {
+		return 3
+	}
+
+	perc := (20 * total) / 100
+	if perc < 4 {
+		return 5
+	}
+	return perc
+}
+
 // NewPool initializes a new session pool of given size, for ServiceURL, with a buffered channel of
 // type Session, and with specification for cycled keepalive checks, expiration and
 // timer for an initialized time. Do not initialize sessions until ready to populate, this keeps it nil until the time we actually need it.
 func NewPool(expire ExpireScheme, cred *SessionConf, cycle time.Duration, size int, sig ...os.Signal) *SessionPool {
 	return &SessionPool{
-		ConfigPoolSize: size,
-		//Sessions:        make(chan Session, size), // doing this in Populate
+		ConfigPoolSize:  size,
+		refreshMod:      findMod(size),
 		InitializedTime: time.Now(),
 		ServiceURL:      cred.ServiceURL,
 		CycleEvery:      cycle,
@@ -88,49 +107,90 @@ func RandomInt(min, max int) int {
 
 // newSession initializes a new valid Sabre session for AAA workspace. It checks new sessions
 // can be added to workspace, checks for any faults on creation, creates a new Session struct
-// with metadata, logs it, and retursn that Session for placement into the pool.
+// with metadata, logs it, and returns that Session for placement into the pool.
 func (p *SessionPool) newSession() (Session, error) {
+	var err error
+	var ok bool = true
 	createRQ := BuildSessionCreateRequest(p.Conf)
 	createRS, err := CallSessionCreate(p.ServiceURL, createRQ)
 	if err != nil {
+		// create is special, we still want to put crappy sessions into the buffer because RangeKeepAlive will eventually heal them
+		ok = false
 		p.NetworkErrors = append(p.NetworkErrors, err)
-		// create is special, we don't want to put crappy sessions into the buffer
-		return Session{}, err
 	}
 	now := time.Now()
 	var faultErr error
 	fc := createRS.Body.Fault.Code
 	if fc != "" {
+		ok = false
 		st := createRS.Body.Fault.Detail.StackTrace
 		fs := createRS.Body.Fault.String
 		faultErr = fmt.Errorf("%s-%s: %s", fs, fc, st)
 		p.FaultErrors = append(p.FaultErrors, faultErr)
 	}
+
 	// still want to fill buffer even if we get a fault from Sabre
 	// there may sceanrios where this is legit (sabre flushes all sessions weekly,
 	// or we are over threshold... don't want to block the queue or try to keep
 	// filling it with bad sessions. Instead, accept bad sessions, and let the
 	// cleanup will clear out faulted sessions later).
 	sess := Session{
-		ID:              GenerateSessionID(),
-		Sabre:           createRS,
-		TimeStarted:     now,
-		TimeValidated:   now,
-		ExpireTime:      now.Add(time.Minute * time.Duration(RandomInt(p.Expire.Min, p.Expire.Max))),
-		FaultError:      faultErr,
-		PromisePutAfter: time.Duration(5 * time.Minute),
-		PromisePut:      make(chan bool),
-		// PromiseEnd:       make(chan bool),
+		ID:               GenerateSessionID(),
+		BinSecTokCached:  createRS.Header.Security.BinarySecurityToken.Value,
+		TimeStarted:      now,
+		TimeValidated:    now,
+		ExpireTime:       now.Add(time.Minute * time.Duration(RandomInt(p.Expire.Min, p.Expire.Max))),
+		FaultError:       faultErr,
+		OK:               ok,
+		PromisePutAfter:  time.Duration(5 * time.Minute),
+		PromisePut:       make(chan bool),
 		PromiseSigListen: make(chan os.Signal, 1),
 	}
 	signal.Notify(sess.PromiseSigListen, p.Signals...)
+	var status string
+	if createRS.Body.SessionCreateRS.Status == "" {
+		status = "NO CREATE"
+		sess.OK = false
+	} else {
+		status = createRS.Body.SessionCreateRS.Status
+	}
 	logSession.Printf(
-		"Status='%s' created session ID=%s with Expirey='%s' for token=%s", sess.Sabre.Body.SessionCreateRS.Status,
+		"ID-%s OK=%v Create Status='%s' Expirey='%s' for token=%s",
 		sess.ID,
+		sess.OK,
+		status,
 		sess.ExpireTime,
-		SabreTokenParse(sess.Sabre.Header.Security.BinarySecurityToken.Value),
+		SabreTokenParse(sess.BinSecTokCached),
 	)
-	return sess, nil
+	countBadSessions(sess.OK, sess.ID, p.ConfigPoolSize)
+	return sess, err
+}
+
+func (p *SessionPool) refreshSession(sess Session) {
+	logSession.Printf("RefreshSession ID-%s ", sess.ID)
+	//if session was created while network was down its not going to have this and won't exist on sabre side... no use closing what does not exist, just try re-creating
+	if sess.BinSecTokCached != "" {
+		logSession.Printf("BinSecToken valid for close ID-%s ", sess.ID)
+		closeRQ := BuildSessionCloseRequest(p.Conf, sess.BinSecTokCached)
+		_, err := CallSessionClose(p.ServiceURL, closeRQ)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+	s, _ := p.newSession()
+	p.Sessions <- s
+}
+
+func countBadSessions(sessOK bool, id string, configuredPoolSize int) {
+	if !sessOK {
+		if NumberOfBadSessions >= configuredPoolSize {
+			//don't count any higher
+			return
+		}
+		NumberOfBadSessions++
+	} else if NumberOfBadSessions >= 1 { //if count 1 likely THIS is last/only bad session
+		NumberOfBadSessions--
+	}
 }
 
 // Populate puts sessions into a buffered channel of SessionPool if the current
@@ -144,25 +204,27 @@ func (p *SessionPool) newSession() (Session, error) {
 // instead, accept a bad session and let the keepalive cleanup bad sessions later.
 func (p *SessionPool) Populate() error {
 	var err error
+	var ok bool
 	p.Sessions = make(chan Session, p.ConfigPoolSize) //buffered channel blocks!
-	ok := (p.AllowPoolSize == len(p.Sessions))
 	for i := 0; i < p.ConfigPoolSize; i++ {
 		sess, err := p.newSession()
 		if err != nil {
-			logSession.Printf("ERROR %v for attempt=%d, continuing...", err, i)
-			continue
+			logSession.Printf("ERROR %v for attempt=%d, adding bad session, KeepAlive will heal it...", err, i)
 		}
 		p.Sessions <- sess
-		p.AllowPoolSize++
+		p.PoolSizeCounter++
 	}
+	ok = ((p.PoolSizeCounter == len(p.Sessions)) && (p.ConfigPoolSize == len(p.Sessions)) && (len(p.NetworkErrors) != len(p.Sessions)))
 	//close blocking channel, message, return error
-	if p.AllowPoolSize == 0 {
-		err = fmt.Errorf("Cannot create valid sessions closing pool")
-		p.NetworkErrors = append(p.NetworkErrors, err)
+	if p.ConfigPoolSize == 0 {
+		err = fmt.Errorf("You have not allowed any sessions to be created, check PoolSizeCounter on SessionPool; closing SessionPool for now.")
+		// p.NetworkErrors = append(p.NetworkErrors, err)
+		//this closes it so the app can be shutdown(don't want to leave an empty buffered channel open because it will forever block). It does not ever allow the pool to be populated again... Since ConfigPoolSize is user defined this may be the best way
 		close(p.Sessions)
-		ok = (p.AllowPoolSize == len(p.Sessions))
+		//Is it really OK? it's not blocking and that is good, but ...
+		ok = false
 	}
-	logSession.Printf("Create AllowPoolSize=%d, Create OK=%v. NetworkErrors=%v, FaultErrors=%v", p.AllowPoolSize, ok, p.NetworkErrors, p.FaultErrors)
+	logSession.Printf("Create PoolSizeCounter=%d, Create OK=%v. NetworkErrors=%v, FaultErrors=%v", p.PoolSizeCounter, ok, p.NetworkErrors, p.FaultErrors)
 	return err
 }
 
@@ -181,10 +243,11 @@ func (p *SessionPool) Put(sess Session) {
 
 // logReport helper to log info about session pool
 func (p SessionPool) logReport(ctx string) {
-	open := len(p.Sessions)
-	allow := p.AllowPoolSize
-	busy := (allow - open)
-	logSession.Printf("[%s] ALLOW=%d, OPEN=%d, BUSY=%d, CYCLES=%d, OK=%v", ctx, allow, open, busy, p.NumberOfCycles, (allow == (open + busy)))
+	configured := p.ConfigPoolSize
+	count := p.PoolSizeCounter
+	open := len(p.Sessions) - NumberOfBadSessions
+	notOpen := (count - open)
+	logSession.Printf("[%s] CONFIGURED=%d, COUNTED=%d, BAD=%d, OPEN=%d, NOT_OPEN=%d, CYCLES=%d, STABLE=%v", ctx, configured, count, NumberOfBadSessions, open, notOpen, NumberSessionPoolCycles, (count == (open + notOpen)))
 }
 
 // RangeKeepalive pulls session out of the pool, checks if expire time is over current time,
@@ -201,15 +264,17 @@ func (p *SessionPool) RangeKeepalive(keepaliveID string) {
 			return
 		}
 		counter++
-		if time.Now().After(sess.ExpireTime) {
-			validateRQ := BuildSessionValidateRequest(
-				sess.Sabre.Header.MessageHeader.From.PartyID.Value,
-				sess.Sabre.Header.MessageHeader.CPAID, //don't need, send anyway
-				sess.Sabre.Header.Security.BinarySecurityToken.Value,
-				sess.Sabre.Header.MessageHeader.ConversationID,
-				sess.Sabre.Header.MessageHeader.MessageData.RefToMessageID,
-				SabreTimeNowFmt(),
-			)
+		// keeping the pool "fresh": semi-randomly pick session, close, create new, put in pool
+		if counter%p.refreshMod == 0 {
+			if time.Since(sess.TimeValidated)%3 == 0 {
+				logSession.Printf("ID-%s select for refresh...\n", sess.ID)
+				p.refreshSession(sess)
+				continue
+			}
+		}
+		//time to expire and/or try to recover from bad state
+		if time.Now().After(sess.ExpireTime) || !sess.OK {
+			validateRQ := BuildSessionValidateRequest(p.Conf, sess.BinSecTokCached)
 			validateRS, err := CallSessionValidate(p.ServiceURL, validateRQ)
 			if err != nil {
 				//if network error, log and continue. We'll update the queue item with a new expire and allow it to cycle through again. The session may still be valid and useable even if the session validate endpoint is down. Even if it is no longer valid, we don't want to dequeue the pool becuase if sabre is totally down we will end up with an empty queue that will block forever. If Sabre is down they are down, a nothing we can do, so we just go forward as usual and self-repair as Sabre services come back online.
@@ -227,39 +292,43 @@ func (p *SessionPool) RangeKeepalive(keepaliveID string) {
 				newSess, err := p.newSession()
 				if err != nil {
 					logSession.Printf("Network ERROR for ID=%s, expire and retry", newSess.ID)
-					newSess.ExpireTime = time.Now().Add(time.Second * 5)
+					newSess.ExpireTime = time.Now().Add(time.Second * 30)
 				}
-				logSession.Printf("NewSession-%s ID=%s token=%s\n",
-					keepaliveID,
+				logSession.Printf("ID-%s OK=%v NewSession-%s token=%s\n",
 					newSess.ID,
-					SabreTokenParse(sess.Sabre.Header.Security.BinarySecurityToken.Value),
+					newSess.OK,
+					keepaliveID,
+					SabreTokenParse(newSess.BinSecTokCached),
 				)
-				//kill sess::Session by GC, already pulled off queue
+				//kill sess::Session  already pulled off queue, GC will pick it up...
+				countBadSessions(newSess.OK, newSess.ID, p.ConfigPoolSize)
 				p.Sessions <- newSess
 				continue
 			}
-			//reset expire, validated time, binary token(shouldn't change but set to Sabre return)
+			//reset expire, validated time, binary token (these shouldn't change but update anyway)
 			sess.ExpireTime = time.Now().Add(time.Minute * time.Duration(RandomInt(p.Expire.Min, p.Expire.Max)))
 			sess.TimeValidated = time.Now()
-			//sess.Sabre.Header.Security.BinarySecurityToken = validateRS.Header.Security.BinarySecurityToken
+			sess.BinSecTokCached = validateRS.Header.Security.BinarySecurityToken.Value
 			logSession.Printf(
-				"UPDATED-%s-%s token=%s ID=%s AliveFor=%.2f(mins) Next ExpireIn=%.2f(mins)\n",
+				"ID-%s UPDATED-%s-%s token=%s AliveFor=%.2f(mins) Next ExpireIn=%.2f(mins)\n",
+				sess.ID,
 				keepaliveID,
 				validateRS.Header.MessageHeader.Action,
-				SabreTokenParse(sess.Sabre.Header.Security.BinarySecurityToken.Value),
-				sess.ID,
+				SabreTokenParse(sess.BinSecTokCached),
 				time.Since(sess.TimeStarted).Minutes(),
 				time.Until(sess.ExpireTime).Minutes(),
 			)
 			//put session back on queue
+			countBadSessions(sess.OK, sess.ID, p.ConfigPoolSize)
 			p.Sessions <- sess
 		} else {
 			//put session back on queue
 			p.Sessions <- sess
-			logSession.Printf("VALID-%s token=%s ID=%s ExpiresIn=%.2f(mins)\n",
-				keepaliveID,
-				SabreTokenParse(sess.Sabre.Header.Security.BinarySecurityToken.Value),
+			logSession.Printf("ID-%s OK=%v VALIDATE-%s token=%s ExpiresIn=%.2f(mins)\n",
 				sess.ID,
+				sess.OK,
+				keepaliveID,
+				SabreTokenParse(sess.BinSecTokCached),
 				time.Until(sess.ExpireTime).Minutes(),
 			)
 		}
@@ -320,8 +389,9 @@ func (p *SessionPool) Daemonize(wg *sync.WaitGroup) {
 }
 
 /*
-Promise allows us to puts a session into a number of channels that guarantee it will be closed. This is used in cases where its better to keep making subsequent requests to Sabre using the same session but accross different handlers, api endpoints, or html pages. There are three promise struct fields that allow us manage the Promise: PromisePut is boolean and allows put the session back into the pool; the other two are automated with one acting as a timeout (e.g., user leaves browser window open, no more requests coming in on the api), while the other listens for shutdown signals on the pool and makes sure the channel is put back into the pool before Close() on the pool is called.; the last two are run in a goroutine; see supervisor
-These are set on new session creation:
+Promise allows us to puts a session into a number of channels that guarantee it will be closed. This is used in cases where its better to keep making subsequent requests to Sabre using the same session but accross different handlers, api endpoints, or html pages. There are three promise struct fields that allow us manage the Promise: PromisePut is boolean and allows the user to force put the session back into the pool, effectively ending the promise; the other two are automated with one acting as a timeout (e.g., user leaves browser window open, no more requests coming in on the api), while the other listens for shutdown signals on the pool and makes sure the channel is put back into the pool before Close() on the pool is called.; the last two are run in a goroutine
+NOTE: Promise is an advanced useage feature created specficially to run HOT* (hotel display), which must use the exact session meta data AND must guarantee no other session uses that meta-data. So we essentially lock out the channel associated with that meta-data for subsequent use. The danger here is that if you do not manage the Promise well you can exhaust you session pool, blocking all other requests until the Promise times out; do not do this.
+These are set on new session creation
 	sess.PromisePutAfter = time.Duration(5 * time.Minute)
 	sess.PromisePut = make(chan bool)
 	sess.PromiseSigListen = chan os.Signal
@@ -334,17 +404,11 @@ func (sess *Session) Promise(p *SessionPool) {
 		time.Now().Add(sess.PromisePutAfter),
 	)
 	p.logReport(msg)
-	go p.supervisor(sess)
 
-	if <-sess.PromisePut {
+	select {
+	case <-sess.PromisePut:
 		p.Sessions <- *sess
 		p.logReport("PromisePut-" + sess.ID)
-	}
-}
-
-// supervisor is for system-level handling of a session promise.
-func (p *SessionPool) supervisor(sess *Session) {
-	select {
 	//shutdown signal means session goes back for Close()
 	case <-sess.PromiseSigListen:
 		p.Sessions <- *sess
@@ -363,46 +427,43 @@ func (p *SessionPool) supervisor(sess *Session) {
 func (p *SessionPool) Keepalive() {
 	started := time.Now()
 	keepAliveID := generateKeepAliveID()
-	logSession.Println("Starting KEEPALIVE...", keepAliveID)
+	logSession.Printf("Starting KEEPALIVE...%v refresh modulo: %d for total: %d", keepAliveID, p.refreshMod, len(p.Sessions))
+	p.logReport(keepAliveID + "-KeepAlive")
 	for {
 		select {
 		case <-time.After(p.CycleEvery):
-			//p.NumberOfCycles++ //TODO DATA-RACE
+			NumberSessionPoolCycles++
 			p.RangeKeepalive(keepAliveID)
 			logSession.Printf("KEEPALIVE run(InMin=%.2f, InHour=%.2f)", time.Since(started).Minutes(), time.Since(started).Hours())
 			p.logReport(keepAliveID + "-KeepAlive")
 		case <-p.ShutDown:
+			logSession.Println("KEEPALIVE shutdown, total lifetime:", time.Since(started))
 			fmt.Println("\n-> Deamonize -> Close")
 			p.Close() //close sabre sessions
 			fmt.Println("Close -> close(Shutdown)")
 			close(p.ShutDown) //shutdown session pool
-			logSession.Println("KEEPALIVE done, total lifetime:", time.Since(started))
 			return
 		}
 	}
 }
 
 // Close down all sessions gracefull and valid on Sabre.
-
 func (p *SessionPool) Close() {
-	// fmt.Printf("AllowPoolSize: %v\n", p.AllowPoolSize)
-	p.NetworkErrors, p.FaultErrors = p.loopHole([]error{}, []error{})
+	p.NetworkErrors, p.FaultErrors = p.loopOverPool([]error{}, []error{})
 
-	logSession.Printf("Closing report... AllowPoolSize=%d, Busy=%d, Queuesize=%d, NetworkErrors=%v,  FaultErrors=%v", p.AllowPoolSize, (p.AllowPoolSize - len(p.Sessions)), len(p.Sessions), p.NetworkErrors, p.FaultErrors)
+	logSession.Printf("Closing report... PoolSizeCounter=%d, Busy=%d, Queuesize=%d, NetworkErrors=%v,  FaultErrors=%v", p.PoolSizeCounter, (p.PoolSizeCounter - len(p.Sessions)), len(p.Sessions), p.NetworkErrors, p.FaultErrors)
 
 	logSession.Println("Close SessionPool complete")
 }
 
+// TODO refactor this so its easy to just close one session so we can recreate a new one...
 //loopHole iterates through all sessions in the pool and initializing a correct close session request to Sabre. If sessions are not properly closed on Sabre side they remain open and invalidate the workspace for up to an hour, which means you cannot open new sessions.
-func (p *SessionPool) loopHole(networkErrors, faultErrors []error) ([]error, []error) {
-	fmt.Printf("BEGINlen(p.Sessions): %v\n", len(p.Sessions))
+func (p *SessionPool) loopOverPool(networkErrors, faultErrors []error) ([]error, []error) {
 	//only close down if we have sessions
 	if len(p.Sessions) > 0 {
-		for createRS := range p.Sessions {
+		for sessChan := range p.Sessions {
 			//jsut make sure noting is holding on to a promise
-			fmt.Printf("SESSION-CLOSE: %v\n", createRS.ID)
-			p.Conf.SetBinSec(createRS.Sabre)
-			closeRQ := BuildSessionCloseRequest(p.Conf)
+			closeRQ := BuildSessionCloseRequest(p.Conf, sessChan.BinSecTokCached)
 			closeRS, err := CallSessionClose(p.ServiceURL, closeRQ)
 
 			if err != nil {
@@ -415,15 +476,12 @@ func (p *SessionPool) loopHole(networkErrors, faultErrors []error) ([]error, []e
 				fs := closeRS.Body.Fault.String
 				faultErrors = append(faultErrors, fmt.Errorf("%s-%s: %s", fs, fc, st))
 			}
-			p.AllowPoolSize--
-			fmt.Printf("AllowPoolSize: %v\n", p.AllowPoolSize)
-			logSession.Printf("Status='%s' closed session with token='%s'", closeRS.Body.SessionCloseRS.Status, SabreTokenParse(closeRS.Header.Security.BinarySecurityToken.Value))
+			p.PoolSizeCounter--
+			logSession.Printf("ID-%s Close Status='%s' for token='%s'", sessChan.ID, closeRS.Body.SessionCloseRS.Status, SabreTokenParse(closeRS.Header.Security.BinarySecurityToken.Value))
 
 			//only after we close the actual number of sessions allocated
-			if p.AllowPoolSize == 0 {
+			if p.PoolSizeCounter == 0 {
 				close(p.Sessions)
-			} else {
-				logSession.Println("You have problems... not all channels in the pool have been put back. You may have to kill -9 the program.")
 			}
 		}
 	}

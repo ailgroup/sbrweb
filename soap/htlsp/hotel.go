@@ -21,7 +21,6 @@ Many criterion exist that are not yet implemented:
 	* ContactNumbers,
 	* CommissionProgram,
 	* HotelAmenity,
-	* PointOfInterest,
 	* RefPoint,
 	* RoomAmenity,
 	* HotelFeaturesCriterion

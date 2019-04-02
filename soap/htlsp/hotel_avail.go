@@ -94,7 +94,7 @@ func SetHotelAvailBody(guestCount int, query *HotelSearchCriteria, arrive, depar
 }
 
 // BuildHotelAvailRequest to make hotel availability request.
-func BuildHotelAvailRequest(c *srvc.SessionConf, otaHotelAvail HotelAvailBody) HotelAvailRequest {
+func BuildHotelAvailRequest(c *srvc.SessionConf, binsec string, otaHotelAvail HotelAvailBody) HotelAvailRequest {
 	return HotelAvailRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -112,14 +112,14 @@ func BuildHotelAvailRequest(c *srvc.SessionConf, otaHotelAvail HotelAvailBody) H
 				Service:        srvc.ServiceElem{Value: "OTA_HotelAvailRQ", Type: "sabreXML"},
 				Action:         "OTA_HotelAvailLLSRQ",
 				MessageData: srvc.MessageDataElem{
-					MessageID: c.Msgid,
-					Timestamp: c.Timestr,
+					MessageID: srvc.GenerateMessageID(),
+					Timestamp: srvc.SabreTimeNowFmt(),
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: c.Binsectok,
+				BinarySecurityToken: binsec,
 			},
 		},
 		Body: otaHotelAvail,
@@ -127,7 +127,7 @@ func BuildHotelAvailRequest(c *srvc.SessionConf, otaHotelAvail HotelAvailBody) H
 }
 
 // Paginate constructs avail body in order to request more availability.
-func HOTStar(c *srvc.SessionConf) HotelAvailRequest {
+func HOTStar(c *srvc.SessionConf, binsec string) HotelAvailRequest {
 	return HotelAvailRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -145,14 +145,14 @@ func HOTStar(c *srvc.SessionConf) HotelAvailRequest {
 				Service:        srvc.ServiceElem{Value: "OTA_HotelAvailRQ", Type: "sabreXML"},
 				Action:         "OTA_HotelAvailLLSRQ",
 				MessageData: srvc.MessageDataElem{
-					MessageID: c.Msgid,
-					Timestamp: c.Timestr,
+					MessageID: srvc.GenerateMessageID(),
+					Timestamp: srvc.SabreTimeNowFmt(),
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: c.Binsectok,
+				BinarySecurityToken: binsec,
 			},
 		},
 		Body: setPaginateAvailBody(),

@@ -11,12 +11,9 @@ var (
 )
 
 func TestBuildGetReservationMarshal(t *testing.T) {
-	req := BuildGetReservationRequest(sampleConf, sampleLocator)
-	b, err := xml.Marshal(req)
+	req := BuildGetReservationRequest(sampleConf, samplebinsectoken, sampleLocator)
+	_, err := xml.Marshal(req)
 	if err != nil {
 		t.Error("Error marshaling pnr read request", err)
-	}
-	if string(b) != string(sampleGetReservationRQ) {
-		t.Errorf("Expected marshal get reservation request \n given: %s \n built: %s", string(sampleGetReservationRQ), string(b))
 	}
 }

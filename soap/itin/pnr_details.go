@@ -270,7 +270,7 @@ func SetPNRDetailBody(phone string, person PersonName) PassengerDetailBody {
 }
 
 // BuildPNRDetailsRequest passenger details for booking
-func BuildPNRDetailsRequest(c *srvc.SessionConf, body PassengerDetailBody) PNRDetailsRequest {
+func BuildPNRDetailsRequest(c *srvc.SessionConf, binsec string, body PassengerDetailBody) PNRDetailsRequest {
 	return PNRDetailsRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -288,14 +288,14 @@ func BuildPNRDetailsRequest(c *srvc.SessionConf, body PassengerDetailBody) PNRDe
 				Service:        srvc.ServiceElem{Value: "PassengerDetailsRQ", Type: "sabreXML"},
 				Action:         "PassengerDetailsRQ",
 				MessageData: srvc.MessageDataElem{
-					MessageID: c.Msgid,
-					Timestamp: c.Timestr,
+					MessageID: srvc.GenerateMessageID(),
+					Timestamp: srvc.SabreTimeNowFmt(),
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: c.Binsectok,
+				BinarySecurityToken: binsec,
 			},
 		},
 		Body: body,

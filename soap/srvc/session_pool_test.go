@@ -18,7 +18,7 @@ var (
 	cycleEvery = time.Minute * 3
 )
 
-func TestSessionPoolEmpty(t *testing.T) {
+func TestSessionPoolNewCounters(t *testing.T) {
 	poolSize := 3
 	sampleSessionConf.ServiceURL = serverCreateRQ.URL
 	p := NewPool(sampleExpireScheme, sampleSessionConf, cycleEvery, poolSize)
@@ -26,44 +26,77 @@ func TestSessionPoolEmpty(t *testing.T) {
 		t.Errorf("SessionPool.ServiceURL expect: %s, got: %s", serverCreateRQ.URL, p.ServiceURL)
 	}
 	if p.ConfigPoolSize != poolSize {
-		t.Errorf("ConfigPoolSize expect: %d, got: %d", poolSize, p.ConfigPoolSize)
+		t.Errorf("ConfigPoolSize should be same as user defined value. expect: %d, got: %d", poolSize, p.ConfigPoolSize)
 	}
-	if p.ConfigPoolSize == p.AllowPoolSize {
-		t.Errorf("ConfigPoolSize: %d should not equal AllowPoolSize: %d", p.ConfigPoolSize, p.AllowPoolSize)
+	if p.ConfigPoolSize == p.PoolSizeCounter {
+		t.Errorf("ConfigPoolSize: %d should equal PoolSizeCounter: %d", p.ConfigPoolSize, p.PoolSizeCounter)
 	}
-	if len(p.Sessions) != 0 {
-		t.Errorf("Sessions expect: %d, got: %d", 0, len(p.Sessions))
+	if len(p.Sessions) == poolSize {
+		t.Errorf("Sessions should not equal user defined value on NewPool(). expect: %d, got: %d", 0, len(p.Sessions))
 	}
-	if (p.AllowPoolSize - len(p.Sessions)) != 0 {
-		t.Errorf("Open Sessions expect: %d, got: %d", 0, (p.AllowPoolSize - len(p.Sessions)))
+	if (p.PoolSizeCounter - len(p.Sessions)) != 0 {
+		t.Errorf("Open Sessions expect: %d, got: %d", 0, (p.PoolSizeCounter - len(p.Sessions)))
 	}
 }
 
-// NOTE: this helps test case where we could not get any valid sessions, so we close the buffered channel to prevent indefinite blocking.
+func TestSessionPoolZeroPoolSize(t *testing.T) {
+	sampleSessionConf.ServiceURL = serverCreateRQ.URL
+	p := NewPool(sampleExpireScheme, sampleSessionConf, cycleEvery, 0)
+	err := p.Populate()
+	if err == nil {
+		t.Error("0 ConfigPoolSize should return error:", err)
+	}
+	if len(p.Sessions) != 0 {
+		t.Error("0 ConfigPoolSize should have 0 Sessions")
+	}
+	if p.PoolSizeCounter != 0 {
+		t.Error("0 ConfigPoolSize should have 0 PoolSizeCounter")
+	}
+	sess := p.Pick()
+	if sess.ID != "" {
+		t.Errorf("Pick session from closed queue should not have id; expect: %s, got: %s", "", sess.ID)
+	}
+}
+
 func TestSessionPoolPopluateServerDown(t *testing.T) {
 	poolSize := 3
 	sampleSessionConf.ServiceURL = serverDown.URL
 	p := NewPool(sampleExpireScheme, sampleSessionConf, cycleEvery, poolSize)
-	_ = p.Populate()
-
-	if len(p.Sessions) != 0 {
+	err := p.Populate()
+	if err != nil {
+		t.Error("Bad Populate should not return error:", err)
+	}
+	if len(p.NetworkErrors) == 0 {
+		t.Error("Bad Populate should have network errors:", p.NetworkErrors)
+	}
+	if len(p.Sessions) != poolSize {
 		t.Errorf("Expect %d sessions when server down, got (len.Sessions)=%d", 0, len(p.Sessions))
+	}
+	if NumberOfBadSessions != poolSize {
+		t.Errorf("NumberOfBadSessions expect: %d, got: %d", 0, NumberOfBadSessions)
 	}
 	if len(p.NetworkErrors) <= 0 {
 		t.Errorf("Expect NetworkErrors, got: %v", p.NetworkErrors)
 	}
-	if p.AllowPoolSize != 0 {
-		t.Error("AllowPoolSize should be zero with all failed sessions", p.AllowPoolSize)
+	if p.PoolSizeCounter != poolSize {
+		t.Error("PoolSizeCounter should == poolSize since we expect them to heal:", p.PoolSizeCounter)
 	}
-	if len(p.Sessions) != 0 {
-		t.Error("QUEUE size should be zero since it has been closed due to block safety", len(p.Sessions))
+	if len(p.Sessions) != poolSize {
+		t.Error("SessionPool size should == poolSize since we expect them to heal:", len(p.Sessions))
 	}
+
 	sess := p.Pick()
-	if sess.ID != "" {
-		t.Errorf("Pick session from closed queue should have id==0; expect: %s, got: %s", "", sess.ID)
+	if (p.PoolSizeCounter - len(p.Sessions)) != 1 {
+		t.Errorf("Sessions should be missing 1. expect: %d, got: %d", 1, (p.PoolSizeCounter - len(p.Sessions)))
 	}
-	if (p.AllowPoolSize - len(p.Sessions)) != 0 {
-		t.Errorf("Pick session from closed queue should NotBusy == -1; expect: %d, got: %d", 0, (p.AllowPoolSize - len(p.Sessions)))
+	if sess.ID == "" {
+		t.Errorf("Pick bad session from bad queue should still have id; expect: %s, got: %s", sess.ID, "")
+	}
+	if sess.OK {
+		t.Error("Session should not be OK when server not available")
+	}
+	if sess.BinSecTokCached != "" {
+		t.Errorf("BinSecTokCached should be: %s for bad session, instead: %s", "", sess.BinSecTokCached)
 	}
 }
 
@@ -71,20 +104,22 @@ func TestSessionPoolPopluateBadBody(t *testing.T) {
 	poolSize := 2
 	sampleSessionConf.ServiceURL = serverBadBody.URL
 	p := NewPool(sampleExpireScheme, sampleSessionConf, cycleEvery, poolSize)
-	p.Populate()
-	if len(p.NetworkErrors) <= 0 {
-		t.Fail()
+	err := p.Populate()
+	if err != nil {
+		t.Error("Bad Populate should not return error:", err)
 	}
-	if p.AllowPoolSize != 0 {
-		t.Error("AllowPoolSize should be zero with all failed sessions")
+	if len(p.NetworkErrors) == 0 {
+		t.Error("Bad Populate should have network errors:", p.NetworkErrors)
+	}
+	if p.PoolSizeCounter != poolSize {
+		t.Error("PoolSizeCounter should == poolSize since we expect them to heal")
 	}
 }
 func TestSessionPoolCloseOnDownServer(t *testing.T) {
 	poolSize := 2
-	//must be a good server or no sessions and buffer blocks...
 	sampleSessionConf.ServiceURL = serverCreateRQ.URL
 	p := NewPool(sampleExpireScheme, sampleSessionConf, cycleEvery, poolSize)
-	p.Populate()
+	_ = p.Populate()
 	//reroute to unavailable server
 	p.ServiceURL = serverDown.URL
 	p.Close()
@@ -99,14 +134,14 @@ func TestSessionPoolPopluateUnauth(t *testing.T) {
 	p := NewPool(sampleExpireScheme, sampleSessionConf, cycleEvery, poolSize)
 	_ = p.Populate()
 	if len(p.NetworkErrors) != 0 {
-		t.Fail()
+		t.Error("Network errors should be 0:", p.NetworkErrors)
 	}
-	if p.AllowPoolSize != poolSize {
-		t.Error("AllowPoolSize should be more than zero even with SOAP Fault")
+	if p.PoolSizeCounter != poolSize {
+		t.Error("PoolSizeCounter should be more than zero even with SOAP Fault")
 	}
 	sess := p.Pick()
-	if sess.Sabre.Body.Fault.Detail.StackTrace != sampleSessionNoAuthStackTrace {
-		t.Errorf("Session Fault Invalid token expect: %s, got: %s", sampleSessionNoAuthStackTrace, sess.Sabre.Body.Fault.String)
+	if sess.OK {
+		t.Error("Session should not be OK when server not available")
 	}
 	if sess.FaultError.Error() != sampleSessionPoolMsgNoAuth {
 		t.Errorf("Session Soap Error should be nasty string. expect: %s, got: %s", sampleSessionPoolMsgNoAuth, sess.FaultError)
@@ -122,19 +157,22 @@ func TestSessionPoolCloseInvalidToken(t *testing.T) {
 	p := NewPool(sampleExpireScheme, sampleSessionConf, cycleEvery, poolSize)
 	_ = p.Populate()
 	if len(p.NetworkErrors) != 0 {
-		t.Fail()
+		t.Error("Network errors should be 0:", p.NetworkErrors)
 	}
-	if p.AllowPoolSize != poolSize {
-		t.Error("AllowPoolSize should be more than zero even with SOAP Fault")
+	if p.PoolSizeCounter != poolSize {
+		t.Error("PoolSizeCounter should be more than zero even with SOAP Fault")
 	}
 	//reroute serivce to server with close invalid response...
 	p.ServiceURL = serverCloseRSInvalid.URL
 	p.Close()
-	if len(p.NetworkErrors) != 0 {
-		t.Error("Network errors should not exist")
+	if len(p.FaultErrors) != poolSize {
+		t.Error("FaultErrors should exist:", p.FaultErrors)
 	}
-	if p.AllowPoolSize != 0 {
-		t.Error("AllowPoolSize should be more than zero even with SOAP Fault")
+	if len(p.NetworkErrors) != 0 {
+		t.Error("NetworkErrors should not exist")
+	}
+	if p.PoolSizeCounter != 0 {
+		t.Error("PoolSizeCounter should be more than zero even with SOAP Fault")
 	}
 	if len(p.FaultErrors) != poolSize {
 		t.Error("SessionPool fault errors shoudl exist")
@@ -146,8 +184,8 @@ func TestSessionPoolPopluatePickPut(t *testing.T) {
 	sampleSessionConf.ServiceURL = serverCreateRQ.URL
 	p := NewPool(sampleExpireScheme, sampleSessionConf, cycleEvery, poolSize)
 	_ = p.Populate()
-	if poolSize != p.AllowPoolSize {
-		t.Errorf("given poolSize: %d should equal AllowPoolSize on Populate: %d", poolSize, p.AllowPoolSize)
+	if poolSize != p.PoolSizeCounter {
+		t.Errorf("given poolSize: %d should equal PoolSizeCounter on Populate: %d", poolSize, p.PoolSizeCounter)
 	}
 	if len(p.Sessions) != poolSize {
 		t.Errorf("Sessions expect: %d, got: %d", poolSize, len(p.Sessions))
@@ -160,23 +198,23 @@ func TestSessionPoolPopluatePickPut(t *testing.T) {
 		if len(p.Sessions) != expectOpen {
 			t.Errorf("Open Sessions after Pick() expect: %d, got: %d", expectOpen, len(p.Sessions))
 		}
-		if p.AllowPoolSize != poolSize {
-			t.Errorf("AoowPoolSize after Pick() expect: %d, got: %d", poolSize, p.AllowPoolSize)
+		if p.PoolSizeCounter != poolSize {
+			t.Errorf("AoowPoolSize after Pick() expect: %d, got: %d", poolSize, p.PoolSizeCounter)
 		}
-		if (p.AllowPoolSize - len(p.Sessions)) != i {
-			t.Errorf("Busy Sessions after Pick() expect: %d, got: %d", i, (p.AllowPoolSize - len(p.Sessions)))
+		if (p.PoolSizeCounter - len(p.Sessions)) != i {
+			t.Errorf("Busy Sessions after Pick() expect: %d, got: %d", i, (p.PoolSizeCounter - len(p.Sessions)))
 		}
 	}
 	for num, sess := range sessions {
 		if len(p.Sessions) != num {
 			t.Errorf("Open Sessions for Put(sess) expect: %d, got: %d", num, len(p.Sessions))
 		}
-		if p.AllowPoolSize != poolSize {
-			t.Errorf("AllowPoolSize for Put(sess) expect: %d, got: %d", poolSize, p.AllowPoolSize)
+		if p.PoolSizeCounter != poolSize {
+			t.Errorf("PoolSizeCounter for Put(sess) expect: %d, got: %d", poolSize, p.PoolSizeCounter)
 		}
 		expectBusy := len(sessions) - num
-		if (p.AllowPoolSize - len(p.Sessions)) != expectBusy {
-			t.Errorf("Busy Sessions for Put(sess) expect: %d, got: %d", expectBusy, (p.AllowPoolSize - len(p.Sessions)))
+		if (p.PoolSizeCounter - len(p.Sessions)) != expectBusy {
+			t.Errorf("Busy Sessions for Put(sess) expect: %d, got: %d", expectBusy, (p.PoolSizeCounter - len(p.Sessions)))
 		}
 		p.Put(sess)
 	}
@@ -193,10 +231,10 @@ func TestSessionPoolBlocking(t *testing.T) {
 		sessions = append(sessions, p.Pick())
 		expectOpen := (poolSize - i)
 		if len(p.Sessions) != expectOpen {
-			t.Errorf("Open Sessions after Pick() expect: %d, got: %d", expectOpen, (p.AllowPoolSize - len(p.Sessions)))
+			t.Errorf("Open Sessions after Pick() expect: %d, got: %d", expectOpen, (p.PoolSizeCounter - len(p.Sessions)))
 		}
-		if p.AllowPoolSize != poolSize {
-			t.Errorf("AllowPoolSize after Put(sess) expect: %d, got: %d", poolSize, p.AllowPoolSize)
+		if p.PoolSizeCounter != poolSize {
+			t.Errorf("PoolSizeCounter after Put(sess) expect: %d, got: %d", poolSize, p.PoolSizeCounter)
 		}
 	}
 
@@ -212,8 +250,8 @@ func TestSessionPoolBlocking(t *testing.T) {
 	if len(p.Sessions) != 0 {
 		t.Errorf("Open Sessions after all Pick() and we have blocking requests expect: %d, got: %d", 0, len(p.Sessions))
 	}
-	if (p.AllowPoolSize - len(p.Sessions)) != poolSize {
-		t.Errorf("Busy Sessions after all Pick() and we have blocking requests expect: %d, got: %d", poolSize, (p.AllowPoolSize - len(p.Sessions)))
+	if (p.PoolSizeCounter - len(p.Sessions)) != poolSize {
+		t.Errorf("Busy Sessions after all Pick() and we have blocking requests expect: %d, got: %d", poolSize, (p.PoolSizeCounter - len(p.Sessions)))
 	}
 
 	//put back busy sessions with requests waiting
@@ -230,11 +268,11 @@ func TestSessionPoolBlocking(t *testing.T) {
 		t.Errorf("Open Sessions after busy Put() back and blocking requests handled: %d, got: %d", 2, len(p.Sessions))
 	}
 	// expect all to still be busy
-	if (p.AllowPoolSize - len(p.Sessions)) != blockingSize {
-		t.Errorf("Busy Sessions after busy Put() back and blocking requests handled: %d, got: %d", blockingSize, (p.AllowPoolSize - len(p.Sessions)))
+	if (p.PoolSizeCounter - len(p.Sessions)) != blockingSize {
+		t.Errorf("Busy Sessions after busy Put() back and blocking requests handled: %d, got: %d", blockingSize, (p.PoolSizeCounter - len(p.Sessions)))
 	}
-	if p.AllowPoolSize != poolSize {
-		t.Errorf("AllowPoolSize after handling blocked requests expect: %d, got: %d", poolSize, p.AllowPoolSize)
+	if p.PoolSizeCounter != poolSize {
+		t.Errorf("PoolSizeCounter after handling blocked requests expect: %d, got: %d", poolSize, p.PoolSizeCounter)
 	}
 	if len(bg) != blockingSize {
 		t.Errorf("Waiting requests have now been handled, should be same number as blockingSize expect: %d, got: %d", blockingSize, len(bg))
@@ -248,36 +286,64 @@ func TestSessionPoolBlocking(t *testing.T) {
 		t.Errorf("Open Sessions after all requests handled: %d, got: %d", poolSize, len(p.Sessions))
 	}
 	// expect all to still be busy
-	if (p.AllowPoolSize - len(p.Sessions)) != 0 {
-		t.Errorf("Busy Sessions after all requests handled: %d, got: %d", 0, (p.AllowPoolSize - len(p.Sessions)))
+	if (p.PoolSizeCounter - len(p.Sessions)) != 0 {
+		t.Errorf("Busy Sessions after all requests handled: %d, got: %d", 0, (p.PoolSizeCounter - len(p.Sessions)))
 	}
-	if p.AllowPoolSize != poolSize {
-		t.Errorf("AllowPoolSize after all requests handled: %d, got: %d", poolSize, p.AllowPoolSize)
+	if p.PoolSizeCounter != poolSize {
+		t.Errorf("PoolSizeCounter after all requests handled: %d, got: %d", poolSize, p.PoolSizeCounter)
 	}
 }
 
 func TestSessionPoolSafeBlocking(t *testing.T) {
 	poolSize := 3
 	p := NewPool(sampleExpireScheme, sampleSessionConf, cycleEvery, poolSize)
-	if p.ConfigPoolSize == p.AllowPoolSize {
-		t.Errorf("ConfigPoolSize: %d not equal AllowPoolSize: %d", p.ConfigPoolSize, p.AllowPoolSize)
+	if p.ConfigPoolSize == p.PoolSizeCounter {
+		t.Errorf("ConfigPoolSize: %d not equal PoolSizeCounter: %d", p.ConfigPoolSize, p.PoolSizeCounter)
 	}
 
 	p.ServiceURL = serverDown.URL
 	err := p.Populate()
-	if p.ConfigPoolSize == p.AllowPoolSize {
-		t.Errorf("ConfigPoolSize: %d not equal AllowPoolSize AFTER server goes down: %d", p.ConfigPoolSize, p.AllowPoolSize)
+	if err != nil {
+		t.Error("Populate pool with sessions from down server should not return error", err)
 	}
-	if err == nil {
-		t.Error("Should have returned error on forever-blocking session pool", err)
+	if len(p.NetworkErrors) == 0 {
+		t.Error("Network errors should exist:", p.NetworkErrors)
 	}
+	if p.ConfigPoolSize != p.PoolSizeCounter {
+		t.Errorf("ConfigPoolSize: %d not equal PoolSizeCounter: %d AFTER server goes down", p.ConfigPoolSize, p.PoolSizeCounter)
+	}
+	if NumberOfBadSessions != poolSize {
+		t.Errorf("NumberOfBadSessions expect: %d, got: %d", 0, NumberOfBadSessions)
+	}
+
 	sess := p.Pick()
-	//if no safe blocking this will never be reached
+	if NumberOfBadSessions != poolSize {
+		t.Errorf("NumberOfBadSessions expect: %d, got: %d", 0, NumberOfBadSessions)
+	}
+	// if no safe blocking this will never be reached
 	// fact that you get here is a success for safe blocking!
 	s := Session{}
-	if sess != s {
-		t.Error("Should get to this code and return a empty session", sess)
+	if sess == s {
+		t.Error("Bad Session should not be empty:", sess)
 	}
-	// p.Put(sess) --> this will explode: SEND ON CLOSED CHANNEL
-	//fmt.Printf("%+v\n", p.Sessions)
+	if (p.PoolSizeCounter - len(p.Sessions)) != 1 {
+		t.Errorf("Sessions should be missing 1. expect: %d, got: %d", 1, (p.PoolSizeCounter - len(p.Sessions)))
+	}
+	if sess.ID == "" {
+		t.Errorf("Pick bad session from bad queue should still have id; expect: %s, got: %s", sess.ID, "")
+	}
+	if sess.OK {
+		t.Error("Session should not be OK when server not available")
+	}
+	if sess.BinSecTokCached != "" {
+		t.Errorf("BinSecTokCached should be: %s for bad session, instead: %s", "", sess.BinSecTokCached)
+	}
+
+	p.Put(sess)
+	if (p.PoolSizeCounter - len(p.Sessions)) != 0 {
+		t.Errorf("PoolSizeCounter and Sessions should be same. expect: %d, got: %d", 0, (p.PoolSizeCounter - len(p.Sessions)))
+	}
+	if NumberOfBadSessions != poolSize {
+		t.Errorf("NumberOfBadSessions expect: %d, got: %d", 0, NumberOfBadSessions)
+	}
 }

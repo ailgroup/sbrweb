@@ -99,12 +99,12 @@ var (
 	samplePhoneRes    = "123-456-7890-H.1.1"
 	samplePhoneReq    = "123-456-7890"
 	sampleConf        = &srvc.SessionConf{
-		From:      samplefrom,
-		PCC:       samplepcc,
-		Convid:    sampleconvid,
-		Msgid:     samplemid,
-		Binsectok: samplebinsectoken,
-		Timestr:   sampletime,
+		From:   samplefrom,
+		PCC:    samplepcc,
+		Convid: sampleconvid,
+		// Msgid:     samplemid,
+		// Binsectok: samplebinsectoken,
+		// Timestr:   sampletime,
 	}
 )
 
