@@ -21,7 +21,6 @@ Many criterion exist that are not yet implemented:
 	* ContactNumbers,
 	* CommissionProgram,
 	* HotelAmenity,
-	* PointOfInterest,
 	* RefPoint,
 	* RoomAmenity,
 	* HotelFeaturesCriterion
@@ -40,6 +39,7 @@ import (
 	"unicode"
 
 	"github.com/ailgroup/sbrweb/sbrerr"
+	"github.com/ailgroup/sbrweb/soap/srvc"
 )
 
 const (
@@ -77,12 +77,10 @@ const (
 	RrateMetaRqsKey      = "rqs"  //next
 
 	returnHostCommand = true
-	ESA               = "\u0087" //UNICODE: End of Selected Area
-	CrossLorraine     = "\u2628" //UNICODE Cross of Lorraine
 )
 
 var (
-	hostCommandReplacer = strings.NewReplacer("\\", "", "/", "", ESA, "")
+	hostCommandReplacer = strings.NewReplacer("\\", "", "/", "", srvc.ESA, "")
 	ratesMetaMatch      = regexp.MustCompile(`^\[.*\]$`)
 )
 
@@ -116,6 +114,8 @@ func (s SystemResults) Translate() string {
 		return fmt.Sprintf("%s=%s", "Check Date Parameters", s.Message)
 	case strings.Contains(clean, "noavail"):
 		return fmt.Sprintf("%s=%s", "No Hotel Availability", s.Message)
+	case strings.Contains(clean, "nomoredata"):
+		return fmt.Sprintf("%s=%s", "No More Hotel Availability Data", s.Message)
 	default:
 		return fmt.Sprintf("%s=%s", s.Message, "No Translation")
 	}
@@ -260,8 +260,13 @@ type ParsedRoomMeta struct {
 
 // HotelSearchCriteria top level element for criterion
 type HotelSearchCriteria struct {
-	XMLName   xml.Name `xml:"HotelSearchCriteria"`
-	Criterion Criterion
+	XMLName       xml.Name `xml:"HotelSearchCriteria"`
+	NumProperties int      `xml:"NumProperties,attr,omitempty"`
+	Criterion     Criterion
+}
+
+func (h *HotelSearchCriteria) SetNumberOfHotels(n int) {
+	h.NumProperties = n
 }
 
 // QuerySearchParams is a typed function to support optional query params on creation of new search criterion
@@ -427,12 +432,10 @@ type RatePlanCandidates struct {
 }
 
 // SetRatePlans helper to create a slice of rate plans to append to an Avail Segement for search or description services.
-func SetRatePlans(ratePlans []RatePlan) *RatePlanCandidates {
-	rpc := &RatePlanCandidates{}
+func (rpc *RatePlanCandidates) SetRatePlans(ratePlans []RatePlan) {
 	for _, plan := range ratePlans {
 		rpc.RatePlans = append(rpc.RatePlans, &plan)
 	}
-	return rpc
 }
 
 // SetContractNegotiatedRates helper for setting the negotiated rates on availability requests.
@@ -444,18 +447,30 @@ func (a *AvailRequestSegment) SetContractNegotiatedRates(rateCodes []string) {
 	a.RatePlanCandidates = rpc
 }
 
+// SetContractNegotiatedRates helper for setting the negotiated rates on availability requests.
+// RC-G,S,C "\u2628" ALL
+func (rpc *RatePlanCandidates) SetContractNegotiatedRates(rateCodes []string) {
+	for _, code := range rateCodes {
+		rpc.ContractNegotiatedRateCodes = append(rpc.ContractNegotiatedRateCodes, &ContractNegotiatedRateCode{code})
+	}
+}
+
 // SetRatePlanCodes convencience for setting the negotiated rates on availability requests.
-func (a *AvailRequestSegment) SetRatePlanCodes(rateCodes []string) {
-	rpc := &RatePlanCandidates{}
+func (rpc *RatePlanCandidates) SetRatePlanCodes(rateCodes []string) {
 	for _, code := range rateCodes {
 		rpc.RatePlanCodes = append(rpc.RatePlanCodes, &RatePlanCode{code})
 	}
-	a.RatePlanCandidates = rpc
+}
+
+type AdditionalAvail struct {
+	XMLName xml.Name `xml:"AdditionalAvail"`
+	Ind     bool     `xml:"Ind,attr"`
 }
 
 // AvailAvailRequestSegment holds basic hotel availability params: customer ids, guest count, hotel search criteria and arrival departure. nil pointers ignored if empty
 type AvailRequestSegment struct {
 	XMLName             xml.Name `xml:"AvailRequestSegment"`
+	AdditionalAvail     *AdditionalAvail
 	Customer            *Customer
 	GuestCounts         *GuestCounts
 	HotelSearchCriteria *HotelSearchCriteria
@@ -631,9 +646,9 @@ type BasicPropertyInfo struct {
 	RoomRateAvail RoomRate //hotel avail
 }
 type Charge struct {
-	//XMLName     xml.Name `xml:"Charges"`
-	Crib        string `xml:"Crib,attr"`
-	ExtraPerson string `xml:"ExtraPerson,attr"`
+	XMLName     xml.Name `xml:"Charges"`
+	Crib        string   `xml:"Crib,attr"`
+	ExtraPerson string   `xml:"ExtraPerson,attr"`
 }
 
 type AdditionalGuestAmount struct {

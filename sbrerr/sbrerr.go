@@ -16,6 +16,7 @@ const (
 	NotProcessed                        //5
 	Approved                            //6
 	Complete                            //7
+	Success                             //8
 )
 
 const (
@@ -28,7 +29,9 @@ const (
 	ErrCallHotelRes        = "Error CallHotelRes::OTA_HotelResLLSRQ"
 	ErrCallPNRDetails      = "Error CallPNRDetails::PassengerDetailsRQ"
 	ErrCallEndTransaction  = "Error CallEndTransaction::EndTransactionLLSRQ"
+	ErrCallProfileToPNR    = "Error CallProfileToPNR::EPS_ProfileToPNRRQ"
 	ErrCallGetReservation  = "Error CallGetReservation::GetReservationRQ"
+	ErrCallMiscSegment     = "Error CallMiscSegment::MiscSegmentSellLLSRQ"
 )
 
 var (
@@ -47,6 +50,7 @@ var (
 		"NotProcessed",
 		"Approved",
 		"Complete",
+		"Success",
 	}
 )
 
@@ -68,7 +72,7 @@ func StatusComplete() string {
 
 // String reverse lookup for statuses, get string value for code
 func (code SabreStatus) String() string {
-	if code < Unknown || code > Complete {
+	if code < Unknown || code > Success {
 		return "Unknown"
 	}
 	return sabreEngineStatuses[code]
@@ -80,6 +84,8 @@ func SabreEngineStatusCode(input string) SabreStatus {
 		return Unknown
 	}
 	switch input {
+	case Success.String():
+		return Success
 	case NotProcessed.String():
 		return NotProcessed
 	case Approved.String():

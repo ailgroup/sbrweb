@@ -84,7 +84,7 @@ func SetHotelPropDescBody(guestCount int, query *HotelSearchCriteria, arrive, de
 }
 
 // BuildHotelPropDescRequest to make hotel property description request, which will have rate availability information on the response.
-func BuildHotelPropDescRequest(c *srvc.SessionConf, propDesc HotelPropDescBody) HotelPropDescRequest {
+func BuildHotelPropDescRequest(c *srvc.SessionConf, binsec string, propDesc HotelPropDescBody) HotelPropDescRequest {
 	return HotelPropDescRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -102,14 +102,14 @@ func BuildHotelPropDescRequest(c *srvc.SessionConf, propDesc HotelPropDescBody) 
 				Service:        srvc.ServiceElem{Value: "HotelPropertyDescription", Type: "sabreXML"},
 				Action:         "HotelPropertyDescriptionLLSRQ",
 				MessageData: srvc.MessageDataElem{
-					MessageID: c.Msgid,
-					Timestamp: c.Timestr,
+					MessageID: srvc.GenerateMessageID(),
+					Timestamp: srvc.SabreTimeNowFmt(),
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: c.Binsectok,
+				BinarySecurityToken: binsec,
 			},
 		},
 		Body: propDesc,
@@ -169,6 +169,7 @@ func (r *HotelPropDescResponse) SetRoomMetaData(guest int, arrive, depart, hotel
 func CallHotelPropDesc(serviceURL string, req HotelPropDescRequest) (HotelPropDescResponse, error) {
 	propResp := HotelPropDescResponse{}
 	byteReq, _ := xml.Marshal(req)
+	srvc.LogSoap.Printf("CallHotelPropDesc-REQUEST %s\n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
@@ -179,7 +180,8 @@ func CallHotelPropDesc(serviceURL string, req HotelPropDescRequest) (HotelPropDe
 	// parse payload body into []byte buffer from net Response.ReadCloser
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
-	io.Copy(bodyBuffer, resp.Body)
+	_, _ = io.Copy(bodyBuffer, resp.Body)
+	srvc.LogSoap.Printf("CallHotelPropDesc-RESPONSE %s\n\n", bodyBuffer)
 	resp.Body.Close()
 
 	//marshal bytes sabre response body into availResp response struct

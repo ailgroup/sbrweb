@@ -10,19 +10,24 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"regexp"
 	"time"
 
 	"github.com/ailgroup/sbrweb/sbrerr"
 )
 
 const (
-	BaseEBNameSpace       = "http://www.ebxml.org/namespaces/messageHeader"
-	BaseNS                = "http://schemas.xmlsoap.org/soap/envelope/"
-	BaseWebServicesNS     = "http://webservices.sabre.com/sabreXML/2011/10"
-	BaseWsse              = "http://schemas.xmlsoap.org/ws/2002/12/secext"
-	BaseWsuNameSpace      = "http://schemas.xmlsoap.org/ws/2002/12/utility"
-	BaseXSDNameSpace      = "http://www.w3.org/2001/XMLSchema"
-	BaseXSINamespace      = "http://www.w3.org/2001/XMLSchema-instance"
+	BaseEBNameSpace   = "http://www.ebxml.org/namespaces/messageHeader"
+	BaseNS            = "http://schemas.xmlsoap.org/soap/envelope/"
+	BaseWebServicesNS = "http://webservices.sabre.com/sabreXML/2011/10"
+	BaseWsse          = "http://schemas.xmlsoap.org/ws/2002/12/secext"
+	BaseWsuNameSpace  = "http://schemas.xmlsoap.org/ws/2002/12/utility"
+	BaseXSDNameSpace  = "http://www.w3.org/2001/XMLSchema"
+	BaseXSINamespace  = "http://www.w3.org/2001/XMLSchema-instance"
+	BaseXINamespace   = "http://www.sabre.com/eps/schemas"
+	BaseTPFCSchema    = "http://webservices.sabre.com/wsdl/tpfc"
+	BaseProfileSchema = "http://www.sabre.com/eps/schemas \\schemas\\Sabre_OTA_ProfileCreateRQ.xsd"
+	//BaseMisSegSchema      = "http://webservices.sabre.com/wsdl/tpfc/MiscSegmentSellLLS2.0.0RQ.xsd"
 	PartyIDTypeURN        = "urn:x12.org:IO5:01"
 	SabreEBVersion        = "2.0.0"
 	SabreMustUnderstand   = "1"
@@ -38,12 +43,16 @@ const (
 	letterIdxMask      = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
 	letterIdxMax       = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 	sabreDefaultDomain = "DEFAULT"
+
+	ESA           = "\u0087" //UNICODE End of Selected Area: §
+	CrossLorraine = "\u2628" //UNICODE Cross of Lorraine: ¥
+	ChangeKey     = "\u00A4" //UNICODE: ChangeKey
 )
 
 var (
-	logSoap    = &log.Logger{}
-	logSession = &log.Logger{}
-	//binaryTokenMatcher = regexp.MustCompile(`-\d.*$`)
+	LogSoap            = &log.Logger{}
+	logSession         = &log.Logger{}
+	binaryTokenMatcher = regexp.MustCompile(`\!\d.*$`)
 )
 
 func init() {
@@ -60,7 +69,7 @@ func setUpLogging() {
 		log.Fatal("no session log file")
 	}
 
-	logSoap = log.New(soapL, "[sabre-soap] ", (log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile))
+	LogSoap = log.New(soapL, "[sabre-soap] ", (log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile))
 	logSession = log.New(sessL, "[sabre-sess] ", (log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile))
 }
 
@@ -319,15 +328,15 @@ func CreateManifest() Manifest {
 // Take this 'Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/RESE!ICESMSLB\/RES.LB!-3174053563846592370!1390092!0'
 // Return this '-3174053563846592370!1390092!0'
 func SabreTokenParse(tok string) string {
-	return tok
-	/*
-		fmt.Printf("\n\n******************** %s\n\n", tok)
-		if tok == "" || len(tok) < 1 {
-			return "none"
-		}
-		//TODO: FIXME: panic: runtime error: index out of range
-		return binaryTokenMatcher.FindAllString(tok, -1)[0]
-	*/
+	if tok == "" || len(tok) < 1 {
+		return "none"
+	}
+	//TODO: FIXME: panic: runtime error: index out of range
+	res := binaryTokenMatcher.FindAllString(tok, -1)
+	if len(res) > 0 {
+		return res[0]
+	}
+	return "parse-fail"
 }
 
 // SabreTimeNowFmt returns time.Now in format: '2017-11-27T09:58:31Z'
@@ -387,31 +396,30 @@ type SessionCreateRequest struct {
 }
 
 type SessionConf struct {
-	ServiceURL  string
-	From        string
-	PCC         string
-	Binsectok   string
-	Convid      string
-	Msgid       string
-	Timestr     string
-	Username    string
-	Password    string
-	AppTimeZone *time.Location
+	ServiceURL string
+	//Environment string
+	From string
+	PCC  string
+	// Binsectok         string
+	Convid string
+	// Msgid             string
+	// Timestr           string
+	Username          string
+	Password          string
+	ProfileNames      []string
+	ProfileIDs        []string
+	ContractRateCodes []string
+	AppTimeZone       *time.Location
 }
 
-// SetTime updates the timestamp. Pass around SessionConf and update the timestamp for any new request
-// TODO: FIXME: shoudl not return a session if modifying existing pointer... update docs
-func (s *SessionConf) SetTime() *SessionConf {
-	s.Timestr = SabreTimeNowFmt()
-	return s
-}
-
+/*
 // SetBinSec updates the timestamp. Pass around SessionConf and update the timestamp for any new request
-// TODO: FIXME: shoudl not return a session if modifying existing pointer... update docs
-func (s *SessionConf) SetBinSec(session SessionCreateResponse) *SessionConf {
-	s.Binsectok = session.Header.Security.BinarySecurityToken.Value
-	return s
+func (s *SessionConf) SetBinSec(session SessionCreateResponse) {
+	// s.Binsectok = session.Header.Security.BinarySecurityToken.Value
+	s.Msgid = session.Header.MessageHeader.MessageData.MessageID
+	s.Convid = session.Header.MessageHeader.ConversationID
 }
+*/
 
 // BuildSessionCreateRequest build session create envelope for request
 // CPAID, Organization, and PseudoCityCode all use the PCC/iPCC. ConversationID is typically a contact email address with unique identifier to the request. MessageID is typically a timestamped identifier to locate specific queries: it should contai a company identifier.
@@ -430,8 +438,8 @@ func BuildSessionCreateRequest(c *SessionConf) SessionCreateRequest {
 				Service:        ServiceElem{"SessionCreateRQ", "OTA"},
 				Action:         "SessionCreateRQ",
 				MessageData: MessageDataElem{
-					MessageID: c.Msgid,
-					Timestamp: c.Timestr,
+					MessageID: GenerateMessageID(),
+					Timestamp: SabreTimeNowFmt(),
 				},
 			},
 			Security: Security{
@@ -521,7 +529,7 @@ type SessionCloseRequest struct {
 
 // BuildSessionCloseRequest build session Close envelope for request.
 // CPAID, Organization, and PseudoCityCode all use the PCC/iPCC. ConversationID, MessageID, BinarySecurityToken must be from the existing session you wish to close.
-func BuildSessionCloseRequest(c *SessionConf) SessionCloseRequest {
+func BuildSessionCloseRequest(c *SessionConf, binsec string) SessionCloseRequest {
 	return SessionCloseRequest{
 		Envelope: CreateEnvelope(),
 		Header: SessionHeader{
@@ -535,14 +543,14 @@ func BuildSessionCloseRequest(c *SessionConf) SessionCloseRequest {
 				Service:        ServiceElem{"SessionCloseRQ", "OTA"},
 				Action:         "SessionCloseRQ",
 				MessageData: MessageDataElem{
-					MessageID: c.Msgid,
-					Timestamp: c.Timestr,
+					MessageID: GenerateMessageID(),
+					Timestamp: SabreTimeNowFmt(),
 				},
 			},
 			Security: Security{
 				XMLNSWsseBase:       BaseWsse,
 				XMLNSWsu:            BaseWsuNameSpace,
-				BinarySecurityToken: c.Binsectok,
+				BinarySecurityToken: binsec,
 			},
 		},
 		Body: SessionCloseRQBody{
@@ -618,35 +626,35 @@ type SessionValidateRequest struct {
 
 // BuildSessionValidateRequest build session Validate envelope for request.
 // CPAID, Organization, and PseudoCityCode all use the PCC/iPCC. ConversationID, MessageID, BinarySecurityToken must be from the existing session you wish to validate.
-func BuildSessionValidateRequest(from, pcc, binsectoken, convid, mid, time string) SessionValidateRequest {
+func BuildSessionValidateRequest(c *SessionConf, binsec string) SessionValidateRequest {
 	return SessionValidateRequest{
 		Envelope: CreateEnvelope(),
 		Header: SessionHeader{
 			MessageHeader: MessageHeader{
 				MustUnderstand: SabreMustUnderstand,
 				EbVersion:      SabreEBVersion,
-				From:           FromElem{PartyID: CreatePartyID(from, PartyIDTypeURN)},
+				From:           FromElem{PartyID: CreatePartyID(c.From, PartyIDTypeURN)},
 				To:             ToElem{PartyID: CreatePartyID(SabreToBase, PartyIDTypeURN)},
-				CPAID:          pcc,
-				ConversationID: convid,
+				CPAID:          c.PCC,
+				ConversationID: c.Convid,
 				Service:        ServiceElem{"SessionValidateRQ", "OTA"},
 				Action:         "SessionValidateRQ",
 				MessageData: MessageDataElem{
-					MessageID: mid,
-					Timestamp: time,
+					MessageID: GenerateMessageID(),
+					Timestamp: SabreTimeNowFmt(),
 				},
 			},
 			Security: Security{
 				XMLNSWsseBase:       BaseWsse,
 				XMLNSWsu:            BaseWsuNameSpace,
-				BinarySecurityToken: binsectoken,
+				BinarySecurityToken: binsec,
 			},
 		},
 		Body: SessionValidateRQBody{
 			SessionValidateRQ: SessionValidateRQ{
 				POS: POSElem{
 					Source: SourceElem{
-						PseudoCityCode: pcc,
+						PseudoCityCode: c.PCC,
 					},
 				},
 			},

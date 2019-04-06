@@ -3,7 +3,6 @@ package itin
 import (
 	"bytes"
 	"encoding/xml"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -62,8 +61,42 @@ type UniqueID struct {
 	ID      string   `xml:"ID,attr"`
 }
 type SpecialReqDetails struct {
-	XMLName          xml.Name `xml:"SpecialRequestDetails"`
-	SpecialServiceRQ SpecialServiceRQ
+	XMLName          xml.Name `xml:"SpecialReqDetails"`
+	SpecialServiceRQ *SpecialServiceRQ
+	AddRemarkRQ      *AddRemarkRQ
+}
+type AddRemarkRQ struct {
+	XMLName    xml.Name `xml:"AddRemarkRQ"`
+	RemarkInfo RemarkInfo
+}
+type RemarkInfo struct {
+	XMLName   xml.Name `xml:"RemarkInfo"`
+	FOPRemark *FOPRemark
+	//Remarks   []*Remark
+}
+type FOPRemark struct {
+	XMLName xml.Name `xml:"FOP_Remark"`
+	Remarks []Remark
+	CCInfo  CCInfo
+}
+type CCInfo struct {
+	XMLName     xml.Name `xml:"CC_Info"`
+	PaymentCard PaymentCard
+}
+type PaymentCard struct {
+	XMLName              xml.Name `xml:"PaymentCard"`
+	CardSecurityCode     string   `xml:"CardSecurityCode,attr"`
+	Code                 string   `xml:"Code,attr"`
+	ExpireDate           string   `xml:"ExpireDate,attr"`
+	ExtendedPayment      string   `xml:"ExtendedPayment,attr"`
+	ManualApprovalCode   string   `xml:"ManualApprovalCode,attr"`
+	Number               string   `xml:"Number,attr"`
+	SuppressApprovalCode string   `xml:"SuppressApprovalCode,attr"`
+}
+type Remark struct {
+	XMLName xml.Name `xml:"Remark"`
+	Typ     string   `xml:"Type,attr"` //General
+	Text    string   `xml:"Text"`
 }
 type SpecialServiceRQ struct {
 	XMLName            xml.Name `xml:"SpecialServiceRQ"`
@@ -109,16 +142,15 @@ type Surname struct {
 	XMLName xml.Name `xml:"Surname"`
 	Val     string   `xml:",chardata"`
 }
-
 type Airline struct {
 	XMLName xml.Name `xml:"Airline"`
-	Hosted  bool     `xml:"Hosted,attr"`
+	Hosted  bool     `xml:"Hosted,attr,omitempty"`
+	Code    string   `xml:"Code,attr,omitempty"`
 }
 type VendorPrefs struct {
 	XMLName xml.Name `xml:"VendorPrefs"`
 	Airline Airline
 }
-
 type StateProvince struct {
 	XMLName   xml.Name `xml:"StateCountyProv,omitempty"`
 	StateCode string   `xml:"StateCode,attr,omitempty"`
@@ -134,7 +166,6 @@ type Address struct {
 	Street        string `xml:"StreetNmbr,omitempty"`
 	VendorPrefs   VendorPrefs
 }
-
 type CustomerInfo struct {
 	XMLName        xml.Name        `xml:"CustomerInfo"`
 	ContactNumbers []ContactNumber `xml:"ContactNumbers>ContactNumber"`
@@ -160,16 +191,34 @@ type AgencyInfo struct {
 	Address Address
 }
 
-// AddAgencyInfo required to complete booking. Helper function allows it to be more fleixible to build up travel itinerary PNR.
-func (ti *TravelItineraryAddInfoRQ) AddAgencyInfo(addr Address) {
+// AddAgencyInfoAddress required to complete booking. Often this can be handled by moving Profile information into the PNR workspace. If that is not available then you must use this.
+func (ti *TravelItineraryAddInfoRQ) AddAgencyInfoAddress(addr Address) {
 	ti.Agency = &AgencyInfo{
 		Address: addr,
 	}
 }
 
+/*
+SetSpecialRemarkFPT for FOP on credit card remarks of type rtype ("Corporate", "Itinerary",Invoice", "General", "Check", etc...) to the special details struct, which has to be added to the passenger detail body. This is used for adding custom details request to a PNR.
+	Example
+		pnrBody := itin.SetPNRDetailBody(phoneVariable, personStruct)
+		special := &itin.SpecialReqDetails{}
+		special.SetSpecialRemarkFOP("Corporate", []string{"HOLD LINE"})
+		pnrBody.AddSpecialDetails(special)
+*/
+func (spec *SpecialReqDetails) SetSpecialRemarkFOP(rtype string, remarks []string) {
+	fop := &FOPRemark{}
+	for _, remark := range remarks {
+		fop.Remarks = append(fop.Remarks, Remark{Typ: rtype, Text: remark})
+	}
+	spec.AddRemarkRQ = &AddRemarkRQ{
+		RemarkInfo: RemarkInfo{FOPRemark: fop},
+	}
+}
+
 // AddSpecialDetails optionally include special details in special requests
-func (p *PassengerDetailBody) AddSpecialDetails() {
-	p.PassengerDetailsRQ.SpecialReq = &SpecialReqDetails{}
+func (p *PassengerDetailBody) AddSpecialDetails(spec *SpecialReqDetails) {
+	p.PassengerDetailsRQ.SpecialReq = spec
 }
 
 // AddUniqueID optionally include a pre processing unique ID
@@ -188,19 +237,7 @@ func CreatePersonName(firstName, lastName string) PersonName {
 	}
 }
 
-/*
-SetHotelRateDescRqStruct hotel rate description request using input parameters
-	IgnoreOnError: false,
-	HaltOnError:   true,
-	PostProcess: PostProcessing{
-		IgnoreAfter:          false,
-		RedisplayReservation: true,
-		UnmaskCreditCard:     false,
-	},
-	PreProcess: PreProcessing{
-		IgnoreBefore: true,
-
-*/
+// SetPNRDetailBody construct passenger payload for request payload
 func SetPNRDetailBody(phone string, person PersonName) PassengerDetailBody {
 	return PassengerDetailBody{
 		PassengerDetailsRQ: PassengerDetailsRQ{
@@ -233,7 +270,7 @@ func SetPNRDetailBody(phone string, person PersonName) PassengerDetailBody {
 }
 
 // BuildPNRDetailsRequest passenger details for booking
-func BuildPNRDetailsRequest(c *srvc.SessionConf, body PassengerDetailBody) PNRDetailsRequest {
+func BuildPNRDetailsRequest(c *srvc.SessionConf, binsec string, body PassengerDetailBody) PNRDetailsRequest {
 	return PNRDetailsRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -251,14 +288,14 @@ func BuildPNRDetailsRequest(c *srvc.SessionConf, body PassengerDetailBody) PNRDe
 				Service:        srvc.ServiceElem{Value: "PassengerDetailsRQ", Type: "sabreXML"},
 				Action:         "PassengerDetailsRQ",
 				MessageData: srvc.MessageDataElem{
-					MessageID: c.Msgid,
-					Timestamp: c.Timestr,
+					MessageID: srvc.GenerateMessageID(),
+					Timestamp: srvc.SabreTimeNowFmt(),
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: c.Binsectok,
+				BinarySecurityToken: binsec,
 			},
 		},
 		Body: body,
@@ -289,7 +326,7 @@ type PNRDetailsResponse struct {
 func CallPNRDetail(serviceURL string, req PNRDetailsRequest) (PNRDetailsResponse, error) {
 	pnrResp := PNRDetailsResponse{}
 	byteReq, _ := xml.Marshal(req)
-	fmt.Printf("CallPNRDetail-REQUEST\n\n %s\n\n", byteReq)
+	srvc.LogSoap.Printf("CallPNRDetail-REQUEST\n\n %s\n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
@@ -305,7 +342,7 @@ func CallPNRDetail(serviceURL string, req PNRDetailsRequest) (PNRDetailsResponse
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
 	_, _ = io.Copy(bodyBuffer, resp.Body)
-	fmt.Printf("CallPNRDetail-RESPONSE\n\n %s\n\n", bodyBuffer)
+	srvc.LogSoap.Printf("CallPNRDetail-RESPONSE\n\n %s\n\n", bodyBuffer)
 	resp.Body.Close()
 
 	//fmt.Printf("\n\n:CallPNRDetail Response: %s\n\n", bodyBuffer)

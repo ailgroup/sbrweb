@@ -3,7 +3,6 @@ package htlsp
 import (
 	"bytes"
 	"encoding/xml"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -194,14 +193,14 @@ func (h *HotelRsrvBody) AddTimeSpan(timesp TimeSpan) {
 }
 
 // SetHotelResBody for basic payload, other functions can append optional data
-func SetHotelResBody(units int, timestr string) HotelRsrvBody {
+func SetHotelResBody(units int) HotelRsrvBody {
 	return HotelRsrvBody{
 		OTAHotelResRQ: OTAHotelResRQ{
 			XMLNS:             srvc.BaseWebServicesNS,
 			XMLNSXs:           srvc.BaseXSDNameSpace,
 			XMLNSXsi:          srvc.BaseXSINamespace,
 			ReturnHostCommand: true,
-			TimeStamp:         timestr,
+			TimeStamp:         srvc.SabreTimeNowFmt(),
 			Version:           "2.2.0",
 			Hotel: HotelRequest{
 				RoomType: RoomType{
@@ -213,7 +212,7 @@ func SetHotelResBody(units int, timestr string) HotelRsrvBody {
 }
 
 // BuildHotelResRequest build request body for SOAP reservation service
-func BuildHotelResRequest(c *srvc.SessionConf, body HotelRsrvBody) HotelRsrvRequest {
+func BuildHotelResRequest(c *srvc.SessionConf, binsec string, body HotelRsrvBody) HotelRsrvRequest {
 	return HotelRsrvRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -231,14 +230,14 @@ func BuildHotelResRequest(c *srvc.SessionConf, body HotelRsrvBody) HotelRsrvRequ
 				Service:        srvc.ServiceElem{Value: "OTA_HotelRes", Type: "sabreXML"},
 				Action:         "OTA_HotelResLLSRQ",
 				MessageData: srvc.MessageDataElem{
-					MessageID: c.Msgid,
-					Timestamp: c.Timestr,
+					MessageID: srvc.GenerateMessageID(),
+					Timestamp: srvc.SabreTimeNowFmt(),
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: c.Binsectok,
+				BinarySecurityToken: binsec,
 			},
 		},
 		Body: body,
@@ -284,7 +283,7 @@ func CallHotelRes(serviceURL string, req HotelRsrvRequest) (HotelRsrvResponse, e
 	resResp := HotelRsrvResponse{}
 	//construct payload
 	byteReq, _ := xml.Marshal(req)
-	fmt.Printf("\n\nCallHotelResPAYLOAD: %s\n\n", byteReq)
+	srvc.LogSoap.Printf("\n\nCallHotelResPAYLOAD: %s\n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
@@ -294,24 +293,20 @@ func CallHotelRes(serviceURL string, req HotelRsrvRequest) (HotelRsrvResponse, e
 	// parse payload body into []byte buffer from net Response.ReadCloser
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
-	io.Copy(bodyBuffer, resp.Body)
+	_, _ = io.Copy(bodyBuffer, resp.Body)
 	resp.Body.Close()
 
-	fmt.Printf("\n\nCallHotelResRESPONSE: %s\n\n", bodyBuffer)
+	srvc.LogSoap.Printf("\n\nCallHotelResRESPONSE: %s\n\n", bodyBuffer)
 	//marshal bytes sabre response body into availResp response struct
 	err = xml.Unmarshal(bodyBuffer.Bytes(), &resResp)
 	if err != nil {
-		fmt.Println("1")
 		return resResp, sbrerr.NewErrorSabreXML(err.Error(), sbrerr.ErrCallHotelAvail, sbrerr.BadParse)
 	}
 	if !resResp.Body.Fault.Ok() {
-		fmt.Println("2")
 		return resResp, sbrerr.NewErrorSoapFault(resResp.Body.Fault.Format().Error())
 	}
 	if !resResp.Body.HotelRes.Result.Ok() {
-		fmt.Println("3")
 		return resResp, resResp.Body.HotelRes.Result.ErrFormat()
 	}
-	fmt.Println("4")
 	return resResp, nil
 }

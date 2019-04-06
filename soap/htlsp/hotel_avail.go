@@ -9,7 +9,6 @@ package htlsp
 import (
 	"bytes"
 	"encoding/xml"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -59,7 +58,23 @@ func (a *OTAHotelAvailRQ) addCustomerID(cID string) {
 	}
 }
 
-// SetHotelAvailBody hotel availability request using input parameters
+// SetPaginateAvailBody hotel availability request for getting additional availability based on a previous availability request. NOTE: this requires that a previous sucessful hotel avail search has happened; it also requires you to mkae the additional request on the same session as before and it assumes that caller is managing the session for this request. See Paginate() function.
+func setPaginateAvailBody() HotelAvailBody {
+	return HotelAvailBody{
+		OTAHotelAvailRQ: OTAHotelAvailRQ{
+			Version:           hotelRQVersion,
+			XMLNS:             srvc.BaseWebServicesNS,
+			XMLNSXs:           srvc.BaseXSDNameSpace,
+			XMLNSXsi:          srvc.BaseXSINamespace,
+			ReturnHostCommand: returnHostCommand,
+			Avail: AvailRequestSegment{
+				AdditionalAvail: &AdditionalAvail{Ind: true},
+			},
+		},
+	}
+}
+
+// SetHotelAvailBody hotel availability request using input parameters.
 func SetHotelAvailBody(guestCount int, query *HotelSearchCriteria, arrive, depart string) HotelAvailBody {
 	ts := TimeSpanFormatter(arrive, depart, TimeFormatMD, TimeFormatMD)
 	return HotelAvailBody{
@@ -79,7 +94,7 @@ func SetHotelAvailBody(guestCount int, query *HotelSearchCriteria, arrive, depar
 }
 
 // BuildHotelAvailRequest to make hotel availability request.
-func BuildHotelAvailRequest(c *srvc.SessionConf, otaHotelAvail HotelAvailBody) HotelAvailRequest {
+func BuildHotelAvailRequest(c *srvc.SessionConf, binsec string, otaHotelAvail HotelAvailBody) HotelAvailRequest {
 	return HotelAvailRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -97,25 +112,73 @@ func BuildHotelAvailRequest(c *srvc.SessionConf, otaHotelAvail HotelAvailBody) H
 				Service:        srvc.ServiceElem{Value: "OTA_HotelAvailRQ", Type: "sabreXML"},
 				Action:         "OTA_HotelAvailLLSRQ",
 				MessageData: srvc.MessageDataElem{
-					MessageID: c.Msgid,
-					Timestamp: c.Timestr,
+					MessageID: srvc.GenerateMessageID(),
+					Timestamp: srvc.SabreTimeNowFmt(),
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: c.Binsectok,
+				BinarySecurityToken: binsec,
 			},
 		},
 		Body: otaHotelAvail,
 	}
 }
 
+// Paginate constructs avail body in order to request more availability.
+func HOTStar(c *srvc.SessionConf, binsec string) HotelAvailRequest {
+	return HotelAvailRequest{
+		Envelope: srvc.CreateEnvelope(),
+		Header: srvc.SessionHeader{
+			MessageHeader: srvc.MessageHeader{
+				MustUnderstand: srvc.SabreMustUnderstand,
+				EbVersion:      srvc.SabreEBVersion,
+				From: srvc.FromElem{
+					PartyID: srvc.CreatePartyID(c.From, srvc.PartyIDTypeURN),
+				},
+				To: srvc.ToElem{
+					PartyID: srvc.CreatePartyID(srvc.SabreToBase, srvc.PartyIDTypeURN),
+				},
+				CPAID:          c.PCC,
+				ConversationID: c.Convid,
+				Service:        srvc.ServiceElem{Value: "OTA_HotelAvailRQ", Type: "sabreXML"},
+				Action:         "OTA_HotelAvailLLSRQ",
+				MessageData: srvc.MessageDataElem{
+					MessageID: srvc.GenerateMessageID(),
+					Timestamp: srvc.SabreTimeNowFmt(),
+				},
+			},
+			Security: srvc.Security{
+				XMLNSWsseBase:       srvc.BaseWsse,
+				XMLNSWsu:            srvc.BaseWsuNameSpace,
+				BinarySecurityToken: binsec,
+			},
+		},
+		Body: setPaginateAvailBody(),
+	}
+}
+
+// StopPaginate sets the additional val to false; need this to be able to manage keeping the same session in order to make the additional request.
+func (h *HotelAvailRequest) StopPaginate() {
+	h.Body.OTAHotelAvailRQ.Avail.AdditionalAvail = &AdditionalAvail{Ind: false}
+}
+
+// PagaAgain helper for knowing if we can or should to another reuqest for more avail; need this to be able to manage keeping the same session; also note that AdditionalAvail cannot be included on normal availability requests, so it is defined as pointer to a struct and therefore can be nil.
+func (h HotelAvailRequest) PageAgain() bool {
+	if h.Body.OTAHotelAvailRQ.Avail.AdditionalAvail == nil {
+		return false
+	}
+	return h.Body.OTAHotelAvailRQ.Avail.AdditionalAvail.Ind
+}
+
+// AvailabilityOptions for parsing the RPH and BasicPropertyInfo of available hotels in the results.
 type AvailabilityOptions struct {
 	XMLName          xml.Name             `xml:"AvailabilityOptions" json:"-"`
 	AvailableOptions []AvailabilityOption `xml:"AvailabilityOption"`
 }
 
+// AvailabilityOption holds RPH and BasicPropertyInfo of available hotel.
 type AvailabilityOption struct {
 	RPH          string `xml:"RPH,attr"` //string? 001 versus 1
 	PropertyInfo BasicPropertyInfo
@@ -154,7 +217,7 @@ func CallHotelAvail(serviceURL string, req HotelAvailRequest) (HotelAvailRespons
 	availResp := HotelAvailResponse{}
 	//construct payload
 	byteReq, _ := xml.Marshal(req)
-	fmt.Printf("CallHotelAvail-REQUEST: %s\n\n", byteReq)
+	srvc.LogSoap.Printf("CallHotelAvail-REQUEST: %s\n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
@@ -166,7 +229,7 @@ func CallHotelAvail(serviceURL string, req HotelAvailRequest) (HotelAvailRespons
 	// ioutil.ReadAll(resp.Body) has no cap on size and can create memory problems
 	bodyBuffer := new(bytes.Buffer)
 	_, _ = io.Copy(bodyBuffer, resp.Body)
-	fmt.Printf("CallHotelAvail-RESPONSE: %s\n\n", byteReq)
+	srvc.LogSoap.Printf("CallHotelAvail-RESPONSE: %s\n\n", bodyBuffer)
 	resp.Body.Close()
 
 	//marshal bytes sabre response body into availResp response struct

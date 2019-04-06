@@ -12,13 +12,15 @@ import (
 )
 
 /*
-	GetReservationRQ Retrieve Itinerary API is used to retrieve and display a passenger name record (PNR) and data that is related to PNR..
+GetReservationRQ Retrieve Itinerary API is used to retrieve and display a passenger name record (PNR) and data that is related to PNR..
 
-	Once a PNR has been created on the Sabre Host, this Web Service offers capabilities allowing Airline or Agency to retrieve PNR data using PNR Locator as a search criterion. It also enables retrieving PNR from AAA session. Request payload can be further specified by using "ReturnOptions" which determine response message content.
+Once a PNR has been created on the Sabre Host, this Web Service offers capabilities allowing Airline or Agency to retrieve PNR data using PNR Locator as a search criterion. It also enables retrieving PNR from AAA session. Request payload can be further specified by using "ReturnOptions" which determine response message content.
 
-	For Read Only Access use the Trip option as the PNR is not unpacked into the user AAA Session. The PNR Locator must always be specified in the request.
+For Read Only Access use the Trip option as the PNR is not unpacked into the user AAA Session. The PNR Locator must always be specified in the request.
 
-	For Update Access use the Stateful option as this will unpack the PNR into the user AAA session and be available for follow up Sabre entries. If a Locator is specified in the request the service checks the Locator in the AAA and if they match retrieves the current data in the AAA, if they do not match the service will unpack the PNR into the AAA session as long as the current session is available and there are no updates outstanding.
+For Update Access use the Stateful option as this will unpack the PNR into the user AAA session and be available for follow up Sabre entries. If a Locator is specified in the request the service checks the Locator in the AAA and if they match retrieves the current data in the AAA, if they do not match the service will unpack the PNR into the AAA session as long as the current session is available and there are no updates outstanding.
+
+http://files.developer.sabre.com/doc/providerdoc/pnrservices/GetReservationRQ_1.19.0_User_Guide.pdf
 */
 
 // GetReservationBody holds namespaced body
@@ -85,7 +87,7 @@ type GetReservationRQ struct {
 	//ReturnOptions ReturnOptions //not necessary but leaving here for documentation
 }
 
-func BuildGetReservationRequest(c *srvc.SessionConf, locator string) GetReservationRequest {
+func BuildGetReservationRequest(c *srvc.SessionConf, binsec, locator string) GetReservationRequest {
 	return GetReservationRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -103,14 +105,14 @@ func BuildGetReservationRequest(c *srvc.SessionConf, locator string) GetReservat
 				Service:        srvc.ServiceElem{Value: "GetReservationRQ", Type: "sabreXML"},
 				Action:         "GetReservationRQ",
 				MessageData: srvc.MessageDataElem{
-					MessageID: c.Msgid,
-					Timestamp: c.Timestr,
+					MessageID: srvc.GenerateMessageID(),
+					Timestamp: srvc.SabreTimeNowFmt(),
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: c.Binsectok,
+				BinarySecurityToken: binsec,
 			},
 		},
 		Body: GetReservationBody{
@@ -181,7 +183,7 @@ type GetReservationResponse struct {
 
 // Ok check for errors on get reservations requests.
 func (r *GetReservationRS) Ok() bool {
-	return len(r.Errors.Error) > 0
+	return len(r.Errors.Error) <= 0
 }
 
 // Format for PNRErrors returns standard formatted erorrs for api.
@@ -204,8 +206,7 @@ func CallGetReservation(serviceURL string, req GetReservationRequest) (GetReserv
 	getRes := GetReservationResponse{}
 	byteReq, _ := xml.Marshal(req)
 
-	//-----------------------------------
-	fmt.Printf("\n\nCallGetReservation RAW REQUEST: %s\n\n", byteReq)
+	srvc.LogSoap.Printf("\n\nCallGetReservation-REQUEST: %s\n\n", byteReq)
 
 	//post payload
 	resp, err := http.Post(serviceURL, "text/xml", bytes.NewBuffer(byteReq))
@@ -233,8 +234,7 @@ func CallGetReservation(serviceURL string, req GetReservationRequest) (GetReserv
 		return getRes, getRes.ErrorSabreService
 	}
 
-	//-----------------------------------
-	fmt.Printf("\n\nCallGetReservation RAW RESPONSE: %s\n\n", bodyBuffer.Bytes())
+	srvc.LogSoap.Printf("\n\nCallGetReservation-RESPONSE: %s\n\n", bodyBuffer.Bytes())
 
 	//marshal bytes sabre response body into availResp response struct
 	err = xml.Unmarshal(bodyBuffer.Bytes(), &getRes)
@@ -249,11 +249,6 @@ func CallGetReservation(serviceURL string, req GetReservationRequest) (GetReserv
 	if !getRes.Body.Fault.Ok() {
 		return getRes, sbrerr.NewErrorSoapFault(getRes.Body.Fault.Format().ErrMessage)
 	}
-
-	// does this even return AppResults ??
-	//if !getRes.Body.GetReservationRS.AppResults.Ok() {
-	//	return getRes, getRes.Body.GetReservationRS.AppResults.ErrFormat()
-	//}
 
 	if !getRes.Body.GetReservationRS.Ok() {
 		return getRes, getRes.Body.GetReservationRS.Errors.Format()

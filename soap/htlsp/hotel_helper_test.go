@@ -121,12 +121,12 @@ var (
 	samplemid           = "mid:20180207-20:19:07.25|QVbg0"
 	sampletime          = "2018-02-16T07:18:42Z"
 	sconf               = &srvc.SessionConf{
-		From:      samplesite,
-		PCC:       samplepcc,
-		Convid:    sampleconvid,
-		Msgid:     samplemid,
-		Timestr:   sampletime,
-		Binsectok: samplebinsectoken,
+		From:   samplesite,
+		PCC:    samplepcc,
+		Convid: sampleconvid,
+		// Msgid:     samplemid,
+		// Timestr:   sampletime,
+		// Binsectok: samplebinsectoken,
 		//Username: sampleusername,
 		//Password: samplepassword,
 	}
