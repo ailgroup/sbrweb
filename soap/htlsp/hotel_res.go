@@ -212,7 +212,7 @@ func SetHotelResBody(units int) HotelRsrvBody {
 }
 
 // BuildHotelResRequest build request body for SOAP reservation service
-func BuildHotelResRequest(c *srvc.SessionConf, body HotelRsrvBody) HotelRsrvRequest {
+func BuildHotelResRequest(c *srvc.SessionConf, binsec string, body HotelRsrvBody) HotelRsrvRequest {
 	return HotelRsrvRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -230,14 +230,14 @@ func BuildHotelResRequest(c *srvc.SessionConf, body HotelRsrvBody) HotelRsrvRequ
 				Service:        srvc.ServiceElem{Value: "OTA_HotelRes", Type: "sabreXML"},
 				Action:         "OTA_HotelResLLSRQ",
 				MessageData: srvc.MessageDataElem{
-					MessageID: c.Msgid,
-					Timestamp: c.Timestr,
+					MessageID: srvc.GenerateMessageID(),
+					Timestamp: srvc.SabreTimeNowFmt(),
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: c.Binsectok,
+				BinarySecurityToken: binsec,
 			},
 		},
 		Body: body,

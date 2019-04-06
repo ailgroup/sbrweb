@@ -52,7 +52,7 @@ type EndTransactionRQ struct {
 	Source         Source
 }
 
-func BuildEndTransactionRequest(c *srvc.SessionConf) EndTransactionRequest {
+func BuildEndTransactionRequest(c *srvc.SessionConf, binsec string) EndTransactionRequest {
 	return EndTransactionRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -70,14 +70,14 @@ func BuildEndTransactionRequest(c *srvc.SessionConf) EndTransactionRequest {
 				Service:        srvc.ServiceElem{Value: "EndTransactionRQ", Type: "sabreXML"},
 				Action:         "EndTransactionLLSRQ",
 				MessageData: srvc.MessageDataElem{
-					MessageID: c.Msgid,
-					Timestamp: c.Timestr,
+					MessageID: srvc.GenerateMessageID(),
+					Timestamp: srvc.SabreTimeNowFmt(),
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: c.Binsectok,
+				BinarySecurityToken: binsec,
 			},
 		},
 		Body: EndTransactionBody{

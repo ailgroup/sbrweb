@@ -78,7 +78,7 @@ type MiscSegText struct {
 }
 
 // BuildMiscSegmentRequest construct payload for request to copy a profile into a PNR. The FilterPath is parameter since it may need to be constructed in various ways depending on need; for example BuildFilterPathForProfileOnly buils a simple FilterPath Profile
-func BuildMiscSegmentRequest(c *srvc.SessionConf, seg MiscSegment) MiscSegmentRequest {
+func BuildMiscSegmentRequest(c *srvc.SessionConf, binsec string, seg MiscSegment) MiscSegmentRequest {
 	return MiscSegmentRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -96,14 +96,14 @@ func BuildMiscSegmentRequest(c *srvc.SessionConf, seg MiscSegment) MiscSegmentRe
 				Service:        srvc.ServiceElem{Value: "MiscSegmentSellLLSRQ", Type: "sabreXML"},
 				Action:         "MiscSegmentSellLLSRQ",
 				MessageData: srvc.MessageDataElem{
-					MessageID: c.Msgid,
-					Timestamp: c.Timestr,
+					MessageID: srvc.GenerateMessageID(),
+					Timestamp: srvc.SabreTimeNowFmt(),
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: c.Binsectok,
+				BinarySecurityToken: binsec,
 			},
 		},
 		Body: MiscSegmentBody{

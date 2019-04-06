@@ -2,7 +2,6 @@ package itin
 
 import (
 	"encoding/xml"
-	"fmt"
 	"testing"
 )
 
@@ -26,12 +25,11 @@ func TestProfileToPNRXML(t *testing.T) {
 		sampleProfileName,     //ProfileNames from sessionconf
 		sampleProfilePNRMoveOrderSeqNo,
 	)
-	et := BuildProfileToPNRRequest(sampleConf, filterPath)
-	b, err := xml.Marshal(et)
+	et := BuildProfileToPNRRequest(sampleConf, samplebinsectoken, filterPath)
+	_, err := xml.Marshal(et)
 	if err != nil {
 		t.Error("Error marshal build end transaction", err)
 	}
-	fmt.Printf("%s\n\n", b)
 	/*
 		if string(b) != string(sampleEndTReq) {
 			t.Errorf("Expect end transaction \n given: %s \n built: %s", sampleEndTReq, b)

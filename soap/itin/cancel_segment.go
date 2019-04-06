@@ -48,7 +48,7 @@ type CancelSegmentRQ struct {
 	Segment SegmentToCancel
 }
 
-func BuildCancelSegmentRequest(c *srvc.SessionConf, typ, endnumber, number string) CancelSeqmentRequest {
+func BuildCancelSegmentRequest(c *srvc.SessionConf, binsec, typ, endnumber, number string) CancelSeqmentRequest {
 	seg := SegmentToCancel{
 		Typ:       typ,
 		EndNumber: endnumber,
@@ -71,14 +71,14 @@ func BuildCancelSegmentRequest(c *srvc.SessionConf, typ, endnumber, number strin
 				Service:        srvc.ServiceElem{Value: "OTA_CancelRQ", Type: "sabreXML"},
 				Action:         "OTA_CancelRQ", //OTA_CancelLLSRQ
 				MessageData: srvc.MessageDataElem{
-					MessageID: c.Msgid,
-					Timestamp: c.Timestr,
+					MessageID: srvc.GenerateMessageID(),
+					Timestamp: srvc.SabreTimeNowFmt(),
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: c.Binsectok,
+				BinarySecurityToken: binsec,
 			},
 		},
 		Body: CancelSegmentBody{

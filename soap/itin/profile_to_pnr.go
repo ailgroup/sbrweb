@@ -103,7 +103,7 @@ type ProfileToPNRRQ struct {
 }
 
 // BuildProfileToPNRRequest construct payload for request to copy a profile into a PNR. The FilterPath is parameter since it may need to be constructed in various ways depending on need; for example BuildFilterPathForProfileOnly buils a simple FilterPath Profile
-func BuildProfileToPNRRequest(c *srvc.SessionConf, fp *FilterPath) ProfileToPNRRequest {
+func BuildProfileToPNRRequest(c *srvc.SessionConf, binsec string, fp *FilterPath) ProfileToPNRRequest {
 	return ProfileToPNRRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -121,14 +121,14 @@ func BuildProfileToPNRRequest(c *srvc.SessionConf, fp *FilterPath) ProfileToPNRR
 				Service:        srvc.ServiceElem{Value: "EPS_ProfileToPNR", Type: "sabreXML"},
 				Action:         "EPS_ProfileToPNRRQ",
 				MessageData: srvc.MessageDataElem{
-					MessageID: c.Msgid,
-					Timestamp: c.Timestr,
+					MessageID: srvc.GenerateMessageID(),
+					Timestamp: srvc.SabreTimeNowFmt(),
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: c.Binsectok,
+				BinarySecurityToken: binsec,
 			},
 		},
 		Body: ProfileToPNRBody{

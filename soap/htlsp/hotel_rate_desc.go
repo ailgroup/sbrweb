@@ -51,7 +51,7 @@ func SetHotelRateDescBody(rpc *RatePlanCandidates) (HotelRateDescBody, error) {
 }
 
 // BuildHotelRateDescRequest to make hotel property description request, done after hotel property description iff HRD_RequiredForSell=true.
-func BuildHotelRateDescRequest(c *srvc.SessionConf, body HotelRateDescBody) HotelRateDescRequest {
+func BuildHotelRateDescRequest(c *srvc.SessionConf, binsec string, body HotelRateDescBody) HotelRateDescRequest {
 	return HotelRateDescRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -69,14 +69,14 @@ func BuildHotelRateDescRequest(c *srvc.SessionConf, body HotelRateDescBody) Hote
 				Service:        srvc.ServiceElem{Value: "HotelRateDescriptionLLSRQ", Type: "sabreXML"},
 				Action:         "HotelRateDescriptionLLSRQ",
 				MessageData: srvc.MessageDataElem{
-					MessageID: c.Msgid,
-					Timestamp: c.Timestr,
+					MessageID: srvc.GenerateMessageID(),
+					Timestamp: srvc.SabreTimeNowFmt(),
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: c.Binsectok,
+				BinarySecurityToken: binsec,
 			},
 		},
 		Body: body,

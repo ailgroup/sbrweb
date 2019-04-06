@@ -87,7 +87,7 @@ type GetReservationRQ struct {
 	//ReturnOptions ReturnOptions //not necessary but leaving here for documentation
 }
 
-func BuildGetReservationRequest(c *srvc.SessionConf, locator string) GetReservationRequest {
+func BuildGetReservationRequest(c *srvc.SessionConf, binsec, locator string) GetReservationRequest {
 	return GetReservationRequest{
 		Envelope: srvc.CreateEnvelope(),
 		Header: srvc.SessionHeader{
@@ -105,14 +105,14 @@ func BuildGetReservationRequest(c *srvc.SessionConf, locator string) GetReservat
 				Service:        srvc.ServiceElem{Value: "GetReservationRQ", Type: "sabreXML"},
 				Action:         "GetReservationRQ",
 				MessageData: srvc.MessageDataElem{
-					MessageID: c.Msgid,
-					Timestamp: c.Timestr,
+					MessageID: srvc.GenerateMessageID(),
+					Timestamp: srvc.SabreTimeNowFmt(),
 				},
 			},
 			Security: srvc.Security{
 				XMLNSWsseBase:       srvc.BaseWsse,
 				XMLNSWsu:            srvc.BaseWsuNameSpace,
-				BinarySecurityToken: c.Binsectok,
+				BinarySecurityToken: binsec,
 			},
 		},
 		Body: GetReservationBody{
