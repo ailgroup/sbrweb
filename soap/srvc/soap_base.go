@@ -33,6 +33,9 @@ const (
 	SabreMustUnderstand   = "1"
 	SabreToBase           = "webservices.sabre.com"
 	StandardTimeFormatter = "2006-01-02T15:04:05Z"
+	TimeFormatMD          = "01-02"
+	TimeFormatMDHM        = "01-02 15:04"
+	TimeFormatMDTHM       = "01-02T15:04"
 	//StatusErrorRS is the string value error response when SOAP request->response had an error, typically found in the Header.MessageHeader.Action. Usually, any SOAP response with Action="ErrorRS" will also have a SOAPFault body with more informative error codes. This can be used as an easy way to identify and error.
 	StatusErrorRS = "ErrorRS"
 

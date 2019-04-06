@@ -1,0 +1,22 @@
+SUV Type
+
+    J (All Terrain) – Open air all terrain
+    E (Coupe) – 2-door 2-seater
+    N (Roadster) – Sporty, open air, 2-door 2-seater
+    M (Monospace) – 4-5 Seater with Extra Interior Dimensions
+    O (Special Offer Car) – New product introduction vehicle offered for a limited time (ideally 6 months or less) – Must be specifically requested
+    R (Recreational Vehicle) – Candidate for phase out / currently used for SUV's
+    H (Motor Home) – Defer to phase II
+    G (Crossover) – Hybrid (e.g. station wagon/SUV mix - Chrysler Pacifica, truck/SUV mix - Chevy Avalanche)
+
+SUV Transmission/Drive
+
+    M/A (Unspecified Drive) – 2WD, 4WD, AWD
+    N/B (4WD) – Must be engaged or disengaged by driver (may also include AWD)
+    C/D (AWD) – 4WD is always engaged
+
+SUV Fuel/Aircon
+
+    R/N (Unspecified Fuel/Power) – Any type of fuel/power
+    H/I (Hybrid) – Gasoline and electric powered
+    (Multi Fuel) – Multiple (two or more) fuel/power sources other than what is defined in hybrid

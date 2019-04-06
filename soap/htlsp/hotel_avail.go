@@ -76,7 +76,7 @@ func setPaginateAvailBody() HotelAvailBody {
 
 // SetHotelAvailBody hotel availability request using input parameters.
 func SetHotelAvailBody(guestCount int, query *HotelSearchCriteria, arrive, depart string) HotelAvailBody {
-	ts := TimeSpanFormatter(arrive, depart, TimeFormatMD, TimeFormatMD)
+	ts := TimeSpanFormatter(arrive, depart, srvc.TimeFormatMD, srvc.TimeFormatMD)
 	return HotelAvailBody{
 		OTAHotelAvailRQ: OTAHotelAvailRQ{
 			Version:           hotelRQVersion,

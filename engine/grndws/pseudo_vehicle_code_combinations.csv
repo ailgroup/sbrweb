@@ -1,0 +1,40 @@
+Pseudo,Definition
+ACAR,Any standard vehicle (default)
+ALLB,2-3 door
+ALLC,2 or 4 door
+ALLD,4-5 door
+AELT,Any Elite
+ACPR,Coupe/Roadster
+ASPC,Any specialty vehicle
+ASPX,Non-standard fleet
+APUP,Any pickup
+AWGN,Wagon
+AREC,Recreational vehicle
+ASUV,SUV
+AVAN,Passenger van
+ASIX,Any 6+ pax van or SUV
+ASEV,Any 7+ pax van or SUV
+AEIG,Any 8-pax+ van
+AFWD,Any 4WD/AWD
+ATRV,All terrain
+ACGO,Commercial truck
+ALMO,Limousine
+ASPT,Sport
+ACNV,Convertible
+AOFR,Special offer car
+AMNO,Monospace
+AMTO,Motor home
+AMCY,2-wheel vehicle
+ACRS,Crossover
+AMAN,All manual transmission VTs
+AUTO,All automatic transmission VTs
+AGAS,All gosline powered vehicles
+APET,All petrol-powered VTs
+ADSL,All diesel-powered VTs
+AGRN,Any green VT (hybrid;electric;LPG;hydrogen;multi-fuel)
+AHYB,All hybrid VTs
+AELC,All electric-powered VTs
+AHYD,All hydrogen-powered VTs
+AMFP,All multi-fuel powered VTs
+ACPG,All LPG/compressed gas-powered VTs
+AETH,All ethanol-powered VTs 

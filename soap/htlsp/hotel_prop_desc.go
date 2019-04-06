@@ -66,7 +66,7 @@ func SetHotelPropDescBody(guestCount int, query *HotelSearchCriteria, arrive, de
 	if err != nil {
 		return HotelPropDescBody{}, err
 	}
-	ts := TimeSpanFormatter(arrive, depart, TimeFormatMD, TimeFormatMD)
+	ts := TimeSpanFormatter(arrive, depart, srvc.TimeFormatMD, srvc.TimeFormatMD)
 	return HotelPropDescBody{
 		HotelPropDescRQ: HotelPropDescRQ{
 			Version:           hotelRQVersion,
